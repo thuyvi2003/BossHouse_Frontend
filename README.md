@@ -30,7 +30,9 @@ git push origin ViVLT
 Tên nhánh phải rõ ràng, có ý nghĩa.
 Ví dụ: ViVLT
 
-=> Nếu đặt sai tên nhánh → KHÔNG ĐƯỢC MERGE.
+Nếu đặt sai tên nhánh: 
+=> KHÔNG ĐƯỢC MERGE.
+=> AUTO BỊ XÓA NHÁNH TRÊN GIT
 
 ⭐ Commit message
 
@@ -62,5 +64,12 @@ Khi có conflict, người tạo PR phải tự xử lý conflict.
 Sau khi fix conflict mới được duyệt merge.
 
 ⭐ Không được push file lạ lên
+
+⭐ Khi code được merge vào nếu dự án chạy bị nổ đùng đùng thì phải fix code liền
+
+⭐ Không được đụng vào code của người khác khi chưa có sự cho phép
+
+⭐ Nếu có ý định phá => AUTO KÍCH 
+
 
 ꒷꒦︶꒷꒦︶ ๋ ࣭ ⭑꒷꒦꒷꒦︶꒷꒦︶ ๋ ࣭ ⭑꒷꒦꒷꒦︶꒷꒦︶ ๋ ࣭ ⭑꒷꒦꒷꒦︶꒷꒦︶ ๋ ࣭ ⭑꒷꒦꒷꒦︶꒷꒦︶ ๋ ࣭ ⭑꒷꒦
