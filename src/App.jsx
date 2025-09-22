@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button"
 import { Routes, Route } from 'react-router-dom'
-import PromotionManagement from "./components/ui/Dashboard/PromotionManagement"
 import Dashboard from './components/ui/Dashboard/Dashboard.jsx'
 
 function App() {
