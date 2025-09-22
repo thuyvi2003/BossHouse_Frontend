@@ -20,7 +20,7 @@ function App() {
   }
 
   return (
-    <BrowserRouter>
+    <>
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
@@ -37,7 +37,7 @@ function App() {
         pauseOnHover
         theme="light"
       />
-    </BrowserRouter>
+    </>
   );
 }
 
