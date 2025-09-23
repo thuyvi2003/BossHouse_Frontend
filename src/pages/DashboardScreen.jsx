@@ -1,6 +1,6 @@
 // Vo Lam Thuy Vi
 import { useState } from "react";
-import PromotionManagement from "./Promotions/PromotionManagement";
+import PromotionManagement from "../components/ui/Dashboard/Promotions/PromotionManagement";
 import {
     ChartBar,
     User,
@@ -13,7 +13,6 @@ import {
 } from "phosphor-react";
 import Logo from "@/assets/Logo_BossHouse.png";
 import Background from "@/assets/Background_Cat.png"
-import { Search, Mail, Bell, ChevronDown, Play, Settings, LogOut } from "lucide-react";
 export default function Dashboard() {
     const [activeTab, setActiveTab] = useState("overview");
 
@@ -94,8 +93,8 @@ export default function Dashboard() {
                     </button>
                 </div>
             </aside>
-            <main   className="relative shadow-xl overflow-hidden flex-1 animate-fade-in bg-cover bg-center"
-  style={{ backgroundImage: `url(${Background})` }}>{renderContent()}</main>
+            <main className="relative shadow-xl overflow-hidden flex-1 animate-fade-in bg-cover bg-center"
+                style={{ backgroundImage: `url(${Background})` }}>{renderContent()}</main>
 
         </div>
     );
