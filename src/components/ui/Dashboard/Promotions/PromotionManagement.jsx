@@ -76,7 +76,6 @@ const PromotionManagement = () => {
   }
   return (
     <div className="bg-white  shadow-xl overflow-hidden flex-1  animate-fade-in">
-      {/* Header */}
       <div className="p-6 flex justify-between items-center bg-[#d7cbbf]">
         <h2 className="flex items-center gap-2 text-2xl font-extrabold tracking-wide text-[#2c2c2c] drop-shadow-sm">
           <Tag size={20} className="text-[#846551]" />

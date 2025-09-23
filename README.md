@@ -59,9 +59,11 @@ KHÔNG ĐƯỢC ĐỤNG VÀO NHÁNH main.
 
 ⭐ Xử lý conflict
 
-Khi có conflict, người tạo PR phải tự xử lý conflict.
+- Khi có conflict, người tạo PR phải tự xử lý conflict.
 
-Sau khi fix conflict mới được duyệt merge.
+- Nếu fix conflict của mình mà xóa code hay sửa code ng khác(Miễn ảnh hưởng tới code ng khác) => Giai quyết với bị hại có thể bao trà sữa hay mua bánh kẹo,... bồi thường tổn thất cho bị hại.
+
+- Sau khi fix conflict mới được duyệt merge.
 
 ⭐ Không được push file lạ lên
 
