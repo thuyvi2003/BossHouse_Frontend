@@ -1,9 +1,9 @@
 // Vo Lam Thuy Vi
 import { useState } from "react";
-import PromotionManagement from "./Promotions/PromotionManagement";
-import CategoryManagement from "./Categories/CategoryManagement";
-import ProductManagement from "./Products/ProductManagement";
-import ProductVariationManagement from "./ProductVariations/ProductVariationManagement";
+import CategoryManagement from "../components/ui/Dashboard/Categories/CategoryManagement";
+import ProductManagement from "../components/ui/Dashboard/Products/ProductManagement";
+import ProductVariationManagement from "../components/ui/Dashboard/ProductVariations/ProductVariationManagement";
+import PromotionManagement from "../components/ui/Dashboard/Promotions/PromotionManagement";
 import {
     ChartBar,
     User,
@@ -16,19 +16,20 @@ import {
 } from "phosphor-react";
 import Logo from "@/assets/Logo_BossHouse.png";
 import Background from "@/assets/Background_Cat.png"
-import { Search, Mail, Bell, ChevronDown, Play, Settings, LogOut } from "lucide-react";
 export default function Dashboard() {
     const [activeTab, setActiveTab] = useState("overview");
 
     const sidebarItems = [
         { id: "overview", icon: <ChartBar size={22} />, label: "Overview" },
         { id: "account", icon: <User size={22} />, label: "Account" },
-        { id: "category", icon: <Package size={22} />, label: "Category" },
         { id: "product", icon: <Package size={22} />, label: "Product" },
+        { id: "category", icon: <Package size={22} />, label: "Category" },
         { id: "variation", icon: <Package size={22} />, label: "Product Variation" },
         { id: "promotion", icon: <FilmSlate size={22} />, label: "Promotion" },
         { id: "booking", icon: <CalendarCheck size={22} />, label: "Booking" },
         { id: "post", icon: <Note size={22} />, label: "Post" },
+
+
     ];
 
     const renderContent = () => {
@@ -39,10 +40,10 @@ export default function Dashboard() {
                 return <h2 className="text-2xl font-bold">📊 Overview</h2>;
             case "account":
                 return <h2 className="text-2xl font-bold">👤 Account Management</h2>;
-            case "category":
-                return <CategoryManagement />;
             case "product":
                 return <ProductManagement />;
+            case "category":
+                return <CategoryManagement />;
             case "variation":
                 return <ProductVariationManagement />;
             case "promotion":
@@ -101,8 +102,8 @@ export default function Dashboard() {
                     </button>
                 </div>
             </aside>
-            <main   className="relative shadow-xl overflow-hidden flex-1 animate-fade-in bg-cover bg-center"
-  style={{ backgroundImage: `url(${Background})` }}>{renderContent()}</main>
+            <main className="relative shadow-xl overflow-hidden flex-1 animate-fade-in bg-cover bg-center"
+                style={{ backgroundImage: `url(${Background})` }}>{renderContent()}</main>
 
         </div>
     );

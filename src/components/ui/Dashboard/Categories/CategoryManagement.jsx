@@ -1,5 +1,5 @@
+// Vo Lam Thuy Vi
 import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { categoryAPI } from "@/services/api";
 import { 
   Plus, 
@@ -10,7 +10,8 @@ import {
   EyeOff,
   Filter,
   MoreHorizontal,
-  X
+  X,
+  Package
 } from "lucide-react";
 
 const CategoryManagement = () => {
@@ -177,213 +178,167 @@ const CategoryManagement = () => {
   }, [pagination.page, pagination.limit, searchTerm, statusFilter]);
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm overflow-hidden w-full max-w-7xl mx-auto">
+    <div className="bg-white shadow-xl overflow-hidden flex-1 animate-fade-in">
       {/* Header */}
-      <div className="p-6 border-b border-gray-200">
-        <div className="flex justify-between items-center">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">Category Management</h2>
-            <p className="text-gray-600 mt-1">Manage product categories</p>
-          </div>
-          <Button 
-            onClick={() => setShowCreateModal(true)}
-            className="bg-blue-600 hover:bg-blue-700"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Create Category
-          </Button>
-        </div>
+      <div className="p-6 flex justify-between items-center bg-[#d7cbbf]">
+        <h2 className="flex items-center gap-2 text-2xl font-extrabold tracking-wide text-[#2c2c2c] drop-shadow-sm">
+          <Package size={20} className="text-[#846551]" />
+          <span className="bg-gradient-to-r from-[#846551] to-[#5a4639] bg-clip-text text-transparent">
+            Category Management
+          </span>
+        </h2>
+        <button
+          onClick={() => setShowCreateModal(true)}
+          className="px-4 py-2 bg-[#846551] text-white font-semibold rounded-lg shadow hover:shadow-lg hover:scale-105 transition-transform duration-300"
+        >
+          + Create Category
+        </button>
       </div>
 
-      {/* Filters */}
-      <div className="p-6 border-b border-gray-200">
-        <div className="flex flex-col sm:flex-row gap-4">
-          {/* Search */}
+      {/* Search and Filter Bar */}
+      <div className="p-6 bg-[#f5f3f2] border-b border-[#eae7e5]">
+        <div className="flex flex-col lg:flex-row gap-4">
+          {/* Search Input */}
           <div className="flex-1">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
                 type="text"
-                placeholder="Search categories..."
+                placeholder="Search categories by name or description..."
                 value={searchTerm}
                 onChange={handleSearch}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#846551] focus:border-transparent"
               />
             </div>
           </div>
 
           {/* Status Filter */}
-          <div className="flex gap-2">
-            <Button
-              variant={statusFilter === "all" ? "default" : "outline"}
-              size="sm"
-              onClick={() => handleStatusFilter("all")}
+          <div className="relative">
+            <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <select
+              value={statusFilter}
+              onChange={(e) => handleStatusFilter(e.target.value)}
+              className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#846551] focus:border-transparent bg-white"
             >
-              All
-            </Button>
-            <Button
-              variant={statusFilter === "active" ? "default" : "outline"}
-              size="sm"
-              onClick={() => handleStatusFilter("active")}
-            >
-              Active
-            </Button>
-            <Button
-              variant={statusFilter === "inactive" ? "default" : "outline"}
-              size="sm"
-              onClick={() => handleStatusFilter("inactive")}
-            >
-              Inactive
-            </Button>
+              <option value="all">All Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
           </div>
+        </div>
+
+        {/* Results Summary */}
+        <div className="mt-3 flex justify-between items-center text-sm text-gray-600">
+          <span>
+            Showing {categories.length} of {pagination.total} categories
+          </span>
+          {(searchTerm || statusFilter !== "all") && (
+            <button
+              onClick={() => {
+                setSearchTerm("");
+                setStatusFilter("all");
+              }}
+              className="text-[#846551] hover:text-[#5a4639] font-medium"
+            >
+              Clear filters
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Category
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Description
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Created
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {loading ? (
-              <tr>
-                <td colSpan="5" className="px-6 py-12 text-center">
-                  <div className="flex justify-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                  </div>
-                </td>
-              </tr>
-            ) : categories.length === 0 ? (
-              <tr>
-                <td colSpan="5" className="px-6 py-12 text-center text-gray-500">
-                  No categories found
-                </td>
-              </tr>
-            ) : (
-              categories.map((category) => (
-                <tr key={category._id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">
-                          {category.name}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          ID: {category._id}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-900 max-w-xs truncate">
-                      {category.description || "No description"}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      category.status === "active" 
-                        ? "bg-green-100 text-green-800" 
-                        : "bg-red-100 text-red-800"
-                    }`}>
-                      {category.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(category.created_at).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex justify-end space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEdit(category)}
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => deleteCategory(category._id)}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+      {/* Table Header */}
+      <div className="grid grid-cols-12 gap-4 px-6 py-3 text-xs font-bold text-gray-700 uppercase tracking-wider bg-gradient-to-r from-[#f5f3f2] to-[#eae7e5] border-b shadow-sm">
+        <div className="col-span-3">Category</div>
+        <div className="col-span-4">Description</div>
+        <div className="col-span-1">Status</div>
+        <div className="col-span-2">Created</div>
+        <div className="col-span-2 text-center">Actions</div>
       </div>
 
-      {/* Pagination */}
-      {pagination.totalPages > 1 && (
-        <div className="px-6 py-4 border-t border-gray-200">
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-700">
-              Showing {((pagination.page - 1) * pagination.limit) + 1} to{" "}
-              {Math.min(pagination.page * pagination.limit, pagination.total)} of{" "}
-              {pagination.total} results
-            </div>
-            <div className="flex space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handlePageChange(pagination.page - 1)}
-                disabled={pagination.page === 1}
-              >
-                Previous
-              </Button>
-              <span className="px-3 py-1 text-sm">
-                Page {pagination.page} of {pagination.totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handlePageChange(pagination.page + 1)}
-                disabled={pagination.page === pagination.totalPages}
-              >
-                Next
-              </Button>
+      {/* Table Body */}
+      <div className="divide-y divide-transparent">
+        {loading ? (
+          <div className="px-6 py-12 text-center">
+            <div className="flex justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#846551]"></div>
             </div>
           </div>
-        </div>
-      )}
+        ) : categories.length === 0 ? (
+          <div className="px-6 py-12 text-center text-gray-500">
+            No categories found
+          </div>
+        ) : (
+          categories.map((category, idx) => (
+            <div
+              key={category._id}
+              className={`
+            relative px-6 py-5 grid grid-cols-12 gap-4 items-center
+            bg-white rounded-xl shadow-sm border border-gray-100
+            hover:border-[#846551] hover:shadow-lg hover:scale-[1.01]
+            transition-all duration-300 ease-in-out
+            animate-fade-in-up
+          `}
+              style={{ animationDelay: `${idx * 120}ms` }}
+            >
+              {/* Decorative left bar */}
+              <div className="absolute left-0 top-0 h-full w-1 rounded-l-xl bg-gray-200 hover:bg-[#846551] transition-all"></div>
+
+              <div className="col-span-3">
+                <div className="font-semibold text-gray-900">{category.name}</div>
+                <div className="text-sm text-gray-500">ID: {category._id}</div>
+              </div>
+              <div className="col-span-4 text-sm text-gray-600 max-w-xs truncate">
+                {category.description || "No description"}
+              </div>
+              <div>
+                <span
+                  className={`px-3 py-1 text-xs rounded-full font-semibold shadow-sm ${
+                    category.status === "active"
+                      ? "bg-gradient-to-r from-green-100 to-green-200 text-green-700"
+                      : "bg-gradient-to-r from-red-100 to-red-200 text-red-700"
+                  }`}
+                >
+                  {category.status}
+                </span>
+              </div>
+              <div className="col-span-2 text-sm text-gray-600">
+                {new Date(category.created_at).toLocaleDateString()}
+              </div>
+              <div className="col-span-2 flex items-center justify-center space-x-3">
+                <button
+                  onClick={() => handleEdit(category)}
+                  className="px-3 py-1 border border-[#846551] text-[#846551] rounded-lg hover:bg-[#f5f3f2] transition-all duration-300"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => deleteCategory(category._id)}
+                  className="px-3 py-1 border border-[#b85c49] text-[#b85c49] rounded-lg hover:bg-[#fbe9e6] transition-all duration-300"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
 
       {/* Create Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Create Category</h3>
-              <Button
-                variant="ghost"
-                size="sm"
+              <h3 className="text-lg font-semibold text-[#2c2c2c]">Create Category</h3>
+              <button
                 onClick={() => {
                   setShowCreateModal(false);
                   resetForm();
                 }}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
               >
                 <X className="w-4 h-4" />
-              </Button>
+              </button>
             </div>
             <form onSubmit={createCategory}>
               <div className="space-y-4">
@@ -427,19 +382,23 @@ const CategoryManagement = () => {
                 </div>
               </div>
               <div className="flex justify-end space-x-3 mt-6">
-                <Button
+                <button
                   type="button"
-                  variant="outline"
                   onClick={() => {
                     setShowCreateModal(false);
                     resetForm();
                   }}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   Cancel
-                </Button>
-                <Button type="submit" disabled={loading}>
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-4 py-2 bg-[#846551] text-white rounded-lg hover:bg-[#5a4639] transition-colors disabled:opacity-50"
+                >
                   {loading ? "Creating..." : "Create Category"}
-                </Button>
+                </button>
               </div>
             </form>
           </div>
@@ -451,18 +410,17 @@ const CategoryManagement = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Edit Category</h3>
-              <Button
-                variant="ghost"
-                size="sm"
+              <h3 className="text-lg font-semibold text-[#2c2c2c]">Edit Category</h3>
+              <button
                 onClick={() => {
                   setShowEditModal(false);
                   setEditingCategory(null);
                   resetForm();
                 }}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
               >
                 <X className="w-4 h-4" />
-              </Button>
+              </button>
             </div>
             <form onSubmit={updateCategory}>
               <div className="space-y-4">
@@ -506,20 +464,24 @@ const CategoryManagement = () => {
                 </div>
               </div>
               <div className="flex justify-end space-x-3 mt-6">
-                <Button
+                <button
                   type="button"
-                  variant="outline"
                   onClick={() => {
                     setShowEditModal(false);
                     setEditingCategory(null);
                     resetForm();
                   }}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   Cancel
-                </Button>
-                <Button type="submit" disabled={loading}>
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-4 py-2 bg-[#846551] text-white rounded-lg hover:bg-[#5a4639] transition-colors disabled:opacity-50"
+                >
                   {loading ? "Updating..." : "Update Category"}
-                </Button>
+                </button>
               </div>
             </form>
           </div>

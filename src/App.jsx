@@ -1,15 +1,27 @@
-/** ⛔⛔⛔   ℂẢℕℍ 𝔹Á𝕆 — ĐỌℂ 𝔽𝕀𝕃𝔼 README 𝕋ℝướℂ 𝕂ℍ𝕀 ℂ𝕆𝔻𝔼   ⛔⛔⛔ */
-
-import { Button } from "@/components/ui/button"
-import { Routes, Route } from 'react-router-dom'
-import Dashboard from './components/ui/Dashboard/Dashboard.jsx'
+import { Routes, Route } from 'react-router-dom';
+import Dashboard from './pages/DashboardScreen.jsx';
+import Cart from './pages/CartScreen.jsx';
+import HomePage from './pages/HomePage.jsx';
+import ProductPage from './pages/ProductPage.jsx';
+import Navbar from './components/Layout/Navbar.jsx';
+import Footer from './components/Layout/Footer.jsx';
 
 function App() {
   return (
-    <Routes>
-      <Route path="/Dashboard" element={<Dashboard />} />
-    </Routes>
-  )
+    <div className="flex flex-col min-h-screen">
+      <Navbar />
+
+      <main className="flex-grow">
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/products" element={<ProductPage />} />
+          <Route path="/Dashboard" element={<Dashboard />} />
+          <Route path="/cart" element={<Cart />} />
+        </Routes>
+      </main>
+      <Footer />
+    </div>
+  );
 }
 
-export default App
+export default App;
