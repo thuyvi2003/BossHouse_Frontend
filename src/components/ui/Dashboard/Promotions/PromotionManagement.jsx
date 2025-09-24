@@ -1,6 +1,7 @@
 // Vo Lam Thuy Vi
 import React, { useEffect, useState } from "react";
 import CreatePromotionModal from "./CreatePromotionModal";
+import { getPromotionsList } from "@/services/promotionService";
 import { Airplane, Tag } from "phosphor-react";
 
 const PromotionManagement = () => {
@@ -18,42 +19,14 @@ const PromotionManagement = () => {
 
   useEffect(() => {
     setPromotions([
-      {
-        _id: "1",
-        code: "SALE50",
-        description: "Giảm 50% tối đa 100k",
-        promotion_type: "percent",
-        promotion_value: 50,
-        expires_at: "2025-12-31",
-        is_hidden: false,
-      },
-      {
-        _id: "2",
-        code: "FREESHIP",
-        description: "Miễn phí vận chuyển",
-        promotion_type: "fixed",
-        promotion_value: 20000,
-        expires_at: "2025-11-30",
-        is_hidden: true,
-      },
-      {
-        _id: "3",
-        code: "SHIP20K",
-        description: "Giảm phí ship 20k",
-        promotion_type: "fixed",
-        promotion_value: 20000,
-        expires_at: "2025-12-15",
-        is_hidden: false,
-      },
-      {
-        _id: "4",
-        code: "VIP10",
-        description: "Giảm 10% cho khách VIP",
-        promotion_type: "percent",
-        promotion_value: 10,
-        expires_at: "2025-12-31",
-        is_hidden: false,
-      },
+      async function fetchData() {
+        try {
+          const data = await getPromotionsList();
+          setPromotions(data);
+        } catch (error) {
+          console.error(" Error fetching promotions:", err.message);
+        }
+      }
     ]);
   }, []);
 
@@ -126,7 +99,7 @@ const PromotionManagement = () => {
             <div className="col-span-1 text-sm text-gray-800 font-semibold">
               {promo.promotion_type === "percent"
                 ? `${promo.promotion_value}%`
-                : `${promo.promotion_value.toLocaleString()}đ`}
+                :`${(promo.promotion_value ?? 0).toLocaleString()}đ`}
             </div>
             <div className="col-span-2 text-sm text-gray-600">{promo.expires_at}</div>
             <div>
