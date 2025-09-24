@@ -1,5 +1,8 @@
 // Vo Lam Thuy Vi
 import { useState } from "react";
+import CategoryManagement from "../components/ui/Dashboard/Categories/CategoryManagement";
+import ProductManagement from "../components/ui/Dashboard/Products/ProductManagement";
+import ProductVariationManagement from "../components/ui/Dashboard/ProductVariations/ProductVariationManagement";
 import PromotionManagement from "../components/ui/Dashboard/Promotions/PromotionManagement";
 import {
     ChartBar,
@@ -20,6 +23,8 @@ export default function Dashboard() {
         { id: "overview", icon: <ChartBar size={22} />, label: "Overview" },
         { id: "account", icon: <User size={22} />, label: "Account" },
         { id: "product", icon: <Package size={22} />, label: "Product" },
+        { id: "category", icon: <Package size={22} />, label: "Category" },
+        { id: "variation", icon: <Package size={22} />, label: "Product Variation" },
         { id: "promotion", icon: <FilmSlate size={22} />, label: "Promotion" },
         { id: "booking", icon: <CalendarCheck size={22} />, label: "Booking" },
         { id: "post", icon: <Note size={22} />, label: "Post" },
@@ -36,7 +41,11 @@ export default function Dashboard() {
             case "account":
                 return <h2 className="text-2xl font-bold">👤 Account Management</h2>;
             case "product":
-                return <h2 className="text-2xl font-bold">🛒 Product Management</h2>;
+                return <ProductManagement />;
+            case "category":
+                return <CategoryManagement />;
+            case "variation":
+                return <ProductVariationManagement />;
             case "promotion":
                 return <PromotionManagement />;
             case "booking":
