@@ -43,7 +43,7 @@ export default function Navbar() {
             </Link>
 
             <div className="flex gap-8 text-lg font-medium items-center">
-                <NavLink to="/home" className={navLinkClass}>
+                <NavLink to="/" className={navLinkClass}>
                     Home
                 </NavLink>
                 <NavLink to="/products" className={navLinkClass}>
