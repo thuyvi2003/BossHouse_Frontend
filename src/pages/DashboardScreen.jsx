@@ -4,7 +4,7 @@ import CategoryManagement from "../components/ui/Dashboard/Categories/CategoryMa
 import ProductManagement from "../components/ui/Dashboard/Products/ProductManagement";
 import ProductVariationManagement from "../components/ui/Dashboard/ProductVariations/ProductVariationManagement";
 import PromotionManagement from "../components/ui/Dashboard/Promotions/PromotionManagement";
-
+import PostManagement from "../components/ui/Dashboard/Posts/PostManagement";
 import {
     ChartBar,
     User,
@@ -53,7 +53,7 @@ export default function Dashboard() {
             case "booking":
                 return <BookingManager />;
             case "post":
-                return <h2 className="text-2xl font-bold">📝 Post Management</h2>;
+                return <PostManagement />;
             default:
                 return <h2 className="text-2xl font-bold">Welcome to Dashboard</h2>;
         }
