@@ -1,6 +1,7 @@
 // Vo Lam Thuy Vi
 import { useState } from "react";
 import PromotionManagement from "../components/ui/Dashboard/Promotions/PromotionManagement";
+import PostManagement from "../components/ui/Dashboard/Posts/PostManagement";
 import {
     ChartBar,
     User,
@@ -42,7 +43,7 @@ export default function Dashboard() {
             case "booking":
                 return <h2 className="text-2xl font-bold">📅 Booking Management</h2>;
             case "post":
-                return <h2 className="text-2xl font-bold">📝 Post Management</h2>;
+                return <PostManagement />;
             default:
                 return <h2 className="text-2xl font-bold">Welcome to Dashboard</h2>;
         }
