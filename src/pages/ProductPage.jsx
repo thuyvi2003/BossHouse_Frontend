@@ -67,13 +67,14 @@ const ProductPage = () => {
   // Filter and sort products
   const filteredAndSortedProducts = products
     .filter(product => {
+      const isActive = product.status === 'active';
       const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            product.description?.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesCategory = selectedCategory === 'all' || 
                              product.categoryId?._id === selectedCategory ||
                              product.categoryId === selectedCategory;
       const matchesPrice = product.price >= priceRange.min && product.price <= priceRange.max;
-      return matchesSearch && matchesCategory && matchesPrice;
+      return isActive && matchesSearch && matchesCategory && matchesPrice;
     })
     .sort((a, b) => {
       switch (sortBy) {
