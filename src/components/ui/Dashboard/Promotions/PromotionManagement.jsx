@@ -1,7 +1,7 @@
 // Vo Lam Thuy Vi
 import React, { useEffect, useState } from "react";
 import CreatePromotionModal from "./CreatePromotionModal";
-import { getPromotionsList } from "@/services/promotionService";
+import { createPromotion, getPromotionsList } from "@/services/promotionService";
 import { Airplane, Tag } from "phosphor-react";
 
 const PromotionManagement = () => {
@@ -16,36 +16,44 @@ const PromotionManagement = () => {
     expires_at: "",
     is_hidden: false,
   })
-
-  useEffect(() => {
-    setPromotions([
-      async function fetchData() {
-        try {
-          const data = await getPromotionsList();
-          setPromotions(data);
-        } catch (error) {
-          console.error(" Error fetching promotions:", err.message);
-        }
+    async function fetchData() {
+      try {
+        console.log("Fetching promotions...");
+        const data = await getPromotionsList();
+        console.log("API response:", data);
+        setPromotions(data.data || []);
+      } catch (err) {
+        console.error("Error fetching promotions:", err.message);
       }
-    ]);
+    }
+  useEffect(() => {
+
+
+    fetchData();
   }, []);
 
-  const handleCreatePromotion = (newForm) => {
-    const newPromotion = {
-      _id: Date.now().toString(),
-      ...newForm,
-      promotion_value: Number(newForm.promotion_value),
+
+  const handleCreatePromotion = async (newForm) => {
+    try {
+      const newPromo = await createPromotion({
+        ...newForm,
+        promotion_value: Number(newForm.promotion_value),
+      })
+     await fetchData();
+      console.log("Created promotion:", newPromo);
+      setShowModal(false)
+      setForm({
+        code: "",
+        description: "",
+        promotion_type: "percent",
+        promotion_value: "",
+        expires_at: "",
+        is_hidden: false,
+      });
+
+    } catch (error) {
+      console.error("Error creating promotion:", err.message)
     }
-    setPromotions([...promotions, newPromotion]);
-    setForm({
-      code: "",
-      description: "",
-      promotion_type: "percent",
-      promotion_value: "",
-      expires_at: "",
-      is_hidden: false,
-    });
-    setShowModal(false);
   }
   return (
     <div className="bg-white  shadow-xl overflow-hidden flex-1  animate-fade-in">
@@ -80,7 +88,7 @@ const PromotionManagement = () => {
       <div className="divide-y divide-transparent">
         {promotions.map((promo, idx) => (
           <div
-            key={promo._id}
+            key={promo._id || `promo-${idx}`}
             className={`
         relative px-6 py-5 grid grid-cols-12 gap-4 items-center
         bg-white rounded-xl shadow-sm border border-gray-100
@@ -99,7 +107,7 @@ const PromotionManagement = () => {
             <div className="col-span-1 text-sm text-gray-800 font-semibold">
               {promo.promotion_type === "percent"
                 ? `${promo.promotion_value}%`
-                :`${(promo.promotion_value ?? 0).toLocaleString()}đ`}
+                : `${(promo.promotion_value ?? 0).toLocaleString()}đ`}
             </div>
             <div className="col-span-2 text-sm text-gray-600">{promo.expires_at}</div>
             <div>
@@ -113,8 +121,7 @@ const PromotionManagement = () => {
               </span>
             </div>
             <div className="col-span-2 flex items-center justify-center space-x-3">
-              <button className="px-3 py-1 border border-[#b85c49] text-[#b85c49] rounded-lg hover:bg-[#fbe9e6] transition-all duration-300
-">
+              <button className="px-3 py-1 border border-[#b85c49] text-[#b85c49] rounded-lg hover:bg-[#fbe9e6] transition-all duration-300">
                 Delete
               </button>
 

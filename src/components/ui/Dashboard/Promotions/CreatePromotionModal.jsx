@@ -20,7 +20,7 @@ export default function CreatePromotionModal({
 
                 {/* Form */}
                 <div className="space-y-5">
-                    =                    <div>
+                                     <div>
                         <label className="block text-sm font-medium text-[#846551] mb-1">
                             Promotion Code
                         </label>
