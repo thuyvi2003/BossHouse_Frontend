@@ -1,6 +1,9 @@
 import { Routes, Route } from 'react-router-dom';
 import Dashboard from './pages/DashboardScreen.jsx';
 import Cart from './pages/CartScreen.jsx';
+import HomePage from './pages/HomePage.jsx';
+import ProductPage from './pages/ProductPage.jsx';
+import ProductDetailPage from './pages/ProductDetailPage.jsx';
 import Navbar from './components/Layout/Navbar.jsx';
 import Footer from './components/Layout/Footer.jsx';
 
@@ -11,6 +14,9 @@ function App() {
 
       <main className="flex-grow">
         <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/products" element={<ProductPage />} />
+          <Route path="/product/:id" element={<ProductDetailPage />} />
           <Route path="/Dashboard" element={<Dashboard />} />
           <Route path="/cart" element={<Cart />} />
         </Routes>
