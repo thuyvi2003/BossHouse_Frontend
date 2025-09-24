@@ -4,9 +4,9 @@ import Background from "@/assets/Background_Dogs.jpg";
 
 export default function Footer() {
     return (
-        <footer  className="relative shadow-xl overflow-hidden flex-1 animate-fade-in bg-cover bg-center py-20"
-                        style={{ backgroundImage: `url(${Background})` }}>
-            <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-6 gap-8">
+        <footer className="relative shadow-xl overflow-hidden flex-1 animate-fade-in bg-cover bg-center py-20 bg-[#b39069]">
+            {/* // style={{ backgroundImage: `url(${Background})` }} */}
+            <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-6 gap-8 text-2xl">
                 <div className="md:col-span-2 flex flex-col items-start gap-4">
                     <div className="flex items-center gap-2">
                         <div className="w-50 h-50 flex items-center justify-center ">
@@ -18,11 +18,11 @@ export default function Footer() {
                         </div>
                     </div>
 
-                
+
                 </div>
 
                 <div>
-                    <h3 className="font-semibold mb-3">Fun</h3>
+                    <h3 className="font-bold mb-3">Fun</h3>
                     <ul className="space-y-2 text-sm">
                         <li><a href="#" className="hover:text-white">Hobbies</a></li>
                         <li><a href="#" className="hover:text-white">FLO</a></li>
