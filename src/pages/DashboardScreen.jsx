@@ -4,6 +4,7 @@ import CategoryManagement from "../components/ui/Dashboard/Categories/CategoryMa
 import ProductManagement from "../components/ui/Dashboard/Products/ProductManagement";
 import ProductVariationManagement from "../components/ui/Dashboard/ProductVariations/ProductVariationManagement";
 import PromotionManagement from "../components/ui/Dashboard/Promotions/PromotionManagement";
+
 import {
     ChartBar,
     User,
@@ -16,6 +17,7 @@ import {
 } from "phosphor-react";
 import Logo from "@/assets/Logo_BossHouse.png";
 import Background from "@/assets/Background_Cat.png"
+import BookingManager from "@/components/ui/Dashboard/Bookings/BookingManager";
 export default function Dashboard() {
     const [activeTab, setActiveTab] = useState("overview");
 
@@ -49,7 +51,7 @@ export default function Dashboard() {
             case "promotion":
                 return <PromotionManagement />;
             case "booking":
-                return <h2 className="text-2xl font-bold">📅 Booking Management</h2>;
+                return <BookingManager />;
             case "post":
                 return <h2 className="text-2xl font-bold">📝 Post Management</h2>;
             default:
