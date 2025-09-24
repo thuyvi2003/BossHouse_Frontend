@@ -6,6 +6,8 @@ import ProductPage from './pages/ProductPage.jsx';
 import ProductDetailPage from './pages/ProductDetailPage.jsx';
 import Navbar from './components/Layout/Navbar.jsx';
 import Footer from './components/Layout/Footer.jsx';
+import BlogScreen from './pages/BlogScreen.jsx';
+import PostDetail from './pages/PostDetail.jsx';
 
 function App() {
   return (
@@ -19,6 +21,8 @@ function App() {
           <Route path="/product/:id" element={<ProductDetailPage />} />
           <Route path="/Dashboard" element={<Dashboard />} />
           <Route path="/cart" element={<Cart />} />
+          <Route path="/post" element={<BlogScreen />} />
+          <Route path="/post/:id" element={<PostDetail />} />
         </Routes>
       </main>
       <Footer />
