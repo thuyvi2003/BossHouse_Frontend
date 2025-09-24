@@ -22,9 +22,9 @@ const ProductPage = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [priceRange, setPriceRange] = useState({ min: 0, max: 1000 });
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 0 });
   const [sortBy, setSortBy] = useState('name');
-  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
+  const [viewMode, setViewMode] = useState('grid')
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(12);
@@ -40,7 +40,16 @@ const ProductPage = () => {
         ]);
 
         if (productsData.success) {
-          setProducts(productsData.data || []);
+          const fetchedProducts = productsData.data || [];
+          setProducts(fetchedProducts);
+
+          // Tính min/max giá từ data thực tế
+          if (fetchedProducts.length > 0) {
+            const prices = fetchedProducts.map(p => p.price).filter(p => p !== undefined);
+            const minPrice = Math.min(...prices) || 0;
+            const maxPrice = Math.max(...prices) || 1000;
+            setPriceRange({ min: minPrice, max: maxPrice });
+          }
         }
         if (categoriesData.success) {
           setCategories(categoriesData.data || []);
@@ -107,7 +116,12 @@ const ProductPage = () => {
   const clearFilters = () => {
     setSearchTerm('');
     setSelectedCategory('all');
-    setPriceRange({ min: 0, max: 1000 });
+    if (products.length > 0) {
+      const prices = products.map(p => p.price).filter(p => p !== undefined);
+      const minPrice = Math.min(...prices) || 0;
+      const maxPrice = Math.max(...prices) || 1000;
+      setPriceRange({ min: minPrice, max: maxPrice });
+    }
     setSortBy('name');
     setCurrentPage(1);
   };
@@ -289,65 +303,55 @@ const ProductPage = () => {
                       style={{ animationDelay: `${index * 100}ms` }}
                     >
                       <div className={`relative ${viewMode === 'list' ? 'w-48 flex-shrink-0' : ''}`}>
-                        {product.image && (
-                          <img
-                            src={product.image}
-                            alt={product.name}
-                            className={`object-cover rounded-t-xl ${
-                              viewMode === 'list' ? 'w-full h-48 rounded-l-xl rounded-t-none' : 'w-full h-48'
-                            }`}
-                          />
-                        )}
-                        <button 
-                          onClick={() => toggleFavorite(product._id)}
-                          className="absolute top-3 right-3 p-2 bg-white bg-opacity-80 hover:bg-opacity-100 rounded-full transition-all duration-300"
-                        >
-                          <Heart className={`w-5 h-5 ${
-                            favorites.has(product._id) ? 'text-red-500 fill-current' : 'text-gray-600 hover:text-red-500'
-                          }`} />
-                        </button>
+                        <Link to={`/product/${product._id}`}>
+                          {product.image && (
+                            <img
+                              src={product.image}
+                              alt={product.name}
+                              className={`object-cover rounded-t-xl cursor-pointer hover:opacity-90 transition-opacity duration-300 ${
+                                viewMode === 'list' ? 'w-full h-48 rounded-l-xl rounded-t-none' : 'w-full h-48'
+                              }`}
+                            />
+                          )}
+                        </Link>
                       </div>
                       
-                      <div className={`p-6 ${viewMode === 'list' ? 'flex-1' : ''}`}>
-                        <div className="flex items-center mb-2">
-                          <div className="flex text-yellow-400">
-                            {[...Array(5)].map((_, i) => (
-                              <Star key={i} className="w-4 h-4 fill-current" />
-                            ))}
+                        <div className={`p-4 ${viewMode === 'list' ? 'flex-1' : ''} flex flex-col`}>
+                          <Link
+                            to={`/product/${product._id}`}
+                            className={`font-semibold text-gray-900 mb-2 ${
+                              viewMode === 'list' ? 'text-xl' : 'text-lg'
+                            } line-clamp-2 hover:text-[#846551] transition-colors duration-300`}
+                          >
+                            {product.name}
+                          </Link>
+                          
+                          <div className="flex-1 mb-3">
+                            <p className="text-gray-600 text-sm line-clamp-3 min-h-[3.75rem]">
+                              {product.description || 'No description available'}
+                            </p>
                           </div>
-                          <span className="text-sm text-gray-500 ml-2">(4.8)</span>
-                        </div>
-                        
-                        <h3 className={`font-semibold text-gray-900 mb-2 ${
-                          viewMode === 'list' ? 'text-xl' : 'text-lg'
-                        } line-clamp-2`}>
-                          {product.name}
-                        </h3>
-                        
-                        <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                          {product.description || 'No description available'}
-                        </p>
 
-                        {viewMode === 'list' && (
-                          <div className="mb-4">
-                            <span className="text-sm text-gray-500">
-                              Category: {product.categoryId?.name || 'Unknown'}
+                          {viewMode === 'list' && (
+                            <div className="mb-3">
+                              <span className="text-sm text-gray-500">
+                                Category: {product.categoryId?.name || 'Unknown'}
+                              </span>
+                            </div>
+                          )}
+                          
+                          <div className="flex items-center justify-between mt-auto">
+                            <span className={`font-bold text-[#846551] ${
+                              viewMode === 'list' ? 'text-2xl' : 'text-xl'
+                            }`}>
+                              ${product.price?.toLocaleString() || '0'}
                             </span>
+                            <button className="flex items-center px-3 py-1.5 bg-[#846551] text-white rounded-md hover:bg-[#5a4639] transition-colors duration-300 text-sm">
+                              <ShoppingCart className="w-4 h-4 mr-1" />
+                              Add
+                            </button>
                           </div>
-                        )}
-                        
-                        <div className="flex items-center justify-between">
-                          <span className={`font-bold text-[#846551] ${
-                            viewMode === 'list' ? 'text-3xl' : 'text-2xl'
-                          }`}>
-                            ${product.price?.toLocaleString() || '0'}
-                          </span>
-                          <button className="flex items-center px-4 py-2 bg-[#846551] text-white rounded-lg hover:bg-[#5a4639] transition-colors duration-300">
-                            <ShoppingCart className="w-4 h-4 mr-2" />
-                            Add to Cart
-                          </button>
                         </div>
-                      </div>
                     </div>
                   ))}
                 </div>

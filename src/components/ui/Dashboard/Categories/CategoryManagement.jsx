@@ -285,7 +285,6 @@ const CategoryManagement = () => {
 
               <div className="col-span-3">
                 <div className="font-semibold text-gray-900">{category.name}</div>
-                <div className="text-sm text-gray-500">ID: {category._id}</div>
               </div>
               <div className="col-span-4 text-sm text-gray-600 max-w-xs truncate">
                 {category.description || "No description"}
