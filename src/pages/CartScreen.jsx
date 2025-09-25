@@ -2,22 +2,23 @@
 import React, { useEffect, useState } from "react";
 import CartItem from "@/components/ui/Cart/CartItem";
 import CartSummary from "@/components/ui/Cart/CartSummary";
-import { addToCart, getUserCart } from "@/services/cartService";
+import { getUserCart, removeItem } from "@/services/cartService";
 
 export default function Cart() {
   const [cart, setCart] = useState([]);
+  const fetchCart = async () => {
+    try {
+      const res = await getUserCart();
+      setCart(res.data?.items || []);
+      console.log("ALOOOOOOOOOOOOOOO")
+    } catch (error) {
+      console.error(error.message)
+    }
+  };
+
   useEffect(() => {
-    const fetchCart = async () => {
-      try {
-        const res = await getUserCart();
-        setCart(res.data?.items|| []);
-        console.log("ALOOOOOOOOOOOOOOO")
-      } catch (error) {
-        console.error(error.message)
-      }
-    };
     fetchCart();
-   }, [])
+  }, [])
   const handleIncrease = (id) => {
     setCart(
       cart.map((item) =>
@@ -36,8 +37,13 @@ export default function Cart() {
     );
   };
 
-  const handleRemove = (id) => {
-    setCart(cart.filter((item) => item.id !== id));
+  const handleRemove = async (variationId) => {
+    try {
+      await removeItem(variationId);
+      fetchCart();
+    } catch (error) {
+      console.error(error.message)
+    }
   };
 
   const handleClearAllCart = () => {
@@ -82,7 +88,7 @@ export default function Cart() {
                     item={item}
                     onIncrease={() => handleIncrease(item._id)}
                     onDecrease={handleDecrease}
-                    onRemove={handleRemove}
+                    onRemove={() => handleRemove(item.variation_id?._id)}
                   />
                 ))
               ) : (
