@@ -1,18 +1,27 @@
 // Vo Lam Thuy Vi
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import CartItem from "@/components/ui/Cart/CartItem";
 import CartSummary from "@/components/ui/Cart/CartSummary";
+import { addToCart, getUserCart } from "@/services/cartService";
 
 export default function Cart() {
-  const [cart, setCart] = useState([
-    { id: 1, name: "Everyday oil 100 ml", price: 32000, quantity: 1, image: "/BossHouse_Logo.png" },
-    { id: 2, name: "Everyday oil night 100 ml", price: 32000, quantity: 1, image: "/Background_Cat.png" },
-  ]);
-
+  const [cart, setCart] = useState([]);
+  useEffect(() => {
+    const fetchCart = async () => {
+      try {
+        const res = await getUserCart();
+        setCart(res.data?.items|| []);
+        console.log("ALOOOOOOOOOOOOOOO")
+      } catch (error) {
+        console.error(error.message)
+      }
+    };
+    fetchCart();
+   }, [])
   const handleIncrease = (id) => {
     setCart(
       cart.map((item) =>
-        item.id === id ? { ...item, quantity: item.quantity + 1 } : item
+        item._id === id ? { ...item, quantity: item.quantity + 1 } : item
       )
     );
   };
@@ -69,9 +78,9 @@ export default function Cart() {
               {cart.length > 0 ? (
                 cart.map((item) => (
                   <CartItem
-                    key={item.id}
+                    key={item._id}
                     item={item}
-                    onIncrease={handleIncrease}
+                    onIncrease={() => handleIncrease(item._id)}
                     onDecrease={handleDecrease}
                     onRemove={handleRemove}
                   />
