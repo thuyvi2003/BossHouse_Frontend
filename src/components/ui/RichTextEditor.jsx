@@ -12,7 +12,7 @@ export default function RichTextEditor({ value = '', onChange, placeholder = 'En
       onEditorChange={onChange}
       init={{
         height: 300,
-        menubar: true,
+  
         plugins: [
           'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
           'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',

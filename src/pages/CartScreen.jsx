@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import CartItem from "@/components/ui/Cart/CartItem";
 import CartSummary from "@/components/ui/Cart/CartSummary";
-import { getUserCart, removeItem } from "@/services/cartService";
+import { clearAllCart, getUserCart, removeItem } from "@/services/cartService";
 
 
 export default function Cart() {
@@ -54,8 +54,13 @@ export default function Cart() {
     }
   };
 
-  const handleClearAllCart = () => {
-    setCart([]);
+  const handleClearAllCart = async () => {
+    try {
+      await clearAllCart();
+      fetchCart();
+    } catch (error) {
+      console.error(error.message);
+    }
   };
 
 
