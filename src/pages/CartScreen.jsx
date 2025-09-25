@@ -4,13 +4,21 @@ import CartItem from "@/components/ui/Cart/CartItem";
 import CartSummary from "@/components/ui/Cart/CartSummary";
 import { getUserCart, removeItem } from "@/services/cartService";
 
+
 export default function Cart() {
   const [cart, setCart] = useState([]);
+  const [total, setTotal] = useState(0);
   const fetchCart = async () => {
     try {
       const res = await getUserCart();
       setCart(res.data?.items || []);
       console.log("ALOOOOOOOOOOOOOOO")
+      
+      const totalPrice = res.data?.items.reduce(
+        (sum, item) => sum + (item.variation_id?.price || 0) * item.quantity,
+        0
+      );
+      setTotal(totalPrice);
     } catch (error) {
       console.error(error.message)
     }
@@ -50,10 +58,6 @@ export default function Cart() {
     setCart([]);
   };
 
-  const total = cart.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
 
   return (
     <div className="min-h-screen bg-[#fdfaf6] px-8 pb-60 justify-center flex">
