@@ -46,3 +46,22 @@ export async function getUserCart() {
     console.log("Parsed data:", data);
     return data;
 }
+export async function removeItem(variation_id) {
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${API_BASE_URL}/carts`, {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ variation_id }),
+    })
+    if (!res.ok) {
+        const text = await res.text();
+        console.error("Failed response:", text);
+        throw new Error("Failed to remove item");
+    }
+    const data = await res.json();
+    console.log("Parsed data:", data);
+    return data;
+}
