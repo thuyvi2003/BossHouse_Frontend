@@ -1,78 +1,104 @@
 import React from "react";
 
-export default function BookingTable({ bookings, onEdit, onDelete, onView }) {
+export default function BookingTable({ bookings, onEdit, onCancelBooking, onView }) {
   return (
-    <div className="overflow-x-auto shadow-lg rounded-lg">
-      <table className="w-full table-auto border-collapse">
+    <div className="overflow-x-auto shadow-lg rounded-xl">
+      <table className="w-full min-w-[800px] border-collapse">
         <thead>
-          <tr className="bg-yellow-400 text-gray-900 text-sm">
-            <th className="p-2 text-left">#</th>
-            <th className="p-2 text-left">Customer</th>
-            <th className="p-2 text-left">Pet</th>
-            <th className="p-2 text-left">Services</th>
-            <th className="p-2 text-left">Veterinarian</th>
-            <th className="p-2 text-left">Date</th>
-            <th className="p-2 text-left">Status</th>
-            <th className="p-2 text-center">Actions</th>
+          <tr className="bg-[#d7cbbf] text-gray-900 text-sm">
+            <th className="px-4 py-3 text-left font-semibold">#</th> {/* ID ảo */}
+            <th className="px-4 py-3 text-left font-semibold">Customer</th>
+            <th className="px-4 py-3 text-left font-semibold">Pet</th>
+            <th className="px-4 py-3 text-left font-semibold">Services</th>
+            <th className="px-4 py-3 text-left font-semibold">Date & Time</th>
+            <th className="px-4 py-3 text-left font-semibold">Status</th>
+            <th className="px-4 py-3 text-left font-semibold">Note</th>
+            <th className="px-4 py-3 text-center font-semibold">Actions</th>
           </tr>
         </thead>
         <tbody>
-          {bookings.map((b, index) => (
-            <tr
-              key={b._id}
-              className={`${
-                index % 2 === 0 ? "bg-yellow-50" : "bg-yellow-100"
-              } hover:bg-yellow-200 transition`}
-            >
-              <td className="p-2 font-medium text-gray-800 border">{index + 1}</td>
-              <td className="p-2 text-gray-800 border">{b.user_id?.name || "N/A"}</td>
-              <td className="p-2 text-gray-800 border">{b.pet_id?.species || "N/A"}</td>
+          {bookings.length > 0 ? (
+            bookings.map((b, index) => {
+              const bookingDate = b.booking_date ? new Date(b.booking_date) : null;
+              const dateStr = bookingDate ? bookingDate.toLocaleDateString() : "-";
+              const timeStr = bookingDate
+                ? bookingDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                : "-";
 
-              {/* Services */}
-              <td className="p-2 text-gray-800 border max-w-xs truncate">
-                {b.services?.length
-                  ? b.services
-                      .map(
-                        (s) =>
-                          `${s.service_id?.name || s.service_id || "Unknown"} × ${s.quantity}`
-                      )
-                      .join(", ")
-                  : "N/A"}
-              </td>
-
-              {/* Veterinarian */}
-              <td className="p-2 text-gray-800 border max-w-xs truncate">
-                {b.veterinarian_id?.user_id?.name
-                  ? `${b.veterinarian_id.user_id.name} (${b.veterinarian_id.specialty})`
-                  : b.veterinarian_id?.specialty || "N/A"}
-              </td>
-
-              <td className="p-2 text-gray-800 border">{new Date(b.booking_date).toLocaleString()}</td>
-              <td className="p-2 font-semibold text-gray-900 border">{b.status}</td>
-
-              {/* Actions */}
-              <td className="p-2 text-center border flex justify-center gap-1">
-                <button
-                  onClick={() => onView(b)}
-                  className="px-2 py-1 bg-gray-600 hover:bg-gray-700 text-white rounded text-xs"
-                >
-                  View
-                </button>
-                <button
-                  onClick={() => onEdit(b)}
-                  className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => onDelete(b._id)}
-                  className="px-2 py-1 bg-red-500 hover:bg-red-600 text-white rounded text-xs"
-                >
-                  Cancel
-                </button>
+              return (
+                <tr key={b._id} className="border-b hover:bg-gray-50 transition-all">
+                  <td className="px-4 py-3 text-sm text-gray-800 whitespace-nowrap">{index + 1}</td> {/* ID ảo */}
+                  <td className="px-4 py-3 text-sm text-gray-800 whitespace-nowrap">{b.user_id?.name || "Unknown"}</td>
+                  <td className="px-4 py-3 text-sm text-gray-800 whitespace-nowrap">{b.pet_id?.species || "Unknown"}</td>
+                  <td className="px-4 py-3 text-sm text-gray-800">
+                    <div className="flex flex-wrap gap-1">
+                      {Array.isArray(b.services) && b.services.length > 0 ? (
+                        b.services.map((s) => (
+                          <span
+                            key={s._id || s.service_id?._id}
+                            className="px-2 py-0.5 text-xs bg-gray-100 border rounded-md text-gray-700"
+                          >
+                            {(s.name || s.service_id?.name || "Service")} × {s.quantity || 1}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-gray-400 italic">No service</span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-800 whitespace-nowrap">
+                    {dateStr} {timeStr}
+                  </td>
+                  <td className="px-4 py-3 text-sm font-medium whitespace-nowrap">
+                    <span
+                      className={`px-3 py-1 text-xs rounded-full font-semibold ${
+                        b.status === "PENDING"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : b.status === "CONFIRMED"
+                          ? "bg-blue-100 text-blue-700"
+                          : b.status === "COMPLETED"
+                          ? "bg-green-100 text-green-700"
+                          : b.status === "CANCELED"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-gray-100 text-gray-600"
+                      }`}
+                    >
+                      {b.status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-600 max-w-xs truncate">{b.note || "-"}</td>
+                  <td className="px-4 py-3 text-center">
+                    <div className="flex items-center justify-center gap-2">
+                      <button
+                        onClick={() => onView(b)}
+                        className="px-2 py-1 text-xs border border-gray-600 text-gray-600 rounded-md hover:bg-gray-100 transition-all"
+                      >
+                        View
+                      </button>
+                      <button
+                        onClick={() => onEdit(b)}
+                        className="px-2 py-1 text-xs border border-blue-600 text-blue-600 rounded-md hover:bg-blue-50 transition-all"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => onCancelBooking(b._id)}
+                        className="px-2 py-1 text-xs border border-orange-500 text-orange-500 rounded-md hover:bg-orange-50 transition-all"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })
+          ) : (
+            <tr>
+              <td colSpan="8" className="px-4 py-4 text-center text-gray-500 italic">
+                No bookings found.
               </td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
     </div>
