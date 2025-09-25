@@ -4,8 +4,12 @@ import CategoryManagement from "../components/ui/Dashboard/Categories/CategoryMa
 import ProductManagement from "../components/ui/Dashboard/Products/ProductManagement";
 import ProductVariationManagement from "../components/ui/Dashboard/ProductVariations/ProductVariationManagement";
 import PromotionManagement from "../components/ui/Dashboard/Promotions/PromotionManagement";
+<<<<<<< HEAD
 import BookingManager from "@/components/ui/Dashboard/Bookings/BookingManager";
 
+=======
+import PostManagement from "../components/ui/Dashboard/Posts/PostManagement";
+>>>>>>> f1be3c70b4078e1dd3fe00ce4c4984369be44c5d
 import {
   ChartBar,
   User,
@@ -23,6 +27,7 @@ import Background from "@/assets/Background_Cat.png";
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("overview");
 
+<<<<<<< HEAD
   const sidebarItems = [
     { id: "overview", icon: <ChartBar size={22} />, label: "Overview" },
     { id: "account", icon: <User size={22} />, label: "Account" },
@@ -33,6 +38,44 @@ export default function Dashboard() {
     { id: "booking", icon: <CalendarCheck size={22} />, label: "Booking" },
     { id: "post", icon: <Note size={22} />, label: "Post" },
   ];
+=======
+    const sidebarItems = [
+        { id: "overview", icon: <ChartBar size={22} />, label: "Overview" },
+        { id: "account", icon: <User size={22} />, label: "Account" },
+        { id: "product", icon: <Package size={22} />, label: "Product" },
+        { id: "category", icon: <Package size={22} />, label: "Category" },
+        { id: "variation", icon: <Package size={22} />, label: "Product Variation" },
+        { id: "promotion", icon: <FilmSlate size={22} />, label: "Promotion" },
+        { id: "booking", icon: <CalendarCheck size={22} />, label: "Booking" },
+        { id: "post", icon: <Note size={22} />, label: "Post" },
+
+
+    ];
+
+    const renderContent = () => {
+        //Import your tab in here to display your component 
+
+        switch (activeTab) {
+            case "overview":
+                return <h2 className="text-2xl font-bold">📊 Overview</h2>;
+            case "account":
+                return <h2 className="text-2xl font-bold">👤 Account Management</h2>;
+            case "product":
+                return <ProductManagement />;
+            case "category":
+                return <CategoryManagement />;
+            case "variation":
+                return <ProductVariationManagement />;
+            case "promotion":
+                return <PromotionManagement />;
+            case "booking":
+                return <BookingManager />;
+            case "post":
+                return <PostManagement />;
+            default:
+                return <h2 className="text-2xl font-bold">Welcome to Dashboard</h2>;
+        }
+>>>>>>> f1be3c70b4078e1dd3fe00ce4c4984369be44c5d
 
   const renderContent = () => {
     switch (activeTab) {
