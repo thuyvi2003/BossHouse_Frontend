@@ -65,3 +65,20 @@ export async function removeItem(variation_id) {
     console.log("Parsed data:", data);
     return data;
 }
+export async function clearAllCart() {
+  const token = localStorage.getItem("token");
+  const res = await fetch(`${API_BASE_URL}/carts/clear`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    console.error("Failed response:", text);
+    throw new Error("Failed to clear all");
+  }
+  return await res.json();
+}
