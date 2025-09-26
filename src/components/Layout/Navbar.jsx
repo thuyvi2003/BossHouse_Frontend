@@ -48,6 +48,9 @@ export default function Navbar() {
                 <NavLink to="/products" className={navLinkClass}>
                     Products
                 </NavLink>
+                <NavLink to="/services" className={navLinkClass}>
+                    Services
+                </NavLink>
                 <NavLink to="/Dashboard" className={navLinkClass}>
                     Dashboard
                 </NavLink>
