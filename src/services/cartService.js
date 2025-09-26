@@ -46,6 +46,34 @@ export async function getUserCart() {
     console.log("Parsed data:", data);
     return data;
 }
+
+
+export async function editCartItemQuantity (itemId, newQuantity ) {
+    const token = localStorage.getItem("token");
+
+    const res = await fetch(`${API_BASE_URL}/carts/${itemId}`,{
+         method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ quantity: newQuantity}), 
+
+    })
+    if (!res.ok) {
+        const text = await res.text();
+        console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaa",newQuantity);
+        console.error("Failed response:", text);
+        throw new Error("Failed to edit quantity");
+    }
+    const data = await res.json();
+    console.log("Parsed data:", data);
+    return data;
+}
+
+
+
+
 export async function removeItem(variation_id) {
     const token = localStorage.getItem("token");
     const res = await fetch(`${API_BASE_URL}/carts`, {

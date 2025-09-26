@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import CartItem from "@/components/ui/Cart/CartItem";
 import CartSummary from "@/components/ui/Cart/CartSummary";
-import { clearAllCart, getUserCart, removeItem } from "@/services/cartService";
+import { clearAllCart, editCartItemQuantity, getUserCart, removeItem } from "@/services/cartService";
 
 
 export default function Cart() {
@@ -13,7 +13,7 @@ export default function Cart() {
       const res = await getUserCart();
       setCart(res.data?.items || []);
       console.log("ALOOOOOOOOOOOOOOO")
-      
+
       const totalPrice = res.data?.items.reduce(
         (sum, item) => sum + (item.variation_id?.price || 0) * item.quantity,
         0
@@ -27,22 +27,25 @@ export default function Cart() {
   useEffect(() => {
     fetchCart();
   }, [])
-  const handleIncrease = (id) => {
-    setCart(
-      cart.map((item) =>
-        item._id === id ? { ...item, quantity: item.quantity + 1 } : item
-      )
-    );
-  };
 
-  const handleDecrease = (id) => {
-    setCart(
-      cart.map((item) =>
-        item.id === id && item.quantity > 1
-          ? { ...item, quantity: item.quantity - 1 }
-          : item
-      )
-    );
+
+
+ const handleIncrease = async (item) => {
+  try {
+    const updatedCart = await editCartItemQuantity(item._id, item.quantity + 1);
+    setCart(updatedCart.data?.items || [])
+  } catch (error) {
+    console.error(error.message)
+  }
+};
+
+  const handleDecrease = async (item) => {
+    try {
+      const updatedCart = await editCartItemQuantity(item._id, item.quantity - 1);
+      setCart(updatedCart.data?.items || [])
+    } catch (error) {
+      console.error(error.message)
+    }
   };
 
   const handleRemove = async (variationId) => {
@@ -95,10 +98,11 @@ export default function Cart() {
                   <CartItem
                     key={item._id}
                     item={item}
-                    onIncrease={() => handleIncrease(item._id)}
-                    onDecrease={handleDecrease}
+                    onIncrease={() => handleIncrease(item)}
+                    onDecrease={() => handleDecrease(item)}
                     onRemove={() => handleRemove(item.variation_id?._id)}
                   />
+
                 ))
               ) : (
                 <p className="text-center text-gray-400 py-10">
