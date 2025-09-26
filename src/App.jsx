@@ -8,6 +8,8 @@ import Navbar from './components/Layout/Navbar.jsx';
 import Footer from './components/Layout/Footer.jsx';
 import BlogScreen from './pages/BlogScreen.jsx';
 import PostDetail from './pages/PostDetail.jsx';
+import Services from './pages/Services.jsx';           
+import UserBookingForm from './pages/UserBookingForm.jsx'; 
 
 function App() {
   return (
@@ -23,8 +25,11 @@ function App() {
           <Route path="/cart" element={<Cart />} />
           <Route path="/post" element={<BlogScreen />} />
           <Route path="/post/:id" element={<PostDetail />} />
+          <Route path="/services" element={<Services />} />
+          <Route path="/user-booking" element={<UserBookingForm />} />
         </Routes>
       </main>
+
       <Footer />
     </div>
   );
