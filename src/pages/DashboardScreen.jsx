@@ -107,7 +107,7 @@ export default function Dashboard() {
       <div className="flex flex-col flex-1">
         {/* Main Content */}
         <main
-          className="flex-1 overflow-y-auto shadow-xl animate-fade-in bg-cover bg-center p-6"
+          className="flex-1 h-auto shadow-xl animate-fade-in bg-cover bg-center p-6"
           style={{ backgroundImage: `url(${Background})` }}
         >
           {renderContent()}

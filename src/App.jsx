@@ -27,10 +27,11 @@ function App() {
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
-
+  const authRoutes = ["/login", "/register", "/verify-otp", "/forgot-password", "/reset-password"];
+  const hideLayout = authRoutes.includes(location.pathname)
   return (
     <div className="flex flex-col min-h-screen">
-      <Navbar />
+      {!hideLayout && <Navbar />}
 
       <main className="flex-grow">
         <Routes>
@@ -52,7 +53,7 @@ function App() {
         <ToastContainer position="top-right" autoClose={5000} />
 
       </main>
-      <Footer />
+      {!hideLayout && <Footer />}
     </div>
   );
 }

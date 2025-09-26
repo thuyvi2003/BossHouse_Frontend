@@ -1,8 +1,8 @@
 // src/services/promotionService.js
 import API_BASE_URL from "@/config/api";
 
-export async function getPromotionsList() {
-    const res = await fetch(`${API_BASE_URL}/promotions/admin`, {
+export async function getPromotionsList(page = 1, limit = 8) {
+    const res = await fetch(`${API_BASE_URL}/promotions/admin?page=${page}&limit=${limit}`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
@@ -13,8 +13,7 @@ export async function getPromotionsList() {
 
     if (!res.ok) {
         const text = await res.text();
-        console.error("Failed response:", text);
-        throw new Error("Failed to fetch promotions");
+        throw new Error(`Failed to fetch promotions: ${text}`);
     }
 
     const data = await res.json();
