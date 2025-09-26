@@ -23,9 +23,13 @@ export default function CreatePromotionModal({
         if (!form.promotion_type) {
             newErrors.promotion_type = "Please select a promotion type";
         }
-        if (!form.promotion_value || form.promotion_value <= 0) {
-            newErrors.promotion_value = "Value must be greater than 0";
+
+        if (form.promotion_type === "percent") {
+            if (form.promotion_value <= 0 || form.promotion_value >= 100) {
+                newErrors.promotion_value = "Percent value must be between 0 and 100";
+            }
         }
+
         if (!form.expires_at) {
             newErrors.expires_at = "Expiry date is required";
         } else {
@@ -64,7 +68,10 @@ export default function CreatePromotionModal({
                             type="text"
                             placeholder="e.g. SALE50"
                             value={form.code}
-                            onChange={(e) => setForm({ ...form, code: e.target.value })}
+                            onChange={(e) => {
+                                const value = e.target.value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+                                setForm({ ...form, code: value });
+                            }}
                         />
                         {errors.code && (
                             <p className="text-red-500 text-sm mt-1">{errors.code}</p>
