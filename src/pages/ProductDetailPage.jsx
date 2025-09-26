@@ -19,6 +19,7 @@ import {
   ChevronDown,
   ChevronUp
 } from 'lucide-react';
+import { addToCart } from '@/services/cartService';
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -79,13 +80,20 @@ const ProductDetailPage = () => {
     }
   };
 
-  // Handle add to cart
-  const handleAddToCart = () => {
-    // Here you would typically add the product to cart
-    // For now, we'll just show an alert
-    const itemToAdd = selectedVariation || product;
-    alert(`Added ${quantity} x ${itemToAdd.name} to cart!`);
-  };
+const handleAddToCart = async () =>{
+  try {
+    if(!selectedVariation){
+       alert("Please select a variation first!");
+      return;
+    }
+    const response = await addToCart(selectedVariation._id, quantity);
+      console.log("Cart after add:", response.data);
+        alert(`Added ${quantity} x ${selectedVariation.name} to cart!`);
+        navigate("/cart")
+  } catch (error) {
+      console.error(error);
+  }
+}
 
   // Toggle favorite
   const toggleFavorite = () => {

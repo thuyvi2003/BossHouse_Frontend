@@ -1,27 +1,26 @@
 // Vo Lam Thuy Vi
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { ShoppingCart } from "phosphor-react";
+import { getUserCart } from "@/services/cartService";
 
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
+    const [cartItems, setCartItems] = useState([])
+    useEffect(() => {
+        const fetchCart = async () => {
+            try {
+                const res = await getUserCart();
+                setCartItems(res.data?.items || []);
+            } catch (error) {
+                console.error(error.message)
+            }
+        }
+        fetchCart();
+    }, [])
+    const displaydItems = cartItems.slice(0, 3);
     //Database mau
-    const cartItems = [
-        {
-            id: 1,
-            name: "Dog Shampoo",
-            price: 120000,
-            image: "/src/assets/dog-shampoo.png",
-            qty: 1,
-        },
-        {
-            id: 2,
-            name: "Cat Toy",
-            price: 80000,
-            image: "/src/assets/cat-toy.png",
-            qty: 2,
-        },
-    ];
+
 
 
 
@@ -84,21 +83,21 @@ export default function Navbar() {
                         <div className="p-4">
                             {cartItems.length > 0 ? (
                                 <ul className="divide-y divide-gray-200 max-h-60 overflow-y-auto">
-                                    {cartItems.map((item) => (
+                                    {displaydItems.map((item) => (
                                         <li
                                             key={item.id}
                                             className="flex items-center gap-3 py-2 hover:bg-gray-50 rounded-md transition-colors"
                                         >
                                             <img
-                                                src={item.image}
-                                                alt={item.name}
+                                                src={item.variation_id?.image}
+                                                alt={item.variation_id?.name}
                                                 className="w-12 h-12 object-cover rounded"
                                             />
                                             <div className="flex-1">
                                                 <p className="text-sm font-medium text-gray-800">
-                                                    {item.name}
+                                                    {item.variation_id?.name}
                                                 </p>
-                                                <p className="text-xs text-gray-500">Qty: {item.qty}</p>
+                                                <p className="text-xs text-gray-500">Quantity: {item?.quantity}</p>
                                             </div>
                                         </li>
                                     ))}

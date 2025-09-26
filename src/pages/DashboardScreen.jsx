@@ -19,6 +19,7 @@ import {
 
 import Logo from "@/assets/Logo_BossHouse.png";
 import Background from "@/assets/Background_Cat.png";
+import PostManagement from "@/components/ui/Dashboard/Posts/PostManagement";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -51,7 +52,7 @@ export default function Dashboard() {
       case "booking":
         return <BookingManager />;
       case "post":
-        return <h2 className="text-2xl font-bold">📝 Post Management</h2>;
+        return <PostManagement/>;
       default:
         return <h2 className="text-2xl font-bold">Welcome to Dashboard</h2>;
     }
@@ -106,7 +107,7 @@ export default function Dashboard() {
       <div className="flex flex-col flex-1">
         {/* Main Content */}
         <main
-          className="flex-1 overflow-y-auto shadow-xl animate-fade-in bg-cover bg-center p-6"
+          className="flex-1 h-auto shadow-xl animate-fade-in bg-cover bg-center p-6"
           style={{ backgroundImage: `url(${Background})` }}
         >
           {renderContent()}

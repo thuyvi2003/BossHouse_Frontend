@@ -1,31 +1,31 @@
 // Vo Lam Thuy Vi
 import React from "react";
 
-export default function CartItem({ item, onIncrease, onDecrease, onRemove }) {
+export default function CartItem({item, onIncrease, onDecrease, onRemove }) {
     return (
         <div className="grid grid-cols-5 items-center py-4 border-b">
             <div className="col-span-2 flex items-center gap-4">
                 <img
-                    src={item.image}
-                    alt={item.name}
+                    src={item?.variation_id?.image|| "/placeholder.png"}
+                    alt={item?.variation_id?.name}
                     className="w-20 h-20 object-cover rounded-md border"
                 />
                 <div>
-                    <p className="font-medium text-gray-800">{item.name}</p>
-                    <p className="text-sm text-gray-500">{item.price.toLocaleString()}₫ / Product</p>
+                    <p className="font-medium text-gray-800">{item?.variation_id?.name}</p>
+                    <p className="text-sm text-gray-500">{item?.variation_id?.price?.toLocaleString()}₫ / Product</p>
                 </div>
             </div>
 
             <div className="flex items-center gap-2">
                 <button
-                    onClick={() => onDecrease(item.id)}
+                    onClick={() => onDecrease(item?.id)}
                     className="px-2 py-1 border rounded hover:bg-gray-100"
                 >
                     -
                 </button>
-                <span>{item.quantity}</span>
+                <span>{item?.quantity}</span>
                 <button
-                    onClick={() => onIncrease(item.id)}
+                    onClick={() => onIncrease(item?.id)}
                     className="px-2 py-1 border rounded hover:bg-gray-100"
                 >
                     +
@@ -33,11 +33,11 @@ export default function CartItem({ item, onIncrease, onDecrease, onRemove }) {
             </div>
 
             <div className="text-gray-700">
-                {(item.price * item.quantity).toLocaleString()}₫
+                {(item?.variation_id?.price * item?.quantity).toLocaleString()}₫
             </div>
 
             <button
-                onClick={() => onRemove(item.id)}
+                onClick={() => onRemove(item?.id)}
                 className="text-gray-400 hover:text-red-500 text-xl"
             >
                 ×
