@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { productAPI, variationAPI } from '@/services/api';
-import { 
-  ShoppingCart, 
-  Star, 
-  Heart, 
+import {
+  ShoppingCart,
+  Star,
+  Heart,
   ArrowLeft,
   ArrowRight,
   Minus,
@@ -40,12 +40,12 @@ const ProductDetailPage = () => {
     const fetchProductDetails = async () => {
       try {
         setLoading(true);
-        
+
         // Fetch product details
         const productData = await productAPI.getById(id);
         if (productData.success) {
           setProduct(productData.data);
-          
+
           // Set main product image as first image
           if (productData.data.image) {
             setSelectedImage(0);
@@ -77,23 +77,26 @@ const ProductDetailPage = () => {
     const newQuantity = quantity + change;
     if (newQuantity >= 1 && newQuantity <= (selectedVariation?.stock || product?.stock || 99)) {
       setQuantity(newQuantity);
+    } else if (newQuantity > currentStock) {
+      alert("Not enough stock available!");
     }
   };
 
-const handleAddToCart = async () =>{
-  try {
-    if(!selectedVariation){
-       alert("Please select a variation first!");
-      return;
-    }
-    const response = await addToCart(selectedVariation._id, quantity);
+
+  const handleAddToCart = async () => {
+    try {
+      if (!selectedVariation) {
+        alert("Please select a variation first!");
+        return;
+      }
+      const response = await addToCart(selectedVariation._id, quantity);
       console.log("Cart after add:", response.data);
-        alert(`Added ${quantity} x ${selectedVariation.name} to cart!`);
-        navigate("/cart")
-  } catch (error) {
+      alert(`Added ${quantity} x ${selectedVariation.name} to cart!`);
+      navigate("/cart")
+    } catch (error) {
       console.error(error);
+    }
   }
-}
 
   // Toggle favorite
   const toggleFavorite = () => {
@@ -177,9 +180,8 @@ const handleAddToCart = async () =>{
               {currentImage && (
                 <button
                   onClick={() => setSelectedImage(0)}
-                  className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 ${
-                    selectedImage === 0 ? 'border-[#846551]' : 'border-gray-200'
-                  }`}
+                  className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 ${selectedImage === 0 ? 'border-[#846551]' : 'border-gray-200'
+                    }`}
                 >
                   <img
                     src={currentImage}
@@ -193,9 +195,8 @@ const handleAddToCart = async () =>{
                   <button
                     key={variation._id}
                     onClick={() => setSelectedImage(index + 1)}
-                    className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 ${
-                      selectedImage === index + 1 ? 'border-[#846551]' : 'border-gray-200'
-                    }`}
+                    className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 ${selectedImage === index + 1 ? 'border-[#846551]' : 'border-gray-200'
+                      }`}
                   >
                     <img
                       src={variation.image}
@@ -229,12 +230,15 @@ const handleAddToCart = async () =>{
 
             {/* Stock Status */}
             <div className="flex items-center space-x-2">
-              {currentStock > 0 ? (
+              {currentStock > 10 ? (
                 <>
                   <Check className="w-5 h-5 text-green-500" />
-                  <span className="text-green-600 font-medium">
-                    In Stock ({currentStock} available)
-                  </span>
+                  <span className="text-green-600 font-medium">In Stock ({currentStock})</span>
+                </>
+              ) : currentStock > 0 ? (
+                <>
+                  <Check className="w-5 h-5 text-yellow-500" />
+                  <span className="text-yellow-600 font-medium">Only {currentStock} left!</span>
                 </>
               ) : (
                 <>
@@ -243,6 +247,7 @@ const handleAddToCart = async () =>{
                 </>
               )}
             </div>
+
 
             {/* Variations */}
             {variations.length > 0 && (
@@ -271,11 +276,10 @@ const handleAddToCart = async () =>{
                       <button
                         key={variation._id}
                         onClick={() => handleVariationSelect(variation)}
-                        className={`p-4 border-2 rounded-lg text-left transition-all duration-300 ${
-                          selectedVariation?._id === variation._id
-                            ? 'border-[#846551] bg-[#f5f3f2]'
-                            : 'border-gray-200 hover:border-gray-300'
-                        }`}
+                        className={`p-4 border-2 rounded-lg text-left transition-all duration-300 ${selectedVariation?._id === variation._id
+                          ? 'border-[#846551] bg-[#f5f3f2]'
+                          : 'border-gray-200 hover:border-gray-300'
+                          }`}
                       >
                         <div className="flex items-center space-x-3">
                           {variation.image && (
@@ -314,7 +318,8 @@ const handleAddToCart = async () =>{
                   >
                     <Minus className="w-4 h-4" />
                   </button>
-                  <span className="px-4 py-2 border-x border-gray-300 min-w-[60px] text-center">
+                  <span className="px-4 py-2 border-x border-gray-300 min-w-[60px] text-center transition-transform duration-200"
+                    style={{ transform: `scale(${quantity > 1 ? 1.05 : 1})` }}>
                     {quantity}
                   </span>
                   <button
@@ -331,11 +336,15 @@ const handleAddToCart = async () =>{
                 <button
                   onClick={handleAddToCart}
                   disabled={currentStock === 0}
-                  className="flex-1 flex items-center justify-center px-6 py-3 bg-[#846551] text-white rounded-lg hover:bg-[#5a4639] transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className={`flex-1 flex items-center justify-center px-6 py-3 rounded-lg transition-colors duration-300 ${currentStock === 0
+                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    : "bg-[#846551] text-white hover:bg-[#5a4639]"
+                    }`}
                 >
                   <ShoppingCart className="w-5 h-5 mr-2" />
-                  Add to Cart
+                  {currentStock === 0 ? "Out of Stock" : "Add to Cart"}
                 </button>
+
                 <button className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-300">
                   <Share2 className="w-5 h-5" />
                 </button>
@@ -377,11 +386,10 @@ const handleAddToCart = async () =>{
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm capitalize ${
-                    activeTab === tab
-                      ? 'border-[#846551] text-[#846551]'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
+                  className={`py-4 px-1 border-b-2 font-medium text-sm capitalize ${activeTab === tab
+                    ? 'border-[#846551] text-[#846551]'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    }`}
                 >
                   {tab}
                 </button>

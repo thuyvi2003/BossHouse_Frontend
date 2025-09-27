@@ -82,7 +82,8 @@ const PromotionManagement = () => {
 
       <div className="overflow-x-hidden overflow-y-hidden">
         {/* Table Header */}
-        <div className="grid grid-cols-12 gap-4 px-6 py-3 text-xs font-bold text-gray-700 uppercase tracking-wider bg-gradient-to-r from-[#f5f3f2] to-[#eae7e5] border-b shadow-sm">
+        <div className="grid grid-cols-13 gap-4 px-6 py-3 text-xs font-bold text-gray-700 uppercase tracking-wider bg-gradient-to-r from-[#f5f3f2] to-[#eae7e5] border-b shadow-sm">
+          <div className="col-span-1">STT</div>
           <div className="col-span-2">Code</div>
           <div className="col-span-3">Description</div>
           <div className="col-span-1">Type</div>
@@ -98,17 +99,17 @@ const PromotionManagement = () => {
             <div
               key={promo._id || `promo-${idx}`}
               className={`
-        relative px-6 py-5 grid grid-cols-12 gap-4 items-center
-        bg-white rounded-xl shadow-sm border border-gray-100
-        hover:border-[#846551] hover:shadow-lg hover:scale-[1.01]
-        transition-all duration-300 ease-in-out
-        animate-fade-in-up
+       relative px-6 py-5 grid grid-cols-13 gap-4 items-center
+    bg-white rounded-xl shadow-sm border border-gray-100
+    hover:border-[#846551] hover:shadow-lg hover:scale-[1.01]
+    transition-all duration-300 ease-in-out
+    animate-fade-in-up
       `}
               style={{ animationDelay: `${idx * 120}ms` }}
             >
               {/* Decorative left bar */}
               <div className="absolute left-0 top-0 h-full w-1 rounded-l-xl bg-gray-200 hover:bg-[#846551] transition-all"></div>
-
+                <div className="col-span-1 font-semibold text-gray-700"> {(page - 1) * limit + idx + 1} </div>
               <div className="col-span-2 font-semibold text-gray-900">{promo.code}</div>
               <div className="col-span-3 text-sm text-gray-600">{promo.description}</div>
               <div className="col-span-1 text-sm capitalize text-gray-500">{promo.promotion_type}</div>
