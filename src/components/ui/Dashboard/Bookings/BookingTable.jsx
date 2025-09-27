@@ -6,7 +6,7 @@ export default function BookingTable({
   onEdit,
   onDeleteBooking,
   onView,
-  rowsPerPage = 4,
+  rowsPerPage = 8,
 }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -53,7 +53,7 @@ export default function BookingTable({
       </div>
 
       {/* Table Body */}
-      <div className="max-h-[calc(4*72px)] overflow-y-auto divide-y divide-gray-100">
+      <div className="max-h-[650px] divide-y divide-gray-100">
         {currentBookings.length === 0 && (
           <div className="px-4 py-4 text-gray-500 italic">No bookings found.</div>
         )}
@@ -71,7 +71,7 @@ export default function BookingTable({
           return (
             <div
               key={b._id || idx}
-              className={`relative px-4 py-4 grid grid-cols-[40px_150px_120px_1fr_150px_100px_120px] gap-2 items-center
+              className={`relative px-6 py-5 grid grid-cols-[40px_150px_120px_1fr_150px_100px_120px] gap-2 items-center
                 bg-white hover:bg-gray-50 transition-all duration-150
                 ${isPast ? "bg-gray-50 text-gray-500 italic" : ""}`}
             >
