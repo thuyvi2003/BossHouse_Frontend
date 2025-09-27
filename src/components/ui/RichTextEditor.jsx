@@ -6,13 +6,13 @@ export default function RichTextEditor({ value = '', onChange, placeholder = 'En
 
   return (
     <Editor
-    apiKey="4etezslxg5mywek98o906k1xt4jfuvzdpebtq6iqo3bsbwz2" // thay bằng API key TinyMCE của bạn
+      apiKey="4etezslxg5mywek98o906k1xt4jfuvzdpebtq6iqo3bsbwz2" // thay bằng API key TinyMCE của bạn
       onInit={(evt, editor) => editorRef.current = editor}
       value={value}
       onEditorChange={onChange}
       init={{
         height: 300,
-        menubar: true,
+        menubar: true,   
         plugins: [
           'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
           'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',

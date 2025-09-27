@@ -1,5 +1,5 @@
 // Vo Lam Thuy Vi
-import React from "react";
+import React, { useState } from "react";
 import { Tag } from "phosphor-react";
 export default function CreatePromotionModal({
     isOpen,
@@ -8,7 +8,46 @@ export default function CreatePromotionModal({
     form,
     setForm,
 }) {
+    const [errors, setErrors] = useState([]);
     if (!isOpen) return null;
+
+    const validate = () => {
+        const newErrors = {};
+
+        if (!form.code?.trim()) {
+            newErrors.code = "Promotion code is required";
+        }
+        if (!form.description?.trim()) {
+            newErrors.description = "Description is required";
+        }
+        if (!form.promotion_type) {
+            newErrors.promotion_type = "Please select a promotion type";
+        }
+
+        if (form.promotion_type === "percent") {
+            if (form.promotion_value <= 0 || form.promotion_value >= 100) {
+                newErrors.promotion_value = "Percent value must be between 0 and 100";
+            }
+        }
+
+        if (!form.expires_at) {
+            newErrors.expires_at = "Expiry date is required";
+        } else {
+            const today = new Date().toISOString().split("T")[0];
+            if (form.expires_at < today) {
+                newErrors.expires_at = "Expiry date must be in the future";
+            }
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const handleSubmit = () => {
+        if (validate()) {
+            onCreate(form);
+        }
+    }
 
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -20,7 +59,7 @@ export default function CreatePromotionModal({
 
                 {/* Form */}
                 <div className="space-y-5">
-                    =                    <div>
+                    <div>
                         <label className="block text-sm font-medium text-[#846551] mb-1">
                             Promotion Code
                         </label>
@@ -29,8 +68,14 @@ export default function CreatePromotionModal({
                             type="text"
                             placeholder="e.g. SALE50"
                             value={form.code}
-                            onChange={(e) => setForm({ ...form, code: e.target.value })}
+                            onChange={(e) => {
+                                const value = e.target.value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+                                setForm({ ...form, code: value });
+                            }}
                         />
+                        {errors.code && (
+                            <p className="text-red-500 text-sm mt-1">{errors.code}</p>
+                        )}
                     </div>
 
                     <div>
@@ -46,6 +91,9 @@ export default function CreatePromotionModal({
                                 setForm({ ...form, description: e.target.value })
                             }
                         />
+                        {errors.description && (
+                            <p className="text-red-500 text-sm mt-1">{errors.description}</p>
+                        )}
                     </div>
 
                     <div>
@@ -62,6 +110,11 @@ export default function CreatePromotionModal({
                             <option value="percent">Percent</option>
                             <option value="fixed">Fixed</option>
                         </select>
+                        {errors.promotion_type && (
+                            <p className="text-red-500 text-sm mt-1">
+                                {errors.promotion_type}
+                            </p>
+                        )}
                     </div>
 
                     <div>
@@ -77,6 +130,11 @@ export default function CreatePromotionModal({
                                 setForm({ ...form, promotion_value: e.target.value })
                             }
                         />
+                        {errors.promotion_value && (
+                            <p className="text-red-500 text-sm mt-1">
+                                {errors.promotion_value}
+                            </p>
+                        )}
                     </div>
 
                     <div>
@@ -89,6 +147,9 @@ export default function CreatePromotionModal({
                             value={form.expires_at}
                             onChange={(e) => setForm({ ...form, expires_at: e.target.value })}
                         />
+                        {errors.expires_at && (
+                            <p className="text-red-500 text-sm mt-1">{errors.expires_at}</p>
+                        )}
                     </div>
                 </div>
 
@@ -100,7 +161,7 @@ export default function CreatePromotionModal({
                         Cancel
                     </button>
                     <button
-                        onClick={() => onCreate(form)}
+                        onClick={handleSubmit}
                         className="px-5 py-2 rounded-lg bg-[#846551] text-white font-semibold shadow hover:bg-[#6d5142] hover:shadow-lg hover:scale-105 transition-transform duration-300"
                     >
                         Create
