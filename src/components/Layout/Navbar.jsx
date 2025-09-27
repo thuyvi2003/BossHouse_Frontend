@@ -54,9 +54,6 @@ export default function Navbar() {
                 <NavLink to="/Dashboard" className={navLinkClass}>
                     Dashboard
                 </NavLink>
-                <NavLink to="/about" className={navLinkClass}>
-                    About
-                </NavLink>
 
 
                 <div
