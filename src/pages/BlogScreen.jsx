@@ -32,21 +32,15 @@ function BlogCard({ post }) {
 
 export default function BlogScreen() {
 	const [query, setQuery] = useState('');
-	const [group, setGroup] = useState(''); // health, grooming, lifestyle, shopping, adoption
-	const [category, setCategory] = useState(''); // child category like pet-bath, pet-care
+	const [category, setCategory] = useState(''); // category filter
 	const [featured, setFeatured] = useState(''); // '', 'true', 'false'
+	const [postLimit, setPostLimit] = useState(12);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState('');
 	const [posts, setPosts] = useState([]);
 	const [pageInfo, setPageInfo] = useState({ page: 1, totalPages: 1, total: 0 });
+	const [availableCategories, setAvailableCategories] = useState([]);
 
-	const GROUP_TO_CATEGORIES = {
-		health: ['pet-care', 'pet-health'],
-		grooming: ['pet-grooming', 'pet-bath', 'pet-skin'],
-		lifestyle: ['pet-training', 'pet-activity', 'pet-travel'],
-		shopping: ['pet-food', 'pet-supplies', 'pet-hygiene'],
-		adoption: ['pet-adoption', 'pet-community'],
-	};
 
 	const searchUrl = useMemo(() => {
 		const hasQuery = Boolean(query.trim());
@@ -57,9 +51,36 @@ export default function BlogScreen() {
 		// Only pass category when a specific child category is selected
 		if (category) url.searchParams.set('category', category);
 		if (!hasQuery && featured) url.searchParams.set('is_featured', featured);
-		url.searchParams.set('limit', '12');
+		url.searchParams.set('limit', String(postLimit));
 		return url.toString();
-	}, [query, category, featured]);
+	}, [query, category, featured, postLimit]);
+
+	// Fetch available categories from posts (to match Post Management)
+	const loadCategories = async () => {
+		try {
+			console.log('BlogScreen: Loading categories from posts');
+			const res = await fetch(`${API_BASE}/api/posts/filter?limit=1000&t=${Date.now()}`);
+			if (res.ok) {
+				const json = await res.json();
+				console.log('BlogScreen: Posts API response:', json);
+				const posts = json.data?.posts || json.data || [];
+				const categories = [...new Set(posts.map(p => p.category).filter(Boolean))];
+				console.log('BlogScreen: Mapped categories from posts:', categories);
+				setAvailableCategories(categories);
+			} else {
+				console.error('BlogScreen: Posts API failed:', res.status, res.statusText);
+			}
+		} catch (e) {
+			console.error('BlogScreen: Failed to load categories:', e);
+		}
+	};
+
+	useEffect(() => {
+		loadCategories();
+		// Refresh categories every 10 seconds to stay in sync with dashboard
+		const interval = setInterval(loadCategories, 10000);
+		return () => clearInterval(interval);
+	}, []);
 
 	useEffect(() => {
 		let ignore = false;
@@ -73,11 +94,6 @@ export default function BlogScreen() {
 				const result = json.data?.posts ? json.data : { posts: json.data?.posts || json.data || [], total: json.data?.total || 0, page: 1, totalPages: 1 };
 				if (!ignore) {
 					let list = result.posts || [];
-					// If group is selected but no child category chosen, apply client-side filter by group mapping
-					if (group && !category) {
-						const allowed = new Set(GROUP_TO_CATEGORIES[group] || []);
-						list = list.filter(p => allowed.has(p.category));
-					}
 					setPosts(list);
 					setPageInfo({ page: result.page || 1, totalPages: result.totalPages || 1, total: result.total || (result.posts?.length || 0) });
 				}
@@ -97,62 +113,69 @@ export default function BlogScreen() {
 		<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 			<div className="text-center mb-8">
 				<h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-indigo-700">Pet Care Service</h1>
-				<p className="mt-2 text-gray-600"></p>
+				<p className="mt-2 text-gray-600">Stay updated with our latest pet care articles</p>
 			</div>
 
-			<form
-				onSubmit={(e) => e.preventDefault()}
-				className="mx-auto mb-8 max-w-5xl flex flex-col gap-3 sm:flex-row sm:items-center"
-			>
-				<input
-					type="text"
-					value={query}
-					onChange={(e) => setQuery(e.target.value)}
-					placeholder="Search blog..."
-					className="flex-1 rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-				/>
-				{/* Group select (parent) */}
-				<select
-					value={group}
-					onChange={(e) => { setCategory(''); setGroup(e.target.value); }}
-					className="rounded-lg border border-gray-300 px-3 py-2"
-				>
-					<option value="">All groups</option>
-					<option value="health">Health</option>
-					<option value="grooming">Grooming</option>
-					<option value="lifestyle">Lifestyle</option>
-					<option value="shopping">Shopping</option>
-					<option value="adoption">Adoption</option>
-				</select>
+			{/* Search and Filter Controls */}
+			<div className="bg-gray-50 rounded-lg p-6 mb-8">
+				<div className="flex flex-col lg:flex-row gap-4">
+					{/* Search Input */}
+					<div className="flex-1">
+						<div className="relative">
+							<span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">🔍</span>
+							<input
+								type="text"
+								placeholder="Search posts by title or description..."
+								value={query}
+								onChange={(e) => setQuery(e.target.value)}
+								className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+							/>
+						</div>
+					</div>
 
-				{/* Category select (child) */}
-				<select
-					value={category}
-					onChange={(e) => setCategory(e.target.value)}
-					className="rounded-lg border border-gray-300 px-3 py-2"
-					disabled={!group}
-				>
-					<option value="">{group ? 'All in group' : 'Select group first'}</option>
-					{(GROUP_TO_CATEGORIES[group] || []).map((c) => (
-						<option key={c} value={c}>{c}</option>
-					))}
-				</select>
-				<select
-					value={featured}
-					onChange={(e) => setFeatured(e.target.value)}
-					className="rounded-lg border border-gray-300 px-3 py-2"
-				>
-					<option value="">All</option>
-					<option value="true">Featured</option>
-					<option value="false">Non-featured</option>
-				</select>
-				<button
-					type="submit"
-					className="px-5 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
-				>
-					Search
-				</button>
-			</form>
+					{/* Filters */}
+					<div className="flex flex-col sm:flex-row gap-3">
+						{/* Category Filter */}
+						<div className="relative">
+							<span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">📂</span>
+							<select 
+								value={category} 
+								onChange={(e) => setCategory(e.target.value)} 
+								className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white min-w-[180px]"
+							>
+								<option value="">All Categories</option>
+								{availableCategories.map(cat => (
+									<option key={cat} value={cat}>{cat}</option>
+								))}
+							</select>
+						</div>
+						
+
+						{/* Post Limit Filter */}
+						<div className="relative">
+							<span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">📄</span>
+							<select 
+								value={postLimit} 
+								onChange={(e) => setPostLimit(Number(e.target.value))}
+								className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white"
+							>
+								<option value={3}>3 Posts</option>
+								<option value={6}>6 Posts</option>
+								<option value={9}>9 Posts</option>
+								<option value={12}>12 Posts</option>
+							</select>
+						</div>
+					</div>
+				</div>
+				
+				{/* Results info */}
+				{pageInfo.total > 0 && (
+					<div className="mt-4 text-center text-sm text-gray-500">
+						Showing {posts.length} of {pageInfo.total} posts
+					</div>
+				)}
+			</div>
+
 
 			{loading && (
 				<div className="text-center text-gray-500">Loading posts...</div>
@@ -172,11 +195,6 @@ export default function BlogScreen() {
 				</div>
 			)}
 
-			{pageInfo.total > 0 && (
-				<p className="mt-6 text-center text-sm text-gray-500">
-					Showing {posts.length} of {pageInfo.total} posts
-				</p>
-			)}
 		</div>
 	);
 }

@@ -1,12 +1,16 @@
 // Vo Lam Thuy Vi
 import React, { useEffect, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
-import { ShoppingCart } from "phosphor-react";
+import { ShoppingCart, Bell } from "phosphor-react";
 import { getUserCart } from "@/services/cartService";
 
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
-    const [cartItems, setCartItems] = useState([])
+    const [cartItems, setCartItems] = useState([]);
+    const [notifications, setNotifications] = useState([]);
+    const [showNotificationTooltip, setShowNotificationTooltip] = useState(false);
+    const [hasNotificationFeature, setHasNotificationFeature] = useState(false); // Flag to enable/disable notification feature
+    
     useEffect(() => {
         const fetchCart = async () => {
             try {
@@ -18,8 +22,40 @@ export default function Navbar() {
         }
         fetchCart();
     }, [])
+    
+    // Function to enable notification feature (call this when implementing notifications)
+    const enableNotificationFeature = () => {
+        setHasNotificationFeature(true);
+    };
+    
+    // Function to add new notification (call this when creating new notifications)
+    // Usage: addNotification({ id: Date.now(), message: "New notification", time: "now" })
+    const addNotification = (notification) => {
+        if (hasNotificationFeature) {
+            setNotifications(prev => [notification, ...prev]);
+        }
+    };
+    
+    // Export these functions for use in other components when implementing notifications
+    // window.enableNotificationFeature = enableNotificationFeature;
+    // window.addNotification = addNotification;
+    
+    // Notification feature - currently disabled
+    useEffect(() => {
+        // TODO: When notification feature is implemented, call enableNotificationFeature()
+        // and add API calls to fetch real notifications
+        setHasNotificationFeature(false);
+        
+        if (hasNotificationFeature) {
+            // Future: Fetch notifications from API
+            // fetchNotifications();
+        } else {
+            // No notification feature yet - show empty state
+            setNotifications([]);
+        }
+    }, [hasNotificationFeature]);
+    
     const displaydItems = cartItems.slice(0, 3);
-    //Database mau
 
 
 
@@ -51,10 +87,59 @@ export default function Navbar() {
                 <NavLink to="/services" className={navLinkClass}>
                     Services
                 </NavLink>
+                <NavLink to="/post" className={navLinkClass}>
+                    Blog
+                </NavLink>
                 <NavLink to="/Dashboard" className={navLinkClass}>
                     Dashboard
                 </NavLink>
 
+                {/* Notification Icon */}
+                <div
+                    className="relative"
+                    onMouseEnter={() => setShowNotificationTooltip(true)}
+                    onMouseLeave={() => setShowNotificationTooltip(false)}
+                >
+                    <div className="relative">
+                        <Bell size={28} className="text-gray-600 hover:text-black transition-colors duration-200 cursor-pointer" />
+                        {notifications.length > 0 && (
+                            <span className="absolute -top-2 -right-2 text-xs bg-red-500 text-white w-5 h-5 flex items-center justify-center rounded-full shadow-md">
+                                {notifications.length}
+                            </span>
+                        )}
+                    </div>
+                    
+                    {/* Notification Tooltip */}
+                    {showNotificationTooltip && (
+                        <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                            <div className="p-3 border-b border-gray-200">
+                                <h3 className="font-semibold text-gray-900">Notifications</h3>
+                            </div>
+                            <div className="max-h-64 overflow-y-auto">
+                                {hasNotificationFeature ? (
+                                    notifications.length > 0 ? (
+                                        <ul className="divide-y divide-gray-100">
+                                            {notifications.map((notification) => (
+                                                <li key={notification.id} className="p-3 hover:bg-gray-50">
+                                                    <p className="text-sm text-gray-900">{notification.message}</p>
+                                                    <p className="text-xs text-gray-500 mt-1">{notification.time}</p>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <p className="text-center text-gray-500 py-4">
+                                            No notifications
+                                        </p>
+                                    )
+                                ) : (
+                                    <p className="text-center text-gray-500 py-4">
+                                        Notifications is empty
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
 
                 <div
                     className="relative"

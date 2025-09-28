@@ -33,7 +33,7 @@ function App() {
     checkAuth();
   }, [checkAuth]);
   const authRoutes = ["/login", "/register", "/verify-otp", "/forgot-password", "/reset-password"];
-  const hideLayout = authRoutes.includes(location.pathname)
+  const hideLayout = authRoutes.includes(location.pathname);
   return (
     <div className="flex flex-col min-h-screen">
       {!hideLayout && <Navbar />}

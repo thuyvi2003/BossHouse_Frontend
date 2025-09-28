@@ -34,10 +34,11 @@ export default function PostManagement() {
 	const [error, setError] = useState('');
 	const [query, setQuery] = useState('');
 	const [category, setCategory] = useState('');
-	const [featured, setFeatured] = useState(''); // '', 'true', 'false'
-	const [limit, setLimit] = useState(10);
+	const [status, setStatus] = useState(''); // '', 'ACTIVE', 'INACTIVE'
+	const [limit, setLimit] = useState(5);
 	const [page, setPage] = useState(1);
 	const [total, setTotal] = useState(0);
+	const [availableCategories, setAvailableCategories] = useState([]);
 
 	// modals
 	const [viewPost, setViewPost] = useState(null);
@@ -46,8 +47,12 @@ export default function PostManagement() {
 	const [deletePost, setDeletePost] = useState(null);
 
 	// form states
-	const [createForm, setCreateForm] = useState({ title: '', description: '', image: '', category: '' });
-	const [editForm, setEditForm] = useState({ title: '', description: '', image: '', category: '' });
+	const [createForm, setCreateForm] = useState({ title: '', description: '', category: '' });
+	const [editForm, setEditForm] = useState({ title: '', description: '', category: '' });
+	
+	// validation states
+	const [createErrors, setCreateErrors] = useState({});
+	const [editErrors, setEditErrors] = useState({});
 
 	// file input refs
 	const createFileRef = useRef(null);
@@ -59,11 +64,13 @@ export default function PostManagement() {
 		const url = new URL(base);
 		if (hasQuery) url.searchParams.set('q', query.trim());
 		if (category) url.searchParams.set('category', category);
-		if (!hasQuery && featured) url.searchParams.set('is_featured', featured);
+		if (!hasQuery && status) url.searchParams.set('status', status);
+		// For admin dashboard, we want to see all posts including INACTIVE ones
+		// The backend filterPosts endpoint should return all posts for admin
 		url.searchParams.set('limit', String(limit));
 		url.searchParams.set('skip', String((page - 1) * limit));
 		return url.toString();
-	}, [query, category, featured, limit, page]);
+	}, [query, category, status, limit, page]);
 
 	async function load() {
 		setLoading(true);
@@ -83,6 +90,30 @@ export default function PostManagement() {
 	}
 
 	useEffect(() => { load(); }, [listUrl]);
+
+	// Load available categories from posts
+	const loadCategories = async () => {
+		try {
+			console.log('PostManagement: Loading categories from posts');
+			const res = await fetch(`${API_BASE}/api/posts/filter?limit=1000&t=${Date.now()}`);
+			if (res.ok) {
+				const json = await res.json();
+				console.log('PostManagement: Posts API response:', json);
+				const posts = json.data?.posts || json.data || [];
+				const categories = [...new Set(posts.map(p => p.category).filter(Boolean))];
+				console.log('PostManagement: Mapped categories from posts:', categories);
+				setAvailableCategories(categories);
+			} else {
+				console.error('PostManagement: Posts API failed:', res.status, res.statusText);
+			}
+		} catch (e) {
+			console.error('PostManagement: Failed to load categories:', e);
+		}
+	};
+
+	useEffect(() => {
+		loadCategories();
+	}, []);
 
 	function authHeaders() {
 		const token = localStorage.getItem('access_token') || localStorage.getItem('token') || '';
@@ -107,30 +138,78 @@ export default function PostManagement() {
 		if (!res.ok) throw new Error('Delete failed');
 	}
 
-	async function uploadLocal(file) {
-		const form = new FormData();
-		form.append('file', file);
-		const res = await fetch(`${API_BASE}/api/posts/upload`, { method: 'POST', body: form });
-		if (!res.ok) throw new Error('Upload failed');
-		const json = await res.json();
-		return json.url; // e.g. /uploads/filename.jpg
+	// Extract first image from HTML content and remove images from description
+	function extractFirstImage(htmlContent) {
+		if (!htmlContent) return '';
+		const parser = new DOMParser();
+		const doc = parser.parseFromString(htmlContent, 'text/html');
+		const img = doc.querySelector('img');
+		return img ? img.src : '';
+	}
+
+	// Remove images from HTML content, keep only text
+	function removeImagesFromDescription(htmlContent) {
+		if (!htmlContent) return '';
+		const parser = new DOMParser();
+		const doc = parser.parseFromString(htmlContent, 'text/html');
+		// Remove all img tags
+		const images = doc.querySelectorAll('img');
+		images.forEach(img => img.remove());
+		return doc.body.innerHTML;
+	}
+
+	// Validation functions
+	function validateForm(formData, isEdit = false) {
+		const errors = {};
+		
+		// Check title - required
+		if (!formData.title || formData.title.trim() === '') {
+			errors.title = 'Post title is required';
+		}
+		
+		// Check description - required
+		if (!formData.description || formData.description.trim() === '') {
+			errors.description = 'Post content is required';
+		} else {
+			// Remove HTML tags and check if there's actual text content
+			const textContent = formData.description.replace(/<[^>]*>/g, '').trim();
+			if (textContent === '') {
+				errors.description = 'Post content cannot be empty';
+			}
+		}
+		
+		// Check category - required
+		if (!formData.category || formData.category.trim() === '') {
+			errors.category = 'Category is required';
+		}
+		
+		return errors;
 	}
 
 	function resetAndReload() {
 		setCreateOpen(false);
 		setEditPost(null);
 		setDeletePost(null);
-		setCreateForm({ title: '', description: '', image: '', category: '' });
-		setEditForm({ title: '', description: '', image: '', category: '' });
+		setCreateForm({ title: '', description: '', category: '' });
+		setEditForm({ title: '', description: '', category: '' });
+		setCreateErrors({});
+		setEditErrors({});
 		load();
+		loadCategories(); // Refresh categories after any post operation
 	}
 
 	function handleEditClick(post) {
 		setEditPost(post);
+		setEditErrors({}); // Clear previous errors
+		// Reconstruct description with image for editing
+		let descriptionWithImage = post.description || '';
+		if (post.image && !descriptionWithImage.includes('<img')) {
+			// Add image back to description for editing
+			descriptionWithImage = `<img src="${post.image.startsWith('http') ? post.image : `${API_BASE}${post.image}`}" alt="Post image" style="max-width: 100%; height: auto;" /><br/>` + descriptionWithImage;
+		}
 		setEditForm({
 			title: post.title || '',
-			description: post.description || '',
-			image: post.image || '',
+			description: descriptionWithImage,
 			category: post.category || ''
 		});
 	}
@@ -138,31 +217,76 @@ export default function PostManagement() {
 	const totalPages = Math.max(1, Math.ceil(total / limit));
 
 	return (
-		<div className="backdrop-blur-sm bg-white/70 rounded-xl shadow-md m-6 p-5">
-			<div className="flex items-center justify-between mb-4">
-				<h2 className="text-2xl font-bold">📝 Post Management</h2>
-				<div className="flex gap-2">
-					<button onClick={() => setCreateOpen(true)} className="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700">Create +</button>
-					<input
-						type="text"
-						placeholder="Search title or description..."
-						value={query}
-						onChange={(e) => { setPage(1); setQuery(e.target.value); }}
-						className="w-60 rounded-md border border-gray-300 px-3 py-2"
-					/>
-					<select value={category} onChange={(e) => { setPage(1); setCategory(e.target.value); }} className="rounded-md border border-gray-300 px-3 py-2">
-						<option value="">All categories</option>
-						<option value="general">General</option>
-						<option value="health">Health</option>
-						<option value="grooming">Grooming</option>
-					</select>
-					<select value={featured} onChange={(e) => { setPage(1); setFeatured(e.target.value); }} className="rounded-md border border-gray-300 px-3 py-2">
-						<option value="">All</option>
-						<option value="true">Featured</option>
-						<option value="false">Non-featured</option>
-					</select>
+		<div className="bg-white shadow-xl overflow-hidden flex-1 animate-fade-in">
+			{/* Header */}
+			<div className="p-6 flex justify-between items-center bg-[#d7cbbf]">
+				<h2 className="flex items-center gap-2 text-2xl font-extrabold tracking-wide text-[#2c2c2c] drop-shadow-sm">
+					<span className="text-[#846551]">📝</span>
+					<span className="bg-gradient-to-r from-[#846551] to-[#5a4639] bg-clip-text text-transparent">
+						Post Management
+					</span>
+				</h2>
+				<button
+					onClick={() => setCreateOpen(true)}
+					className="px-4 py-2 bg-[#846551] text-white font-semibold rounded-lg shadow hover:shadow-lg hover:scale-105 transition-transform duration-300"
+				>
+					+ Create Post
+				</button>
+			</div>
+
+			{/* Search and Filter Bar */}
+			<div className="p-6 bg-[#f5f3f2] border-b border-[#eae7e5]">
+				<div className="flex flex-col lg:flex-row gap-4">
+					{/* Search Input */}
+					<div className="flex-1">
+						<div className="relative">
+							<span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">🔍</span>
+							<input
+								type="text"
+								placeholder="Search posts by title or description..."
+								value={query}
+								onChange={(e) => { setPage(1); setQuery(e.target.value); }}
+								className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#846551] focus:border-transparent"
+							/>
+						</div>
+					</div>
+
+					{/* Filters */}
+					<div className="flex flex-col sm:flex-row gap-3">
+						{/* Category Filter */}
+						<div className="relative">
+							<span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">📂</span>
+							<select 
+								value={category} 
+								onChange={(e) => { setPage(1); setCategory(e.target.value); }} 
+								className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#846551] focus:border-transparent bg-white"
+							>
+								<option value="">All Categories</option>
+								{availableCategories.map(cat => (
+									<option key={cat} value={cat}>{cat}</option>
+								))}
+							</select>
+						</div>
+
+						{/* Status Filter */}
+						<div className="relative">
+							<span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">⚡</span>
+							<select 
+								value={status} 
+								onChange={(e) => { setPage(1); setStatus(e.target.value); }} 
+								className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#846551] focus:border-transparent bg-white"
+							>
+								<option value="">All Status</option>
+								<option value="ACTIVE">ACTIVE</option>
+								<option value="INACTIVE">INACTIVE</option>
+							</select>
+						</div>
+					</div>
 				</div>
 			</div>
+
+			{/* Content */}
+			<div className="p-6">
 
 			{loading && <div className="text-gray-500">Loading...</div>}
 			{error && <div className="text-red-600">{error}</div>}
@@ -185,20 +309,31 @@ export default function PostManagement() {
 						{posts.map((p, idx) => (
 							<tr key={p._id} className="border-b last:border-0">
 								<td className="px-3 py-2">{(page - 1) * limit + idx + 1}</td>
-								<td className="px-3 py-2 font-medium max-w-[260px] truncate" title={p.title}>{p.title}</td>
-								<td className="px-3 py-2 max-w-[340px] text-gray-600 truncate">
+								<td className="px-3 py-2 font-medium max-w-[200px] break-words" title={p.title}>{p.title}</td>
+								<td className="px-3 py-2 max-w-[300px] text-gray-600 break-words">
 									<div
-										className="line-clamp-1"
+										className="line-clamp-2"
 										dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(p.description) }}
 									/>
 								</td>
 
-								<td className="px-3 py-2 text-gray-600">{p.created_by || '—'}</td>
+								<td className="px-3 py-2 text-gray-600 break-words">{p.created_by || '—'}</td>
 								<td className="px-3 py-2">
 									<span className={`px-2 py-1 rounded text-xs ${p.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : p.status === 'DRAFT' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-200 text-gray-700'}`}>{p.status}</span>
 								</td>
-								<td className="px-3 py-2">
-									{p.image ? <img src={p.image.startsWith('http') ? p.image : `${API_BASE}${p.image}`} alt="thumb" className="h-12 w-12 object-cover rounded" /> : '—'}
+								<td className="px-4 py-3">
+									{p.image ? (
+										<img 
+											src={p.image.startsWith('http') ? p.image : `${API_BASE}${p.image}`} 
+											alt="thumb" 
+											className="h-10 w-14 object-cover rounded-md"
+											onError={(e) => {
+												e.target.style.display = 'none';
+												e.target.nextSibling.style.display = 'inline';
+											}}
+										/>
+									) : null}
+									<span style={{display: p.image ? 'none' : 'inline'}} className="text-gray-400 text-xs">No image</span>
 								</td>
 								<td className="px-3 py-2">{new Date(p.created_at || p.createdAt).toLocaleDateString()}</td>
 								<td className="px-3 py-2">
@@ -223,9 +358,10 @@ export default function PostManagement() {
 				<div className="flex items-center gap-2">
 					<span>Items per page:</span>
 					<select value={limit} onChange={(e) => { setPage(1); setLimit(parseInt(e.target.value)); }} className="border rounded px-2 py-1">
+						<option value={3}>3</option>
 						<option value={5}>5</option>
+						<option value={8}>8</option>
 						<option value={10}>10</option>
-						<option value={20}>20</option>
 					</select>
 				</div>
 				<div className="flex items-center gap-2">
@@ -254,17 +390,32 @@ export default function PostManagement() {
 			</Modal>
 
 			{/* Create Modal */}
-			<Modal open={createOpen} onClose={() => setCreateOpen(false)} title="Create New Post" footer={
+			<Modal open={createOpen} onClose={() => {
+				setCreateOpen(false);
+				setCreateErrors({});
+			}} title="Create New Post" footer={
 				<div className="flex justify-end gap-2">
-					<button onClick={() => setCreateOpen(false)} className="px-4 py-2 rounded border">Cancel</button>
+					<button onClick={() => {
+						setCreateOpen(false);
+						setCreateErrors({});
+					}} className="px-4 py-2 rounded border">Cancel</button>
 					<button onClick={async () => {
+						// Validate form
+						const errors = validateForm(createForm);
+						if (Object.keys(errors).length > 0) {
+							setCreateErrors(errors);
+							return;
+						}
+						
 						try {
+							const extractedImage = extractFirstImage(createForm.description);
+							const cleanDescription = removeImagesFromDescription(createForm.description);
 							await apiCreate({
 								title: createForm.title,
-								description: createForm.description,
-								image: createForm.image,
+								description: cleanDescription,
 								category: createForm.category,
-								status: 'ACTIVE'
+								status: 'ACTIVE',
+								image: extractedImage
 							});
 							resetAndReload();
 						} catch (e) { alert(e.message); }
@@ -272,61 +423,78 @@ export default function PostManagement() {
 				</div>
 			}>
 				<div className="grid gap-3">
-					<input
-						value={createForm.title}
-						onChange={(e) => setCreateForm({ ...createForm, title: e.target.value })}
-						className="rounded border px-3 py-2"
-						placeholder="Post title"
-					/>
-					<RichTextEditor
-						value={createForm.description}
-						onChange={(content) => setCreateForm({ ...createForm, description: content })}
-						placeholder="Enter post content..."
-					/>
-					<div className="flex items-center gap-2">
+					<div>
 						<input
-							value={createForm.image}
-							className="flex-1 rounded border px-3 py-2"
-							placeholder="Image URL will be filled after upload"
-							readOnly
+							value={createForm.title}
+							onChange={(e) => {
+								setCreateForm({ ...createForm, title: e.target.value });
+								if (createErrors.title) {
+									setCreateErrors({ ...createErrors, title: '' });
+								}
+							}}
+							className={`rounded border px-3 py-2 w-full ${createErrors.title ? 'border-red-500' : ''}`}
+							placeholder="Post title *"
 						/>
-						<input ref={createFileRef} type="file" accept="image/*" hidden onChange={async (e) => {
-							const file = e.target.files?.[0];
-							if (!file) return;
-							try {
-								const url = await uploadLocal(file);
-								setCreateForm({ ...createForm, image: url });
-							} catch (err) { alert(err.message || 'Upload error'); }
-						}} />
-						<button type="button" className="px-3 py-2 rounded border hover:bg-gray-50" onClick={() => createFileRef.current && createFileRef.current.click()}>{createForm.image ? 'Replace' : 'Upload'}</button>
-						{createForm.image && (
-							<button type="button" className="px-3 py-2 rounded border text-red-600 hover:bg-red-50" onClick={() => setCreateForm({ ...createForm, image: '' })}>Remove</button>
-						)}
+						{createErrors.title && <p className="text-red-500 text-sm mt-1">{createErrors.title}</p>}
 					</div>
-					{createForm.image && (
-						<img src={`${API_BASE}${createForm.image}`} alt="preview" className="h-24 w-24 object-cover rounded border" />
-					)}
-					<input
-						value={createForm.category}
-						onChange={(e) => setCreateForm({ ...createForm, category: e.target.value })}
-						className="rounded border px-3 py-2"
-						placeholder="Category (optional)"
-					/>
+					<div>
+						<RichTextEditor
+							value={createForm.description}
+							onChange={(content) => {
+								setCreateForm({ ...createForm, description: content });
+								if (createErrors.description) {
+									setCreateErrors({ ...createErrors, description: '' });
+								}
+							}}
+							placeholder="Enter post content... (images can be added here) *"
+						/>
+						{createErrors.description && <p className="text-red-500 text-sm mt-1">{createErrors.description}</p>}
+					</div>
+					<div>
+						<input
+							value={createForm.category}
+							onChange={(e) => {
+								setCreateForm({ ...createForm, category: e.target.value });
+								if (createErrors.category) {
+									setCreateErrors({ ...createErrors, category: '' });
+								}
+							}}
+							className={`rounded border px-3 py-2 w-full ${createErrors.category ? 'border-red-500' : ''}`}
+							placeholder="Category *"
+						/>
+						{createErrors.category && <p className="text-red-500 text-sm mt-1">{createErrors.category}</p>}
+					</div>
 				</div>
 			</Modal>
 
 			{/* Edit Modal */}
-			<Modal open={Boolean(editPost)} onClose={() => setEditPost(null)} title="Edit Post" footer={
+			<Modal open={Boolean(editPost)} onClose={() => {
+				setEditPost(null);
+				setEditErrors({});
+			}} title="Edit Post" footer={
 				<div className="flex justify-end gap-2">
-					<button onClick={() => setEditPost(null)} className="px-4 py-2 rounded border">Cancel</button>
+					<button onClick={() => {
+						setEditPost(null);
+						setEditErrors({});
+					}} className="px-4 py-2 rounded border">Cancel</button>
 					<button onClick={async () => {
 						if (!editPost) return;
+						
+						// Validate form
+						const errors = validateForm(editForm, true);
+						if (Object.keys(errors).length > 0) {
+							setEditErrors(errors);
+							return;
+						}
+						
 						try {
+							const extractedImage = extractFirstImage(editForm.description);
+							const cleanDescription = removeImagesFromDescription(editForm.description);
 							await apiUpdate(editPost._id, {
 								title: editForm.title,
-								description: editForm.description,
-								image: editForm.image,
-								category: editForm.category
+								description: cleanDescription,
+								category: editForm.category,
+								image: extractedImage || editPost.image || ''
 							});
 							resetAndReload();
 						} catch (e) { alert(e.message); }
@@ -335,43 +503,47 @@ export default function PostManagement() {
 			}>
 				{editPost && (
 					<div className="grid gap-3">
-						<input
-							value={editForm.title}
-							onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
-							className="rounded border px-3 py-2"
-						/>
-						<RichTextEditor
-							value={editForm.description}
-							onChange={(content) => setEditForm({ ...editForm, description: content })}
-							placeholder="Enter post content..."
-						/>
-						<div className="flex items-center gap-2">
+						<div>
 							<input
-								value={editForm.image}
-								className="flex-1 rounded border px-3 py-2"
-								readOnly
+								value={editForm.title}
+								onChange={(e) => {
+									setEditForm({ ...editForm, title: e.target.value });
+									if (editErrors.title) {
+										setEditErrors({ ...editErrors, title: '' });
+									}
+								}}
+								className={`rounded border px-3 py-2 w-full ${editErrors.title ? 'border-red-500' : ''}`}
+								placeholder="Post title *"
 							/>
-							<input ref={editFileRef} type="file" accept="image/*" hidden onChange={async (e) => {
-								const file = e.target.files?.[0];
-								if (!file) return;
-								try {
-									const url = await uploadLocal(file);
-									setEditForm({ ...editForm, image: url });
-								} catch (err) { alert(err.message || 'Upload error'); }
-							}} />
-							<button type="button" className="px-3 py-2 rounded border hover:bg-gray-50" onClick={() => editFileRef.current && editFileRef.current.click()}>{editForm.image ? 'Replace' : 'Upload'}</button>
-							{editForm.image && (
-								<button type="button" className="px-3 py-2 rounded border text-red-600 hover:bg-red-50" onClick={() => setEditForm({ ...editForm, image: '' })}>Remove</button>
-							)}
+							{editErrors.title && <p className="text-red-500 text-sm mt-1">{editErrors.title}</p>}
 						</div>
-						{editForm.image && (
-							<img src={`${API_BASE}${editForm.image}`} alt="preview" className="h-24 w-24 object-cover rounded border" />
-						)}
-						<input
-							value={editForm.category}
-							onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
-							className="rounded border px-3 py-2"
-						/>
+						<div>
+							<RichTextEditor
+								value={editForm.description}
+								onChange={(content) => {
+									setEditForm({ ...editForm, description: content });
+									if (editErrors.description) {
+										setEditErrors({ ...editErrors, description: '' });
+									}
+								}}
+								placeholder="Enter post content... (images can be added here) *"
+							/>
+							{editErrors.description && <p className="text-red-500 text-sm mt-1">{editErrors.description}</p>}
+						</div>
+						<div>
+							<input
+								value={editForm.category}
+								onChange={(e) => {
+									setEditForm({ ...editForm, category: e.target.value });
+									if (editErrors.category) {
+										setEditErrors({ ...editErrors, category: '' });
+									}
+								}}
+								className={`rounded border px-3 py-2 w-full ${editErrors.category ? 'border-red-500' : ''}`}
+								placeholder="Category *"
+							/>
+							{editErrors.category && <p className="text-red-500 text-sm mt-1">{editErrors.category}</p>}
+						</div>
 					</div>
 				)}
 			</Modal>
@@ -387,6 +559,7 @@ export default function PostManagement() {
 					<p className="text-gray-700">Are you sure you want to delete post: <span className="font-semibold">{deletePost.title}</span>?</p>
 				)}
 			</Modal>
+			</div>
 		</div>
 	);
 }
