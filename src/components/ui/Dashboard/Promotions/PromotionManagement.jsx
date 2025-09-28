@@ -3,10 +3,14 @@ import React, { useEffect, useState } from "react";
 import CreatePromotionModal from "./CreatePromotionModal";
 import { createPromotion, getPromotionsList } from "@/services/promotionService";
 import { Airplane, Tag } from "phosphor-react";
+import Pagination from "@/components/Layout/Pagination";
 
 const PromotionManagement = () => {
   const [promotions, setPromotions] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [page, setPage] = useState(1);
+  const [limit] = useState(8);
+  const [totalPages, setTotalPages] = useState(1);
 
   const [form, setForm] = useState({
     code: "",
@@ -16,21 +20,24 @@ const PromotionManagement = () => {
     expires_at: "",
     is_hidden: false,
   })
-    async function fetchData() {
-      try {
-        console.log("Fetching promotions...");
-        const data = await getPromotionsList();
-        console.log("API response:", data);
-        setPromotions(data.data || []);
-      } catch (err) {
-        console.error("Error fetching promotions:", err.message);
-      }
+
+
+
+  async function fetchData(pageNum = 1) {
+    try {
+      const data = await getPromotionsList(pageNum, limit);
+      setPromotions(data.data || []);
+      setTotalPages(data.pagination?.totalPages || 1);
+      setPage(pageNum)
+    } catch (err) {
+      console.error("Error fetching promotions:", err.message);
     }
+  }
   useEffect(() => {
-
-
-    fetchData();
+    fetchData(1);
   }, []);
+
+
 
 
   const handleCreatePromotion = async (newForm) => {
@@ -39,7 +46,7 @@ const PromotionManagement = () => {
         ...newForm,
         promotion_value: Number(newForm.promotion_value),
       })
-     await fetchData();
+      await fetchData();
       console.log("Created promotion:", newPromo);
       setShowModal(false)
       setForm({
@@ -56,6 +63,7 @@ const PromotionManagement = () => {
     }
   }
   return (
+
     <div className="bg-white  shadow-xl overflow-hidden flex-1  animate-fade-in">
       <div className="p-6 flex justify-between items-center bg-[#d7cbbf]">
         <h2 className="flex items-center gap-2 text-2xl font-extrabold tracking-wide text-[#2c2c2c] drop-shadow-sm">
@@ -72,63 +80,71 @@ const PromotionManagement = () => {
         </button>
       </div>
 
+      <div className="overflow-x-hidden overflow-y-hidden">
+        {/* Table Header */}
+        <div className="grid grid-cols-13 gap-4 px-6 py-3 text-xs font-bold text-gray-700 uppercase tracking-wider bg-gradient-to-r from-[#f5f3f2] to-[#eae7e5] border-b shadow-sm">
+          <div className="col-span-1">STT</div>
+          <div className="col-span-2">Code</div>
+          <div className="col-span-3">Description</div>
+          <div className="col-span-1">Type</div>
+          <div className="col-span-1">Value</div>
+          <div className="col-span-2">Expires At</div>
+          <div className="col-span-1">Status</div>
+          <div className="col-span-2 text-center">Actions</div>
+        </div>
 
-      {/* Table Header */}
-      <div className="grid grid-cols-12 gap-4 px-6 py-3 text-xs font-bold text-gray-700 uppercase tracking-wider bg-gradient-to-r from-[#f5f3f2] to-[#eae7e5] border-b shadow-sm">
-        <div className="col-span-2">Code</div>
-        <div className="col-span-3">Description</div>
-        <div className="col-span-1">Type</div>
-        <div className="col-span-1">Value</div>
-        <div className="col-span-2">Expires At</div>
-        <div className="col-span-1">Status</div>
-        <div className="col-span-2 text-center">Actions</div>
-      </div>
-
-      {/* Table Body */}
-      <div className="divide-y divide-transparent">
-        {promotions.map((promo, idx) => (
-          <div
-            key={promo._id || `promo-${idx}`}
-            className={`
-        relative px-6 py-5 grid grid-cols-12 gap-4 items-center
-        bg-white rounded-xl shadow-sm border border-gray-100
-        hover:border-[#846551] hover:shadow-lg hover:scale-[1.01]
-        transition-all duration-300 ease-in-out
-        animate-fade-in-up
+        {/* Table Body */}
+        <div className="divide-y divide-transparent min-h-[650px]">
+          {promotions.map((promo, idx) => (
+            <div
+              key={promo._id || `promo-${idx}`}
+              className={`
+       relative px-6 py-5 grid grid-cols-13 gap-4 items-center
+    bg-white rounded-xl shadow-sm border border-gray-100
+    hover:border-[#846551] hover:shadow-lg hover:scale-[1.01]
+    transition-all duration-300 ease-in-out
+    animate-fade-in-up
       `}
-            style={{ animationDelay: `${idx * 120}ms` }}
-          >
-            {/* Decorative left bar */}
-            <div className="absolute left-0 top-0 h-full w-1 rounded-l-xl bg-gray-200 hover:bg-[#846551] transition-all"></div>
+              style={{ animationDelay: `${idx * 120}ms` }}
+            >
+              {/* Decorative left bar */}
+              <div className="absolute left-0 top-0 h-full w-1 rounded-l-xl bg-gray-200 hover:bg-[#846551] transition-all"></div>
+                <div className="col-span-1 font-semibold text-gray-700"> {(page - 1) * limit + idx + 1} </div>
+              <div className="col-span-2 font-semibold text-gray-900">{promo.code}</div>
+              <div className="col-span-3 text-sm text-gray-600">{promo.description}</div>
+              <div className="col-span-1 text-sm capitalize text-gray-500">{promo.promotion_type}</div>
+              <div className="col-span-1 text-sm text-gray-800 font-semibold">
+                {promo.promotion_type === "percent"
+                  ? `${promo.promotion_value}%`
+                  : `${(promo.promotion_value ?? 0).toLocaleString()}đ`}
+              </div>
+              <div className="col-span-2 text-sm text-gray-600">{promo.expires_at}</div>
+              <div>
+                <span
+                  className={`px-3 py-1 text-xs rounded-full font-semibold shadow-sm ${promo.is_hidden
+                    ? "bg-gradient-to-r from-red-100 to-red-200 text-red-700"
+                    : "bg-gradient-to-r from-green-100 to-green-200 text-green-700"
+                    }`}
+                >
+                  {promo.is_hidden ? "Hidden" : "Active"}
+                </span>
+              </div>
+              <div className="col-span-2 flex items-center justify-center space-x-3">
+                <button className="px-3 py-1 border border-[#b85c49] text-[#b85c49] rounded-lg hover:bg-[#fbe9e6] transition-all duration-300">
+                  Delete
+                </button>
 
-            <div className="col-span-2 font-semibold text-gray-900">{promo.code}</div>
-            <div className="col-span-3 text-sm text-gray-600">{promo.description}</div>
-            <div className="col-span-1 text-sm capitalize text-gray-500">{promo.promotion_type}</div>
-            <div className="col-span-1 text-sm text-gray-800 font-semibold">
-              {promo.promotion_type === "percent"
-                ? `${promo.promotion_value}%`
-                : `${(promo.promotion_value ?? 0).toLocaleString()}đ`}
+              </div>
             </div>
-            <div className="col-span-2 text-sm text-gray-600">{promo.expires_at}</div>
-            <div>
-              <span
-                className={`px-3 py-1 text-xs rounded-full font-semibold shadow-sm ${promo.is_hidden
-                  ? "bg-gradient-to-r from-red-100 to-red-200 text-red-700"
-                  : "bg-gradient-to-r from-green-100 to-green-200 text-green-700"
-                  }`}
-              >
-                {promo.is_hidden ? "Hidden" : "Active"}
-              </span>
-            </div>
-            <div className="col-span-2 flex items-center justify-center space-x-3">
-              <button className="px-3 py-1 border border-[#b85c49] text-[#b85c49] rounded-lg hover:bg-[#fbe9e6] transition-all duration-300">
-                Delete
-              </button>
-
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
+
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        onPageChange={(newPage) => fetchData(newPage)}
+      />
 
       {/* Modal */}
       <CreatePromotionModal

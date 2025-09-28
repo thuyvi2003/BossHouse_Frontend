@@ -1,10 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import bookingService from "../../../../services/bookingService";
+import { Plus, Minus, Calendar, Clock } from "lucide-react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 export default function BookingForm({
   initialData,
   mode = "add", // "add" | "edit" | "view"
-  options, // { users, pets, services, vets }
+  options, // { users, pets, vets, services, existingBookings }
   onCancel,
   onSuccess,
   onEditClick,
@@ -17,34 +20,32 @@ export default function BookingForm({
     pet_id: "",
     services: [],
     veterinarian_id: "",
-    date: "",
-    time: "",
+    bookingDate: new Date(),
     status: "PENDING",
     total_price: 0,
     note: "",
     _id: null,
   });
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState({});
+  const [isPastBooking, setIsPastBooking] = useState(false);
+  const datePickerRef = useRef(null);
+  const timePickerRef = useRef(null);
 
-  // Load initial data
+  // Init form
   useEffect(() => {
     const now = new Date();
-
     if (initialData) {
       const bookingDate = new Date(initialData.booking_date || now);
+      setIsPastBooking(bookingDate < now);
       setForm({
         customer_id: initialData.user_id?._id || "",
         pet_id: initialData.pet_id?._id || "",
         services:
           initialData.services?.map((s) => {
-            let serviceObj;
-            if (typeof s.service_id === "object" && s.service_id !== null) {
-              serviceObj = s.service_id;
-            } else {
-              serviceObj = options.services.find(
-                (opt) => opt._id === s.service_id
-              );
-            }
+            const serviceObj =
+              typeof s.service_id === "object" && s.service_id !== null
+                ? s.service_id
+                : options.services.find((opt) => opt._id === s.service_id);
             return {
               service_id: serviceObj?._id || s.service_id,
               quantity: s.quantity || 1,
@@ -53,23 +54,16 @@ export default function BookingForm({
             };
           }) || [],
         veterinarian_id: initialData.veterinarian_id?._id || "",
-        date: bookingDate.toISOString().split("T")[0],
-        time: bookingDate.toTimeString().slice(0, 5),
+        bookingDate,
         status: (initialData.status || "PENDING").toUpperCase(),
         total_price: initialData.total_price || 0,
         note: initialData.note || "",
         _id: initialData._id,
       });
-    } else {
-      setForm((f) => ({
-        ...f,
-        date: now.toISOString().split("T")[0],
-        time: now.toTimeString().slice(0, 5),
-      }));
     }
   }, [initialData, options.services]);
 
-  // Auto calculate total_price
+  // Calculate total price
   useEffect(() => {
     const total = form.services.reduce((sum, s) => {
       const service =
@@ -79,8 +73,9 @@ export default function BookingForm({
     setForm((prev) => ({ ...prev, total_price: total }));
   }, [form.services, options.services]);
 
-  // Handlers
+  // Add / Remove service
   const handleAddService = (serviceId) => {
+    if (isEdit && isPastBooking) return;
     setForm((prev) => {
       const exists = prev.services.find((s) => s.service_id === serviceId);
       if (exists) {
@@ -109,6 +104,7 @@ export default function BookingForm({
   };
 
   const handleRemoveService = (serviceId) => {
+    if (isEdit && isPastBooking) return;
     setForm((prev) => {
       const exists = prev.services.find((s) => s.service_id === serviceId);
       if (!exists) return prev;
@@ -128,33 +124,77 @@ export default function BookingForm({
     });
   };
 
+  // Change form field
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
-  const validate = () => {
-    if (!form.customer_id) return "Customer is required";
-    if (!form.pet_id) return "Pet is required";
-    if (!form.services.length) return "At least one service is required";
-    if (!form.date || !form.time) return "Date and Time are required";
-
-    const bookingDateTime = new Date(`${form.date}T${form.time}:00`);
-    if (bookingDateTime < new Date()) return "Cannot book in the past";
-
-    const hour = bookingDateTime.getHours();
-    if (hour < 8 || hour > 17)
-      return "Booking time must be between 08:00-17:00";
-
+  // Validation
+  const validateField = (name, value) => {
+    switch (name) {
+      case "customer_id":
+        if (!value) return "Customer is required";
+        break;
+      case "pet_id":
+        if (!value) return "Pet is required";
+        break;
+      case "services":
+        if (!value || value.length === 0)
+          return "At least one service is required";
+        break;
+      case "bookingDate":
+        if (!value) return "Date & Time are required";
+        const now = new Date();
+        if (!isEdit || (isEdit && !isPastBooking)) {
+          if (value < now) return "Cannot book in the past";
+          const hour = value.getHours();
+          if (hour < 8 || hour > 17)
+            return "Booking time must be between 08:00-17:00";
+        }
+        break;
+      default:
+        return null;
+    }
     return null;
   };
 
+  // Submit
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
+    const newErrors = {};
 
-    const validationError = validate();
-    if (validationError) return setError(validationError);
+    ["customer_id", "pet_id", "services", "bookingDate"].forEach((f) => {
+      const value = form[f];
+      const err = validateField(f, value);
+      if (err) newErrors[f] = err;
+    });
+
+    if (Object.keys(newErrors).length) {
+      setErrors(newErrors);
+      return;
+    }
+
+    const bookingDateTime = form.bookingDate.toISOString().slice(0, 16);
+
+    const conflict = form.services.some((s) =>
+      options.existingBookings?.some(
+        (b) =>
+          b.services?.some((bs) => bs.service_id === s.service_id) &&
+          new Date(b.booking_date).toISOString().slice(0, 16) ===
+            bookingDateTime &&
+          (mode !== "edit" || b._id !== form._id)
+      )
+    );
+
+    if (conflict) {
+      setErrors({
+        services:
+          "One or more selected services are already booked at this time.",
+      });
+      return;
+    }
 
     const payload = {
       user_id: form.customer_id,
@@ -164,42 +204,34 @@ export default function BookingForm({
         quantity: s.quantity,
       })),
       veterinarian_id: form.veterinarian_id || null,
-      booking_date: new Date(`${form.date}T${form.time}:00`).toISOString(),
+      booking_date: form.bookingDate.toISOString(),
       status: form.status,
       total_price: form.total_price,
       note: form.note,
     };
 
     try {
-      let response;
-      if (mode === "add") response = await bookingService.create(payload);
+      if (mode === "add") await bookingService.create(payload);
       if (mode === "edit" && form._id)
-        response = await bookingService.update(form._id, payload);
-
-      onSuccess && onSuccess(response); // gửi dữ liệu về BookingManager
+        await bookingService.update(form._id, payload);
+      onSuccess && onSuccess();
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.message || "Failed to save booking");
+      setErrors({
+        form: err.response?.data?.message || "Failed to save booking",
+      });
     }
   };
 
-  const renderDropdown = (name, label, optionsArr, getLabel) => {
-    if (isView && name !== "status") {
-      const selected = optionsArr.find((o) => o._id === form[name]);
-      return (
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            {label}
-          </label>
-          <div className="p-2 border rounded bg-gray-100">
-            {selected ? getLabel(selected) : "-"}
-          </div>
-        </div>
-      );
-    }
-
-    const disabled = isEdit && name !== "status";
-
+  // Dropdown render
+  const renderDropdown = (
+    name,
+    label,
+    optionsArr,
+    getLabel,
+    disabled = false
+  ) => {
+    const bgClass = disabled ? "bg-gray-100" : "";
     return (
       <div>
         <label className="block text-sm font-medium text-gray-700">
@@ -209,8 +241,8 @@ export default function BookingForm({
           name={name}
           value={form[name]}
           onChange={handleChange}
-          className="w-full border rounded p-2"
           disabled={disabled}
+          className={`w-full border rounded p-2 focus:ring-2 focus:ring-yellow-600 focus:border-transparent ${bgClass}`}
         >
           <option value="">Select {label}</option>
           {optionsArr.map((opt) => (
@@ -219,192 +251,321 @@ export default function BookingForm({
             </option>
           ))}
         </select>
+        {errors[name] && (
+          <p className="text-red-600 text-xs mt-1">{errors[name]}</p>
+        )}
       </div>
     );
   };
 
+  const disableCustomerPet = isView || isEdit;
+  const disableOtherFields = isView || (isEdit && isPastBooking);
+
+  // Status options
+  let statusOptions = [
+    { _id: "PENDING", name: "Pending" },
+    { _id: "CONFIRMED", name: "Confirmed" },
+    { _id: "COMPLETED", name: "Completed" },
+    { _id: "CANCELED", name: "Canceled" },
+  ];
+  if (isEdit && isPastBooking) {
+    statusOptions = [
+      { _id: "COMPLETED", name: "Completed" },
+      { _id: "CANCELED", name: "Canceled" },
+    ];
+  } else if (isEdit && !isPastBooking) {
+    const order = ["PENDING", "CONFIRMED", "COMPLETED"];
+    statusOptions = statusOptions.filter(
+      (o) => order.indexOf(o._id) >= order.indexOf(form.status)
+    );
+  }
+
+  // Helpers for rolling time selector
+  const hours12 = Array.from({ length: 12 }, (_, i) => i + 1);
+  const minutes = Array.from({ length: 60 }, (_, i) => i);
+  const ampm = ["AM", "PM"];
+
+  const setHour = (h) => {
+    const newDate = new Date(form.bookingDate);
+    const currentHour = newDate.getHours();
+    const isPM = currentHour >= 12;
+    newDate.setHours(isPM ? (h % 12) + 12 : h % 12);
+    setForm((prev) => ({ ...prev, bookingDate: newDate }));
+  };
+
+  const setMinute = (m) => {
+    const newDate = new Date(form.bookingDate);
+    newDate.setMinutes(m);
+    setForm((prev) => ({ ...prev, bookingDate: newDate }));
+  };
+
+  const setAMPM = (v) => {
+    const newDate = new Date(form.bookingDate);
+    let h = newDate.getHours();
+    if (v === "AM" && h >= 12) h -= 12;
+    if (v === "PM" && h < 12) h += 12;
+    newDate.setHours(h);
+    setForm((prev) => ({ ...prev, bookingDate: newDate }));
+  };
+
   return (
-    <div className="bg-white p-6 rounded-lg shadow max-w-3xl mx-auto">
-      <h3 className="text-xl font-bold text-yellow-800 mb-4 text-left">
-        {mode === "add" ? "Add Booking" : isEdit ? "Edit Booking" : "View Booking"}
-      </h3>
+    <div className="flex justify-center mt-4 pb-4 bg-gray-50 min-h-screen overflow-auto">
+      <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-4xl animate-fade-in">
+        <h3 className="text-2xl font-bold text-yellow-800 mb-6">
+          {mode === "add"
+            ? "Add Booking"
+            : isEdit
+            ? "Edit Booking"
+            : "View Booking"}
+        </h3>
 
-      {error && <div className="text-red-600 mb-2">{error}</div>}
+        {errors.form && <div className="text-red-600 mb-4">{errors.form}</div>}
 
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {renderDropdown("customer_id", "Customer", options.users, (o) => o.name)}
-        {renderDropdown("pet_id", "Pet", options.pets, (o) =>
-          o.name ? `${o.species} - ${o.name}` : o.species
-        )}
-        {renderDropdown(
-          "veterinarian_id",
-          "Veterinarian",
-          options.vets,
-          (o) => `${o.user_id?.name} (${o.specialty})`
-        )}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Customer, Pet, Veterinarian */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {renderDropdown(
+              "customer_id",
+              "Customer",
+              options.users,
+              (o) => o.name,
+              disableCustomerPet
+            )}
+            {renderDropdown(
+              "pet_id",
+              "Pet",
+              options.pets,
+              (o) => (o.name ? `${o.species} - ${o.name}` : o.species),
+              disableCustomerPet
+            )}
+            {renderDropdown(
+              "veterinarian_id",
+              "Veterinarian",
+              options.vets,
+              (o) => `${o.user_id?.name} (${o.specialty})`,
+              disableOtherFields
+            )}
+          </div>
 
-        {/* Services */}
-        <div className="col-span-1 md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700">Services</label>
-          {!isView && (
-            <select
-              onChange={(e) => {
-                if (e.target.value) {
-                  handleAddService(e.target.value);
-                  e.target.value = "";
-                }
-              }}
-              className="w-full border rounded p-2 mb-2"
-            >
-              <option value="">Select a service</option>
-              {options.services.map((s) => (
-                <option key={s._id} value={s._id}>
-                  {s.name} - ${s.base_price} - {s.duration_minutes} mins
-                </option>
-              ))}
-            </select>
-          )}
-
-          {form.services.length === 0 && (
-            <div className="p-2 border rounded bg-gray-100">No services selected</div>
-          )}
-
-          {form.services.map((s) => {
-            const service = options.services.find((opt) => opt._id === s.service_id) || s;
-            return (
-              <div
-                key={s.service_id}
-                className="flex justify-between items-center p-2 border rounded mb-2 bg-gray-50"
+          {/* Services */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Services
+            </label>
+            {!isView && !disableOtherFields && (
+              <select
+                onChange={(e) => {
+                  if (e.target.value) {
+                    handleAddService(e.target.value);
+                    e.target.value = "";
+                  }
+                }}
+                className="w-full border rounded p-2 mb-3 focus:ring-2 focus:ring-yellow-600 focus:border-transparent"
               >
-                <div>
-                  {service?.name
-                    ? `${service.name} ($${service.base_price}) × ${s.quantity}`
-                    : `Service not found × ${s.quantity}`}
+                <option value="">Select a service</option>
+                {options.services.map((s) => (
+                  <option key={s._id} value={s._id}>
+                    {s.name} - ${s.base_price} - {s.duration_minutes} mins
+                  </option>
+                ))}
+              </select>
+            )}
+            {errors.services && (
+              <p className="text-red-600 text-xs">{errors.services}</p>
+            )}
+            <div className="flex flex-wrap gap-2 mt-2">
+              {form.services.length === 0 && (
+                <div className="p-2 border rounded bg-gray-50">
+                  No services selected
                 </div>
-                {!isView && (
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleAddService(s.service_id)}
-                      className="w-10 h-10 flex items-center justify-center bg-green-500 hover:bg-green-600 text-white rounded-full text-lg font-bold shadow"
-                    >
-                      +
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveService(s.service_id)}
-                      className="w-10 h-10 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-full text-lg font-bold shadow"
-                    >
-                      −
-                    </button>
-                  </div>
-                )}
+              )}
+              {form.services.map((s) => (
+                <div
+                  key={s.service_id}
+                  className="flex items-center gap-2 px-3 py-1 rounded-full shadow-sm text-yellow-800 bg-yellow-100"
+                >
+                  <span>
+                    {s.name} × {s.quantity}
+                  </span>
+                  {!isView && !disableOtherFields && (
+                    <div className="flex gap-1">
+                      <button
+                        type="button"
+                        onClick={() => handleAddService(s.service_id)}
+                        className="w-6 h-6 flex items-center justify-center bg-green-500 text-white rounded-full"
+                      >
+                        <Plus size={12} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveService(s.service_id)}
+                        className="w-6 h-6 flex items-center justify-center bg-red-500 text-white rounded-full"
+                      >
+                        <Minus size={12} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Date & Time */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Date
+              </label>
+              <div className="relative">
+                <DatePicker
+                  ref={datePickerRef}
+                  selected={form.bookingDate}
+                  onChange={(date) => {
+                    if (!date) return;
+                    setForm((prev) => {
+                      const newDate = new Date(prev.bookingDate);
+                      newDate.setFullYear(
+                        date.getFullYear(),
+                        date.getMonth(),
+                        date.getDate()
+                      );
+                      return { ...prev, bookingDate: newDate };
+                    });
+                  }}
+                  dateFormat="MMMM d, yyyy"
+                  disabled={disableOtherFields}
+                  className={`w-full border rounded p-2 pl-7 focus:ring-2 focus:ring-yellow-600 focus:border-transparent ${
+                    disableOtherFields ? "bg-gray-100" : ""
+                  }`}
+                />
+                <Calendar
+                  className="absolute left-2 top-2 w-5 h-5 text-gray-500 cursor-pointer"
+                  onClick={() =>
+                    datePickerRef.current && datePickerRef.current.setOpen(true)
+                  }
+                />
               </div>
-            );
-          })}
-        </div>
+            </div>
 
-        {/* Date & Time */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Date</label>
-          {isView ? (
-            <div className="p-2 border rounded bg-gray-100">{form.date}</div>
-          ) : (
-            <input
-              type="date"
-              name="date"
-              value={form.date}
-              min={new Date().toISOString().split("T")[0]}
-              onChange={handleChange}
-              className="w-full border rounded p-2"
-              disabled={isEdit}
-            />
-          )}
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Time</label>
-          {isView ? (
-            <div className="p-2 border rounded bg-gray-100">{form.time}</div>
-          ) : (
-            <input
-              type="time"
-              name="time"
-              value={form.time}
-              min="08:00"
-              max="17:00"
-              onChange={handleChange}
-              className="w-full border rounded p-2"
-              disabled={isEdit}
-            />
-          )}
-        </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Time
+              </label>
+              <div className="flex items-center gap-1">
+                <Clock className="w-5 h-5 text-gray-500" />
+                {/* Hour */}
+                <select
+                  className="border rounded p-2 w-14"
+                  value={form.bookingDate.getHours() % 12 || 12}
+                  onChange={(e) => setHour(parseInt(e.target.value))}
+                  disabled={disableOtherFields}
+                >
+                  {Array.from({ length: 12 }, (_, i) => i + 1).map((h) => (
+                    <option key={h} value={h}>
+                      {h}
+                    </option>
+                  ))}
+                </select>
+                <span className="font-semibold">:</span>
+                {/* Minute */}
+                <select
+                  className="border rounded p-2 w-14"
+                  value={form.bookingDate.getMinutes()}
+                  onChange={(e) => setMinute(parseInt(e.target.value))}
+                  disabled={disableOtherFields}
+                >
+                  {Array.from({ length: 60 }, (_, i) => (
+                    <option key={i} value={i}>
+                      {i.toString().padStart(2, "0")}
+                    </option>
+                  ))}
+                </select>
+                {/* AM/PM */}
+                <select
+                  className="border rounded p-2 w-16"
+                  value={form.bookingDate.getHours() >= 12 ? "PM" : "AM"}
+                  onChange={(e) => setAMPM(e.target.value)}
+                  disabled={disableOtherFields}
+                >
+                  <option value="AM">AM</option>
+                  <option value="PM">PM</option>
+                </select>
+              </div>
+              {errors.bookingDate && (
+                <p className="text-red-600 text-xs mt-1">
+                  {errors.bookingDate}
+                </p>
+              )}
+            </div>
+          </div>
 
-        {/* Status */}
-        {renderDropdown(
-          "status",
-          "Status",
-          [
-            { _id: "PENDING", name: "Pending" },
-            { _id: "CONFIRMED", name: "Confirmed" },
-            { _id: "COMPLETED", name: "Completed" },
-            { _id: "CANCELED", name: "Canceled" },
-          ],
-          (o) => o.name
-        )}
+          {/* Status & Total */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              {renderDropdown(
+                "status",
+                "Status",
+                statusOptions,
+                (o) => o.name,
+                isView
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Total Price
+              </label>
+              <div className="p-2 border rounded font-semibold text-yellow-800 bg-gray-50">
+                ${form.total_price}
+              </div>
+            </div>
+          </div>
 
-        {/* Total Price */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Total Price</label>
-          <div className="p-2 border rounded bg-gray-100">{form.total_price || "-"}</div>
-        </div>
-
-        {/* Note */}
-        <div className="col-span-1 md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700">Note</label>
-          {isView ? (
-            <div className="p-2 border rounded bg-gray-100">{form.note || "-"}</div>
-          ) : (
+          {/* Note */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Note
+            </label>
             <textarea
               name="note"
               value={form.note}
               onChange={handleChange}
-              className="w-full border rounded p-2"
+              disabled={disableOtherFields}
+              className={`w-full border rounded p-2 focus:ring-2 focus:ring-yellow-600 focus:border-transparent ${
+                disableOtherFields ? "bg-gray-100" : ""
+              }`}
               placeholder="Optional note..."
-              disabled={isEdit}
             />
-          )}
-        </div>
+          </div>
 
-        {/* Buttons */}
-        <div className="col-span-1 md:col-span-2 flex justify-center gap-4 mt-4">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-4 py-2 bg-gray-400 hover:bg-gray-500 text-white rounded"
-          >
-            {isView ? "Back to List" : "Cancel"}
-          </button>
-
-          {isView && (
+          {/* Buttons */}
+          <div className="flex justify-center gap-4 mt-6">
             <button
               type="button"
-              onClick={() => onEditClick && onEditClick(initialData)}
-              className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded"
+              onClick={onCancel}
+              className="px-5 py-2 bg-gray-400 hover:bg-gray-500 text-white rounded-lg shadow"
             >
-              Edit
+              {isView ? "Back to List" : "Cancel"}
             </button>
-          )}
-
-          {(mode === "edit" || mode === "add") && (
-            <button
-              type="submit"
-              className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded"
-            >
-              {mode === "edit" ? "Save Changes" : "Save"}
-            </button>
-          )}
-        </div>
-      </form>
+            {isView && (
+              <button
+                type="button"
+                onClick={() => onEditClick && onEditClick(initialData)}
+                className="px-5 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg shadow"
+              >
+                Edit
+              </button>
+            )}
+            {(mode === "add" || isEdit) && (
+              <button
+                type="submit"
+                className="px-5 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg shadow"
+              >
+                {isEdit ? "Save Changes" : "Save"}
+              </button>
+            )}
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

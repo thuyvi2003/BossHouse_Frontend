@@ -1,44 +1,71 @@
 // Vo Lam Thuy Vi
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import CartItem from "@/components/ui/Cart/CartItem";
 import CartSummary from "@/components/ui/Cart/CartSummary";
+import { clearAllCart, editCartItemQuantity, getUserCart, removeItem } from "@/services/cartService";
+
 
 export default function Cart() {
-  const [cart, setCart] = useState([
-    { id: 1, name: "Everyday oil 100 ml", price: 32000, quantity: 1, image: "/BossHouse_Logo.png" },
-    { id: 2, name: "Everyday oil night 100 ml", price: 32000, quantity: 1, image: "/Background_Cat.png" },
-  ]);
+  const [cart, setCart] = useState([]);
+  const [total, setTotal] = useState(0);
+  const fetchCart = async () => {
+    try {
+      const res = await getUserCart();
+      setCart(res.data?.items || []);
+      console.log("ALOOOOOOOOOOOOOOO")
 
-  const handleIncrease = (id) => {
-    setCart(
-      cart.map((item) =>
-        item.id === id ? { ...item, quantity: item.quantity + 1 } : item
-      )
-    );
+      const totalPrice = res.data?.items.reduce(
+        (sum, item) => sum + (item.variation_id?.price || 0) * item.quantity,
+        0
+      );
+      setTotal(totalPrice);
+    } catch (error) {
+      console.error(error.message)
+    }
   };
 
-  const handleDecrease = (id) => {
-    setCart(
-      cart.map((item) =>
-        item.id === id && item.quantity > 1
-          ? { ...item, quantity: item.quantity - 1 }
-          : item
-      )
-    );
+  useEffect(() => {
+    fetchCart();
+  }, [])
+
+
+
+ const handleIncrease = async (item) => {
+  try {
+    const updatedCart = await editCartItemQuantity(item._id, item.quantity + 1);
+    setCart(updatedCart.data?.items || [])
+  } catch (error) {
+    console.error(error.message)
+  }
+};
+
+  const handleDecrease = async (item) => {
+    try {
+      const updatedCart = await editCartItemQuantity(item._id, item.quantity - 1);
+      setCart(updatedCart.data?.items || [])
+    } catch (error) {
+      console.error(error.message)
+    }
   };
 
-  const handleRemove = (id) => {
-    setCart(cart.filter((item) => item.id !== id));
+  const handleRemove = async (variationId) => {
+    try {
+      await removeItem(variationId);
+      fetchCart();
+    } catch (error) {
+      console.error(error.message)
+    }
   };
 
-  const handleClearAllCart = () => {
-    setCart([]);
+  const handleClearAllCart = async () => {
+    try {
+      await clearAllCart();
+      fetchCart();
+    } catch (error) {
+      console.error(error.message);
+    }
   };
 
-  const total = cart.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
 
   return (
     <div className="min-h-screen bg-[#fdfaf6] px-8 pb-60 justify-center flex">
@@ -69,12 +96,13 @@ export default function Cart() {
               {cart.length > 0 ? (
                 cart.map((item) => (
                   <CartItem
-                    key={item.id}
+                    key={item._id}
                     item={item}
-                    onIncrease={handleIncrease}
-                    onDecrease={handleDecrease}
-                    onRemove={handleRemove}
+                    onIncrease={() => handleIncrease(item)}
+                    onDecrease={() => handleDecrease(item)}
+                    onRemove={() => handleRemove(item.variation_id?._id)}
                   />
+
                 ))
               ) : (
                 <p className="text-center text-gray-400 py-10">
