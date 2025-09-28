@@ -1,6 +1,7 @@
 // Vo Lam Thuy Vi
 import React, { useState, useEffect } from "react";
-import { variationAPI, productAPI } from "@/services/api";
+import { variationService } from "@/services/productVariationService";
+import { productService } from "@/services/productService";
 import {
   Plus,
   Search,
@@ -27,7 +28,7 @@ const ProductVariationManagement = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingVariation, setEditingVariation] = useState(null);
-  const [pagination, setPagination] = useState({
+  const [setPagination] = useState({
     page: 1,
     limit: 10,
     total: 0,
@@ -47,7 +48,7 @@ const ProductVariationManagement = () => {
   // Fetch products for dropdown
   const fetchProducts = async () => {
     try {
-       const data = await productAPI.getAll({ limit: 100 });
+       const data = await productService.getAll({ limit: 100 });
        console.log("Phản hồi API sản phẩm:", data); // Log để debug
        if (data.success) {
          // Backend trả về data.data là mảng products
@@ -67,7 +68,7 @@ const ProductVariationManagement = () => {
     setLoading(true);
     try {
       if (productFilter !== "all") {
-         const data = await variationAPI.getByProduct(productFilter);
+         const data = await variationService.getByProduct(productFilter);
          console.log("Phản hồi API biến thể:", data);
          if (data.success) {
            const variations = Array.isArray(data.data) ? data.data : [];
@@ -117,7 +118,7 @@ const ProductVariationManagement = () => {
 
     setLoading(true);
     try {
-      const data = await variationAPI.create(formData.product_id, formData, formData.image);
+      const data = await variationService.create(formData.product_id, formData, formData.image);
       if (data.success) {
         setShowCreateModal(false);
         resetForm();
@@ -139,7 +140,7 @@ const ProductVariationManagement = () => {
     setLoading(true);
     try {
       const imageFile = formData.image instanceof File ? formData.image : null;
-      const data = await variationAPI.update(editingVariation._id, formData, imageFile);
+      const data = await variationService.update(editingVariation._id, formData, imageFile);
       if (data.success) {
         setShowEditModal(false);
         setEditingVariation(null);
@@ -164,7 +165,7 @@ const ProductVariationManagement = () => {
 
     setLoading(true);
     try {
-      const data = await variationAPI.delete(id, hardDelete);
+      const data = await variationService.delete(id, hardDelete);
       if (data.success) {
         fetchVariations();
       } else {
@@ -222,9 +223,9 @@ const ProductVariationManagement = () => {
   };
 
   // Handle pagination
-  const handlePageChange = (newPage) => {
-    setPagination(prev => ({ ...prev, page: newPage }));
-  };
+  // const handlePageChange = (newPage) => {
+  //   setPagination(prev => ({ ...prev, page: newPage }));
+  // };
 
   // Handle image upload
   const handleImageChange = (e) => {
@@ -239,9 +240,9 @@ const ProductVariationManagement = () => {
     fetchProducts();
   }, []);
 
-  useEffect(() => {
-    fetchVariations();
-  }, [productFilter, statusFilter]);
+  // useEffect(() => {
+  //   fetchVariations();
+  // }, [productFilter, statusFilter]);
 
   // Filter variations by search term and status
   const filteredVariations = variations.filter(variation => {

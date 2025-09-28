@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { productAPI, categoryAPI } from '@/services/api';
-import BackgroundDogs from '@/assets/Background_Dogs.jpg';
-import BackgroundCat from '@/assets/Background_Cat.png';
+import { productService} from '@/services/productService';
+import { categoryService } from '@/services/categoryService';
+import BackgroundDogs from "@/assets/Background_Dogs.jpg";
+import BackgroundCat from "@/assets/Background_Cat.png";
 import {
     ShoppingCart,
     Star,
@@ -27,10 +28,10 @@ import {
 
 const HomePage = () => {
     const [products, setProducts] = useState([]);
-    const [categories, setCategories] = useState([]);
+    const [setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState('all');
+    const [searchTerm] = useState('');
+    const [selectedCategory] = useState('all');
     const [currentSlide, setCurrentSlide] = useState(0);
 
     // Hero images
@@ -44,7 +45,7 @@ const HomePage = () => {
         },
         {
             id: 2,
-            image: BackgroundCat,
+            image: BackgroundDogs,
             title: 'Happy Pets, Happy Life',
             subtitle: 'From grooming to health checkups - we care for your furry friends',
             buttonText: 'Book Services'
@@ -55,8 +56,8 @@ const HomePage = () => {
         const fetchData = async () => {
             try {
                 const [productsData, categoriesData] = await Promise.all([
-                    productAPI.getAll({ limit: 8 }),
-                    categoryAPI.getAll({ limit: 10 })
+                    productService.getAll({ limit: 8 }),
+                    categoryService.getAll({ limit: 10 })
                 ]);
 
                 if (productsData.success) {
@@ -121,21 +122,15 @@ const HomePage = () => {
                             className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100' : 'opacity-0'
                                 }`}
                         >
-                            <div
-                                className="w-full h-full bg-cover bg-center bg-no-repeat"
-                                style={{
-                                    backgroundImage: `url(${hero.image})`,
-                                    backgroundColor: '#846551'
-                                }}
-                                onError={(e) => {
-                                    console.error('Lỗi load hình nền:', hero.image);
-                                    e.target.style.backgroundImage = 'none';
-                                    e.target.style.backgroundColor = '#846551';
-                                }}
-                            >
-                                <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+                            <div className="w-full h-full relative" style={{ backgroundColor: '#846551' }}>
+                                {/* Main background image */}
+                                <img
+                                    src={hero.image}
+                                    alt={hero.title}
+                                    className="absolute inset-0 w-full h-full object-cover"    
+                                />
                                 <div className="relative z-10 flex items-center justify-center h-full">
-                                    <div className="text-center text-white max-w-4xl px-4">
+                                    <div className="text-center text-gray-900 max-w-4xl px-4">
                                         <h1 className="text-5xl md:text-6xl font-bold mb-6">
                                             {hero.title}
                                         </h1>
