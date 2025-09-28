@@ -8,6 +8,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import API_BASE_URL from '@/config/api';
+import BossHouse_Logo from "@/assets/BossHouse_Logo.png"
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -62,13 +63,12 @@ export default function RegisterPage() {
       <div className="w-full md:w-1/2 flex items-center justify-center p-8 bg-white">
         <div className="w-full max-w-md space-y-6">
           {/* Logo placeholder */}
-          <div className="flex justify-center">
-            <div className="w-12 h-12 bg-gray-900 rounded-full flex items-center justify-center">
-              <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
-                <div className="w-2 h-2 bg-gray-900 rounded-full"></div>
-                <div className="w-2 h-2 bg-gray-900 rounded-full ml-1"></div>
-              </div>
-            </div>
+          <div className="flex justify-center mb-0.5">
+            <img
+              src={BossHouse_Logo}
+              alt="BossHouse_Logo"
+              className="w-32 h-32 object-cover"
+            />
           </div>
 
           {/* Header */}

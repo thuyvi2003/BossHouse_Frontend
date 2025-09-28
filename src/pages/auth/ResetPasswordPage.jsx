@@ -8,6 +8,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import API_BASE_URL from '@/config/api';
+import BossHouse_Logo from "@/assets/BossHouse_Logo.png";
 
 export default function ResetPasswordPage() {
   const [newPassword, setNewPassword] = useState('');
@@ -68,10 +69,12 @@ export default function ResetPasswordPage() {
         <Card className="w-full max-w-md border-gray-200 shadow-lg">
           <CardHeader>
             {/* Avatar/Logo placeholder */}
-            <div className="flex justify-center mb-4">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center text-3xl">
-                🐾
-              </div>
+            <div className="flex justify-center mb-0.5">
+              <img
+                src={BossHouse_Logo}
+                alt="BossHouse_Logo"
+                className="w-32 h-32 object-cover"
+              />
             </div>
             <CardTitle className="text-2xl text-center">Reset your password</CardTitle>
             <CardDescription className="text-center text-gray-600">

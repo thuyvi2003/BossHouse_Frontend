@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import API_BASE_URL from '@/config/api';
+import BossHouse_Logo from "@/assets/BossHouse_Logo.png";
 
 export default function VerifyOtpPage() {
   const [otp, setOtp] = useState('');
@@ -70,11 +71,12 @@ export default function VerifyOtpPage() {
         <Card className="w-full max-w-md shadow-lg">
           <CardHeader className="text-center">
             {/* Logo */}
-            <div className="flex justify-center mb-4">
-              <div className="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center">
-                <div className="w-3 h-3 bg-white rounded-full mr-1"></div>
-                <div className="w-3 h-3 bg-white rounded-full"></div>
-              </div>
+            <div className="flex justify-center mb-0.5">
+              <img
+                src={BossHouse_Logo}
+                alt="BossHouse_Logo"
+                className="w-32 h-32 object-cover"
+              />
             </div>
             <CardTitle className="text-2xl">Verify Your Account</CardTitle>
             <CardDescription>
