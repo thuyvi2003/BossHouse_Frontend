@@ -247,6 +247,7 @@ const HomePage = () => {
                 </div>
             </section>
 
+
             {/* Products Section */}
             <section className="py-16 bg-white">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
