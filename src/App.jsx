@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -19,11 +19,13 @@ import RegisterPage from './pages/auth/RegisterPage.jsx';
 import VerifyOtpPage from './pages/auth/VerifyOtpPage.jsx';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage.jsx';
 import ResetPasswordPage from './pages/auth/ResetPasswordPage.jsx';
-import Services from './pages/Services.jsx';           
-import UserBookingForm from './pages/UserBookingForm.jsx'; 
+import Services from './pages/Services.jsx';
+import UserBookingForm from './pages/UserBookingForm.jsx';
 
 
 function App() {
+
+  const location = useLocation();
 
   const { checkAuth, isCheckingAuth } = useAuthStore();
 
