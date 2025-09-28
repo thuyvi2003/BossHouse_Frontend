@@ -309,43 +309,43 @@ export default function BookingForm({
   };
 
   return (
-    <div className="flex justify-center mt-4 pb-4 bg-gray-50 min-h-screen overflow-auto">
-      <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-4xl animate-fade-in">
-        <h3 className="text-2xl font-bold text-yellow-800 mb-6">
-          {mode === "add"
-            ? "Add Booking"
-            : isEdit
-            ? "Edit Booking"
-            : "View Booking"}
-        </h3>
+  <div className="fixed inset-0 flex items-start justify-center bg-black/50 z-50 overflow-auto">
+    <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-4xl mt-10 animate-fade-in">
+      <h3 className="text-2xl font-bold text-yellow-800 mb-6">
+        {mode === "add"
+          ? "Add Booking"
+          : isEdit
+          ? "Edit Booking"
+          : "View Booking"}
+      </h3>
 
-        {errors.form && <div className="text-red-600 mb-4">{errors.form}</div>}
+      {errors.form && <div className="text-red-600 mb-4">{errors.form}</div>}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Customer, Pet, Veterinarian */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {renderDropdown(
-              "customer_id",
-              "Customer",
-              options.users,
-              (o) => o.name,
-              disableCustomerPet
-            )}
-            {renderDropdown(
-              "pet_id",
-              "Pet",
-              options.pets,
-              (o) => (o.name ? `${o.species} - ${o.name}` : o.species),
-              disableCustomerPet
-            )}
-            {renderDropdown(
-              "veterinarian_id",
-              "Veterinarian",
-              options.vets,
-              (o) => `${o.user_id?.name} (${o.specialty})`,
-              disableOtherFields
-            )}
-          </div>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Customer, Pet, Veterinarian */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {renderDropdown(
+            "customer_id",
+            "Customer",
+            options.users,
+            (o) => o.name,
+            disableCustomerPet
+          )}
+          {renderDropdown(
+            "pet_id",
+            "Pet",
+            options.pets,
+            (o) => (o.name ? `${o.species} - ${o.name}` : o.species),
+            disableCustomerPet
+          )}
+          {renderDropdown(
+            "veterinarian_id",
+            "Veterinarian",
+            options.vets,
+            (o) => `${o.user_id?.name} (${o.specialty})`,
+            disableOtherFields
+          )}
+        </div>
 
           {/* Services */}
           <div>

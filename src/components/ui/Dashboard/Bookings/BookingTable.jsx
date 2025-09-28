@@ -27,7 +27,10 @@ export default function BookingTable({
 
   const totalPages = Math.ceil(sortedBookings.length / rowsPerPage);
   const startIndex = (currentPage - 1) * rowsPerPage;
-  const currentBookings = sortedBookings.slice(startIndex, startIndex + rowsPerPage);
+  const currentBookings = sortedBookings.slice(
+    startIndex,
+    startIndex + rowsPerPage
+  );
 
   const handleDeleteClick = (id) => {
     setSelectedId(id);
@@ -55,25 +58,31 @@ export default function BookingTable({
       {/* Table Body */}
       <div className="max-h-[calc(4*72px)] overflow-y-auto divide-y divide-gray-100">
         {currentBookings.length === 0 && (
-          <div className="px-4 py-4 text-gray-500 italic">No bookings found.</div>
+          <div className="px-4 py-4 text-gray-500 italic">
+            No bookings found.
+          </div>
         )}
 
         {currentBookings.map((b, idx) => {
           const bookingDate = b.booking_date ? new Date(b.booking_date) : null;
           const isPast = bookingDate && bookingDate < new Date();
-          const dateStr = bookingDate
-            ? bookingDate.toLocaleDateString()
-            : "-";
+          const dateStr = bookingDate ? bookingDate.toLocaleDateString() : "-";
           const timeStr = bookingDate
-            ? bookingDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+            ? bookingDate.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
             : "-";
 
           return (
             <div
               key={b._id || idx}
-              className={`relative px-4 py-4 grid grid-cols-[40px_150px_120px_1fr_150px_100px_120px] gap-2 items-center
-                bg-white hover:bg-gray-50 transition-all duration-150
-                ${isPast ? "bg-gray-50 text-gray-500 italic" : ""}`}
+              className={`relative px-4 py-4 grid grid-cols-[40px_150px_120px_1fr_150px_100px_120px] gap-2 items-center transition-all duration-150
+                ${
+                  isPast
+                    ? "bg-gray-200 text-gray-600 italic"
+                    : "bg-white text-black"
+                }`}
             >
               <div className="font-semibold">{startIndex + idx + 1}</div>
               <div className="truncate">{b.user_id?.name || "Unknown"}</div>
@@ -85,14 +94,17 @@ export default function BookingTable({
                       key={s._id || s.service_id?._id}
                       className="px-2 py-0.5 text-xs bg-gray-100 border rounded-md text-gray-700 truncate"
                     >
-                      {s.name || s.service_id?.name || "Service"} × {s.quantity || 1}
+                      {s.name || s.service_id?.name || "Service"} ×{" "}
+                      {s.quantity || 1}
                     </span>
                   ))
                 ) : (
                   <span className="text-gray-400 italic">No service</span>
                 )}
               </div>
-              <div>{dateStr} {timeStr}</div>
+              <div>
+                {dateStr} {timeStr}
+              </div>
               <div>
                 <span
                   className={`px-2 py-1 text-xs rounded-full font-semibold ${
@@ -152,7 +164,8 @@ export default function BookingTable({
           <div className="bg-white p-6 rounded-2xl shadow-2xl w-96">
             <h3 className="text-lg font-bold mb-4">Delete Booking</h3>
             <p className="text-gray-600 mb-6">
-              Are you sure you want to delete this booking? This action cannot be undone.
+              Are you sure you want to delete this booking? This action cannot
+              be undone.
             </p>
             <div className="flex justify-end gap-3">
               <button
