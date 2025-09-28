@@ -1,6 +1,6 @@
 // Vo Lam Thuy Vi
 import React, { useState, useEffect } from "react";
-import { categoryAPI } from "@/services/api";
+import { categoryService } from "@/services/categoryService";
 import { 
   Plus, 
   Search, 
@@ -47,7 +47,7 @@ const CategoryManagement = () => {
         ...(statusFilter !== "all" && { status: statusFilter }),
       };
   
-      const data = await categoryAPI.getAll(params);
+      const data = await categoryService.getAll(params);
 
       if (data.success) {
         // Backend trả về data.data là mảng categories trực tiếp
@@ -75,7 +75,7 @@ const CategoryManagement = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const data = await categoryAPI.create(formData);
+      const data = await categoryService.create(formData);
       if (data.success) {
         setShowCreateModal(false);
         resetForm();
@@ -96,7 +96,7 @@ const CategoryManagement = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const data = await categoryAPI.update(editingCategory._id, formData);
+      const data = await categoryService.update(editingCategory._id, formData);
       if (data.success) {
         setShowEditModal(false);
         setEditingCategory(null);
@@ -121,7 +121,7 @@ const CategoryManagement = () => {
 
     setLoading(true);
     try {
-      const data = await categoryAPI.delete(id, hardDelete);
+      const data = await categoryService.delete(id, hardDelete);
       if (data.success) {
         fetchCategories();
       } else {
@@ -168,9 +168,9 @@ const CategoryManagement = () => {
   };
 
   // Handle pagination
-  const handlePageChange = (newPage) => {
-    setPagination(prev => ({ ...prev, page: newPage }));
-  };
+  // const handlePageChange = (newPage) => {
+  //   setPagination(prev => ({ ...prev, page: newPage }));
+  // };
 
   // Effects
   useEffect(() => {
