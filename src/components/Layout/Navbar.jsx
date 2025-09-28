@@ -10,7 +10,7 @@ export default function Navbar() {
     const [notifications, setNotifications] = useState([]);
     const [showNotificationTooltip, setShowNotificationTooltip] = useState(false);
     const [hasNotificationFeature, setHasNotificationFeature] = useState(false); // Flag to enable/disable notification feature
-    
+
     useEffect(() => {
         const fetchCart = async () => {
             try {
@@ -22,12 +22,12 @@ export default function Navbar() {
         }
         fetchCart();
     }, [])
-    
+
     // Function to enable notification feature (call this when implementing notifications)
     const enableNotificationFeature = () => {
         setHasNotificationFeature(true);
     };
-    
+
     // Function to add new notification (call this when creating new notifications)
     // Usage: addNotification({ id: Date.now(), message: "New notification", time: "now" })
     const addNotification = (notification) => {
@@ -35,17 +35,17 @@ export default function Navbar() {
             setNotifications(prev => [notification, ...prev]);
         }
     };
-    
+
     // Export these functions for use in other components when implementing notifications
     // window.enableNotificationFeature = enableNotificationFeature;
     // window.addNotification = addNotification;
-    
+
     // Notification feature - currently disabled
     useEffect(() => {
         // TODO: When notification feature is implemented, call enableNotificationFeature()
         // and add API calls to fetch real notifications
         setHasNotificationFeature(false);
-        
+
         if (hasNotificationFeature) {
             // Future: Fetch notifications from API
             // fetchNotifications();
@@ -54,7 +54,7 @@ export default function Navbar() {
             setNotifications([]);
         }
     }, [hasNotificationFeature]);
-    
+
     const displaydItems = cartItems.slice(0, 3);
 
 
@@ -108,7 +108,7 @@ export default function Navbar() {
                             </span>
                         )}
                     </div>
-                    
+
                     {/* Notification Tooltip */}
                     {showNotificationTooltip && (
                         <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
