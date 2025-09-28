@@ -91,6 +91,10 @@ const ProductDetailPage = () => {
         return;
       }
       const response = await addToCart(selectedVariation._id, quantity);
+      if (response == 0) {
+        alert(`You must be remove one item before add new item into cart`);
+        return;
+      }
       console.log("Cart after add:", response.data);
       alert(`Added ${quantity} x ${selectedVariation.name} to cart!`);
       navigate("/cart")
