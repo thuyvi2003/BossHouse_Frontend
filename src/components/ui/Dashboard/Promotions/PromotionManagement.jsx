@@ -4,6 +4,7 @@ import CreatePromotionModal from "./CreatePromotionModal";
 import { createPromotion, getPromotionsList } from "@/services/promotionService";
 import { Airplane, Tag } from "phosphor-react";
 import Pagination from "@/components/Layout/Pagination";
+import dayjs from "dayjs";
 
 const PromotionManagement = () => {
   const [promotions, setPromotions] = useState([]);
@@ -118,7 +119,7 @@ const PromotionManagement = () => {
                   ? `${promo.promotion_value}%`
                   : `${(promo.promotion_value ?? 0).toLocaleString()}đ`}
               </div>
-              <div className="col-span-2 text-sm text-gray-600">{promo.expires_at}</div>
+              <div className="col-span-2 text-sm text-gray-600">{promo.expires_at ? dayjs(promo.expires_at).format("DD/MM/YYYY") : ""}</div>
               <div>
                 <span
                   className={`px-3 py-1 text-xs rounded-full font-semibold shadow-sm ${promo.is_hidden

@@ -1,6 +1,8 @@
 // Vo Lam Thuy Vi
 import React, { useState } from "react";
 import { Tag } from "phosphor-react";
+import DatePicker from "react-datepicker";
+import { format, parseISO } from "date-fns";
 export default function CreatePromotionModal({
     isOpen,
     onClose,
@@ -141,11 +143,19 @@ export default function CreatePromotionModal({
                         <label className="block text-sm font-medium text-[#846551] mb-1">
                             Expiry Date
                         </label>
-                        <input
-                            type="date"
+                        <DatePicker
+                            selected={form.expires_at ? parseISO(form.expires_at) : null}
+                            onChange={(date) => {
+                                if (date) {
+                                    console.log("Chon ngay")
+                                    setForm({ ...form, expires_at: format(date, "yyyy-MM-dd") });
+                                } else {
+                                    setForm({ ...form, expires_at: "" });
+                                }
+                            }}
+                            dateFormat="dd/MM/yyyy"
+                            placeholderText="dd/mm/yyyy"
                             className="w-full px-4 py-2 border border-[#d7cbbf] rounded-lg focus:ring-2 focus:ring-[#846551] focus:border-[#846551] text-gray-800"
-                            value={form.expires_at}
-                            onChange={(e) => setForm({ ...form, expires_at: e.target.value })}
                         />
                         {errors.expires_at && (
                             <p className="text-red-500 text-sm mt-1">{errors.expires_at}</p>
