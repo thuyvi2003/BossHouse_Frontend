@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import axios from "axios";
-import API_BASE_URL from "@/config/api";
+import API_BASE_URL from '@/config/api';
 
 
 export const useAuthStore = create((set) => ({
@@ -30,6 +30,30 @@ export const useAuthStore = create((set) => ({
             return {
                 success: false,
                 error: error.response?.data?.message || "Login failed",
+            };
+        }
+    },
+
+    googleLogin: async (idToken) => {
+        set({ isLoading: true });
+        try {
+            const response = await axios.post(`${API_BASE_URL}/auth/google-login`, {
+                idToken,
+            });
+
+            const { token, user } = response.data;
+
+            localStorage.setItem("token", token);
+            localStorage.setItem("user", JSON.stringify(user));
+
+            set({ token, user, isLoading: false });
+
+            return { success: true, user: user };
+        } catch (error) {
+            set({ isLoading: false });
+            return {
+                success: false,
+                error: error.response?.data?.message || "Google login failed",
             };
         }
     },
