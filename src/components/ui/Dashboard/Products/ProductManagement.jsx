@@ -1,6 +1,7 @@
 // Vo Lam Thuy Vi
 import React, { useState, useEffect } from "react";
-import { productAPI, categoryAPI } from "@/services/api";
+import { productService } from "@/services/productService";
+import { categoryService } from "@/services/categoryService";
 import {
     Plus,
     Search,
@@ -47,7 +48,7 @@ const ProductManagement = () => {
     // Fetch categories for dropdown
     const fetchCategories = async () => {
         try {
-             const data = await categoryAPI.getAll({ limit: 100 });
+             const data = await categoryService.getAll({ limit: 100 });
              console.log("Phản hồi API danh mục:", data); // Log chi tiết
              if (data.success) {
                  // Backend trả về data.data là mảng categories
@@ -73,7 +74,7 @@ const ProductManagement = () => {
                 ...(statusFilter !== "all" && { status: statusFilter }),
                 ...(categoryFilter !== "all" && { categoryId: categoryFilter }),
             };
-             const data = await productAPI.getAll(params);
+             const data = await productService.getAll(params);
              console.log("Phản hồi API sản phẩm:", data); // Log chi tiết
              if (data.success) {
                  // Backend trả về data.data là mảng products
@@ -99,7 +100,7 @@ const ProductManagement = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const data = await productAPI.create(formData, formData.image);
+            const data = await productService.create(formData, formData.image);
             if (data.success) {
                 setShowCreateModal(false);
                 resetForm();
@@ -122,7 +123,7 @@ const ProductManagement = () => {
         try {
             // Only send image if it's a new file (not a string URL)
             const imageFile = formData.image instanceof File ? formData.image : null;
-            const data = await productAPI.update(editingProduct._id, formData, imageFile);
+            const data = await productService.update(editingProduct._id, formData, imageFile);
             if (data.success) {
                 setShowEditModal(false);
                 setEditingProduct(null);
@@ -147,7 +148,7 @@ const ProductManagement = () => {
 
         setLoading(true);
         try {
-            const data = await productAPI.delete(id, hardDelete);
+            const data = await productService.delete(id, hardDelete);
             if (data.success) {
                 fetchProducts();
             } else {
@@ -206,10 +207,10 @@ const ProductManagement = () => {
         setPagination(prev => ({ ...prev, page: 1 }));
     };
 
-    // Handle pagination
-    const handlePageChange = (newPage) => {
-        setPagination(prev => ({ ...prev, page: newPage }));
-    };
+    // // Handle pagination
+    // const handlePageChange = (newPage) => {
+    //     setPagination(prev => ({ ...prev, page: newPage }));
+    // };
 
     // Handle image upload
     const handleImageChange = (e) => {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { productAPI, categoryAPI, variationAPI } from '@/services/api';
+import { productService } from '@/services/productService';
+import { categoryService } from '@/services/categoryService';
 import { 
   ShoppingCart, 
   Star, 
@@ -28,15 +29,15 @@ const ProductPage = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(12);
-  const [favorites, setFavorites] = useState(new Set());
+  // const [favorites, setFavorites] = useState(new Set());
 
   // Fetch products and categories
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [productsData, categoriesData] = await Promise.all([
-          productAPI.getAll({ limit: 100 }),
-          categoryAPI.getAll({ limit: 50 })
+          productService.getAll({ limit: 100 }),
+          categoryService.getAll({ limit: 50 })
         ]);
 
         if (productsData.success) {
@@ -67,14 +68,15 @@ const ProductPage = () => {
   // Filter and sort products
   const filteredAndSortedProducts = products
     .filter(product => {
-      const isActive = product.status === 'active';
+      const isProductActive = product.status === 'active';
+      const isCategoryActive = product.categoryId?.status === 'active';
       const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            product.description?.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesCategory = selectedCategory === 'all' || 
                              product.categoryId?._id === selectedCategory ||
                              product.categoryId === selectedCategory;
       const matchesPrice = product.price >= priceRange.min && product.price <= priceRange.max;
-      return isActive && matchesSearch && matchesCategory && matchesPrice;
+      return isProductActive && isCategoryActive && matchesSearch && matchesCategory && matchesPrice;
     })
     .sort((a, b) => {
       switch (sortBy) {
@@ -102,16 +104,16 @@ const ProductPage = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Toggle favorite
-  const toggleFavorite = (productId) => {
-    const newFavorites = new Set(favorites);
-    if (newFavorites.has(productId)) {
-      newFavorites.delete(productId);
-    } else {
-      newFavorites.add(productId);
-    }
-    setFavorites(newFavorites);
-  };
+  // // Toggle favorite
+  // const toggleFavorite = (productId) => {
+  //   const newFavorites = new Set(favorites);
+  //   if (newFavorites.has(productId)) {
+  //     newFavorites.delete(productId);
+  //   } else {
+  //     newFavorites.add(productId);
+  //   }
+  //   setFavorites(newFavorites);
+  // };
 
   // Clear all filters
   const clearFilters = () => {
@@ -233,11 +235,13 @@ const ProductPage = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#846551] focus:border-transparent"
                 >
                   <option value="all">All Categories</option>
-                  {categories.map((category) => (
-                    <option key={category._id} value={category._id}>
-                      {category.name}
-                    </option>
-                  ))}
+                  {categories
+                    .filter(category => category.status === 'active')
+                    .map((category) => (
+                      <option key={category._id} value={category._id}>
+                        {category.name}
+                      </option>
+                    ))}
                 </select>
               </div>
 

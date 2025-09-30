@@ -59,7 +59,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="flex h-screen bg-[#f7f7f7]">
+    <div className="flex min-h-screen bg-[#f7f7f7]">
       {/* Sidebar */}
       <aside className="w-64 bg-[#222421] text-white flex flex-col overflow-y-auto">
         <div className="p-6 flex flex-col items-center gap-2">
@@ -104,10 +104,10 @@ export default function Dashboard() {
       </aside>
 
       {/* Main + Footer */}
-      <div className="flex flex-col flex-1">
+      <div className="flex flex-col flex-1 pb-4">
         {/* Main Content */}
         <main
-          className="flex-1 h-auto shadow-xl animate-fade-in bg-cover bg-center p-6"
+          className="flex-1 h-auto shadow-xl animate-fade-in bg-cover bg-center p-6 pb-4"
           style={{ backgroundImage: `url(${Background})` }}
         >
           {renderContent()}

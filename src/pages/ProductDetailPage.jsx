@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { productAPI, variationAPI } from '@/services/api';
+import { productService } from '@/services/productService';
+import { variationService } from '@/services/productVariationService';
 import {
   ShoppingCart,
   Star,
@@ -29,7 +30,7 @@ const ProductDetailPage = () => {
   const [selectedVariation, setSelectedVariation] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [isFavorite, setIsFavorite] = useState(false);
+  // const [isFavorite, setIsFavorite] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [activeTab, setActiveTab] = useState('description');
@@ -42,7 +43,7 @@ const ProductDetailPage = () => {
         setLoading(true);
 
         // Fetch product details
-        const productData = await productAPI.getById(id);
+        const productData = await productService.getById(id);
         if (productData.success) {
           setProduct(productData.data);
 
@@ -53,7 +54,7 @@ const ProductDetailPage = () => {
         }
 
         // Fetch product variations
-        const variationsData = await variationAPI.getByProduct(id);
+        const variationsData = await variationService.getByProduct(id);
         if (variationsData.success) {
           setVariations(variationsData.data || []);
           if (variationsData.data && variationsData.data.length > 0) {
@@ -90,6 +91,10 @@ const ProductDetailPage = () => {
         return;
       }
       const response = await addToCart(selectedVariation._id, quantity);
+      if (response == 0) {
+        alert(`You must be remove one item before add new item into cart`);
+        return;
+      }
       console.log("Cart after add:", response.data);
       alert(`Added ${quantity} x ${selectedVariation.name} to cart!`);
       navigate("/cart")
@@ -97,11 +102,6 @@ const ProductDetailPage = () => {
       console.error(error);
     }
   }
-
-  // Toggle favorite
-  const toggleFavorite = () => {
-    setIsFavorite(!isFavorite);
-  };
 
   // Handle variation selection
   const handleVariationSelect = (variation) => {

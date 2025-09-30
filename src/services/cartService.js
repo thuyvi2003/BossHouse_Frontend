@@ -1,6 +1,10 @@
 // Vo Lam Thuy Vi
 import API_BASE_URL from "@/config/api";
 export async function addToCart(variation_id, quantity = 1) {
+    const dataCart = await getUserCart();
+    if (dataCart.data.items.length === 5) {
+        return 0;
+    }
     const token = localStorage.getItem("token");
 
     const res = await fetch(`${API_BASE_URL}/carts`, {
@@ -12,11 +16,14 @@ export async function addToCart(variation_id, quantity = 1) {
         body: JSON.stringify({ variation_id, quantity }),
     });
 
-    console.log("Response status:", res.status);
 
     if (!res.ok) {
-        const text = await res.text();
-        console.error("Failed response:", text);
+        const text = await res.json();
+        console.error("Failed response:", text.code);
+        if (text.code == 0) {
+            alert(`You must be remove one item before add new item into cart`);
+            return
+        }
         throw new Error("Failed to fetch promotions");
     }
 
@@ -48,21 +55,21 @@ export async function getUserCart() {
 }
 
 
-export async function editCartItemQuantity (itemId, newQuantity ) {
+export async function editCartItemQuantity(itemId, newQuantity) {
     const token = localStorage.getItem("token");
 
-    const res = await fetch(`${API_BASE_URL}/carts/${itemId}`,{
-         method: "PUT",
+    const res = await fetch(`${API_BASE_URL}/carts/${itemId}`, {
+        method: "PUT",
         headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ quantity: newQuantity}), 
+        body: JSON.stringify({ quantity: newQuantity }),
 
     })
     if (!res.ok) {
         const text = await res.text();
-        console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaa",newQuantity);
+        console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaa", newQuantity);
         console.error("Failed response:", text);
         throw new Error("Failed to edit quantity");
     }
@@ -94,19 +101,19 @@ export async function removeItem(variation_id) {
     return data;
 }
 export async function clearAllCart() {
-  const token = localStorage.getItem("token");
-  const res = await fetch(`${API_BASE_URL}/carts/clear`, {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-  });
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${API_BASE_URL}/carts/clear`, {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+    });
 
-  if (!res.ok) {
-    const text = await res.text();
-    console.error("Failed response:", text);
-    throw new Error("Failed to clear all");
-  }
-  return await res.json();
+    if (!res.ok) {
+        const text = await res.text();
+        console.error("Failed response:", text);
+        throw new Error("Failed to clear all");
+    }
+    return await res.json();
 }

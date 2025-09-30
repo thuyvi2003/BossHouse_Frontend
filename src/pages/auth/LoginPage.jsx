@@ -10,19 +10,20 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Eye, EyeOff, Dog } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { toast } from "react-toastify";
 import { FcGoogle } from "react-icons/fc";
-import BossHouse_Logo from "@/assets/BossHouse_Logo.png"
+import BossHouse_Logo from "@/assets/BossHouse_Logo.png";
+import { GoogleLogin } from '@react-oauth/google';
 
 export default function LoginPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const { login, isLoading } = useAuthStore();
+    const { login, googleLogin, isLoading } = useAuthStore();
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
@@ -42,6 +43,24 @@ export default function LoginPage() {
         }
     };
 
+    const handleGoogleSuccess = async (credentialResponse) => {
+        const result = await googleLogin(credentialResponse.credential);
+
+        if (result.success) {
+            toast.success("Google login successful!");
+            if (result.user.role === 'admin') {
+                navigate("/Dashboard");
+            } else {
+                navigate("/");
+            }
+        } else {
+            toast.error(result.error);
+        }
+    };
+
+    const handleGoogleError = () => {
+        toast.error('Google login failed');
+    };
 
     return (
         <div className="min-h-screen flex">
@@ -149,11 +168,20 @@ export default function LoginPage() {
                                 </div>
                             </div>
 
-                            <div className="flex justify-center gap-4">
-                                <Button variant="outline" className="h-11 w-full" disabled={isLoading}>
-                                    <FcGoogle className="mr-2 h-4 w-4" /> {/* Use FcGoogle icon */}
-                                    Google
-                                </Button>
+                            {/* Google Login Button */}
+                            <div className="flex justify-center">
+                                <GoogleLogin
+                                    onSuccess={handleGoogleSuccess}
+                                    onError={handleGoogleError}
+                                    useOneTap
+                                    theme="filled_blue"
+                                    size="large"
+                                    text="signin_with"
+                                    shape="rectangular"
+                                    width="100%"
+                                    logo_alignment="left"
+                                    disabled={isLoading}
+                                />
                             </div>
                         </CardContent>
                         <CardFooter>
