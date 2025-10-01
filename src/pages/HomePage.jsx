@@ -394,7 +394,7 @@ const HomePage = () => {
                     </div>
                     <div className="relative group overflow-hidden rounded-xl shadow-md max-w-2xl w-full" data-aos="fade-left">
                         <img
-                            src="src/assets/services/grooming.jpg"
+                            src="src/assets/services/grooming1.jpg"
                             alt="cat door"
                             className="w-full object-cover transform transition duration-500 group-hover:scale-110 group-hover:rotate-1 group-hover:brightness-90"
                         />

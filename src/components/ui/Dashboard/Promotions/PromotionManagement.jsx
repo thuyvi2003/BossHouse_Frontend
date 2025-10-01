@@ -12,6 +12,8 @@ const PromotionManagement = () => {
   const [page, setPage] = useState(1);
   const [limit] = useState(8);
   const [totalPages, setTotalPages] = useState(1);
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("");
 
   const [form, setForm] = useState({
     code: "",
@@ -26,7 +28,7 @@ const PromotionManagement = () => {
 
   async function fetchData(pageNum = 1) {
     try {
-      const data = await getPromotionsList(pageNum, limit);
+      const data = await getPromotionsList(pageNum, limit, search, status);
       setPromotions(data.data || []);
       setTotalPages(data.pagination?.totalPages || 1);
       setPage(pageNum)
@@ -35,8 +37,12 @@ const PromotionManagement = () => {
     }
   }
   useEffect(() => {
-    fetchData(1);
-  }, []);
+    const timeout = setTimeout(() => {
+      fetchData(1);
+    }, 400);
+
+    return () => clearTimeout(timeout);
+  }, [search, status]);
 
 
 
@@ -73,12 +79,36 @@ const PromotionManagement = () => {
             Promotion Management
           </span>
         </h2>
+        <div className="flex items-center gap-4 p-4 ">
+          {/* Search input */}
+          <input
+            type="text"
+            placeholder="Search by code or description..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="px-3 py-2 border rounded-lg w-64 focus:ring-2 focus:ring-[#846551] focus:border-[#846551]"
+          />
+
+          {/* Status filter */}
+          <select
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+            className="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#846551] focus:border-[#846551]"
+          >
+            <option value="">All</option>
+            <option value="false">Active</option>
+            <option value="true">Hidden</option>
+          </select>
+        </div>
+
         <button
           onClick={() => setShowModal(true)}
           className="px-4 py-2 bg-[#846551] text-white font-semibold rounded-lg shadow hover:shadow-lg hover:scale-105 transition-transform duration-300"
         >
           + Create Promotion
         </button>
+
+
       </div>
 
       <div className="overflow-x-hidden overflow-y-hidden">
@@ -110,7 +140,7 @@ const PromotionManagement = () => {
             >
               {/* Decorative left bar */}
               <div className="absolute left-0 top-0 h-full w-1 rounded-l-xl bg-gray-200 hover:bg-[#846551] transition-all"></div>
-                <div className="col-span-1 font-semibold text-gray-700"> {(page - 1) * limit + idx + 1} </div>
+              <div className="col-span-1 font-semibold text-gray-700"> {(page - 1) * limit + idx + 1} </div>
               <div className="col-span-2 font-semibold text-gray-900">{promo.code}</div>
               <div className="col-span-3 text-sm text-gray-600">{promo.description}</div>
               <div className="col-span-1 text-sm capitalize text-gray-500">{promo.promotion_type}</div>
