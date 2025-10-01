@@ -97,7 +97,7 @@ export default function Navbar() {
                     onMouseLeave={() => setShowNotificationTooltip(false)}
                 >
                     <div className="relative">
-                        <Bell size={28} className="text-gray-600 hover:text-black transition-colors duration-200 cursor-pointer" />
+                        <Bell size={28} className="text-back hover:text-gray-600 transition-colors duration-200 cursor-pointer" />
                         {notifications.length > 0 && (
                             <span className="absolute -top-2 -right-2 text-xs bg-red-500 text-white w-5 h-5 flex items-center justify-center rounded-full shadow-md">
                                 {notifications.length}

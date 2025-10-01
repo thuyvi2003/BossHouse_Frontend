@@ -1,11 +1,18 @@
 // src/services/promotionService.js
 import API_BASE_URL from "@/config/api";
 
-export async function getPromotionsList(page = 1, limit = 8) {
-    const res = await fetch(`${API_BASE_URL}/promotions/admin?page=${page}&limit=${limit}`, {
+export async function getPromotionsList(page = 1, limit = 8, code ="", status="") {
+    const token = localStorage.getItem("token");
+    const url = new URL(`${API_BASE_URL}/promotions`);
+    url.searchParams.append("page", page);
+    url.searchParams.append("limit", limit);
+    if(code) url.searchParams.append("code", code);
+    if(status) url.searchParams.append("status", status);
+
+    const res = await fetch(url, {
         method: "GET",
         headers: {
-            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
         },
     });
 
@@ -20,6 +27,9 @@ export async function getPromotionsList(page = 1, limit = 8) {
     console.log("Parsed data:", data);
     return data;
 }
+
+
+
 
 export async function createPromotion(promo) {
     const res = await fetch(`${API_BASE_URL}/promotions`, {
