@@ -1,10 +1,12 @@
 // Vo Lam Thuy Vi
 import React, { useEffect, useState } from "react";
 import CreatePromotionModal from "./CreatePromotionModal";
-import { createPromotion, getPromotionsList } from "@/services/promotionService";
-import { Airplane, Tag } from "phosphor-react";
+import { createPromotion, getPromotionsList, removePromotion } from "@/services/promotionService";
+import { Tag } from "phosphor-react";
 import Pagination from "@/components/Layout/Pagination";
 import dayjs from "dayjs";
+import ConfirmDialog from "@/components/Layout/ConfirmDialog";
+import Toast from "@/components/Layout/Toast";
 
 const PromotionManagement = () => {
   const [promotions, setPromotions] = useState([]);
@@ -14,6 +16,9 @@ const PromotionManagement = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [selectedPromo, setSelectedPromo] = useState(null);
+  const [toast, setToast] = useState({ show: false, type: "success", message: "" });
 
   const [form, setForm] = useState({
     code: "",
@@ -66,7 +71,26 @@ const PromotionManagement = () => {
       });
 
     } catch (error) {
-      console.error("Error creating promotion:", err.message)
+      console.error("Error creating promotion:", error.message)
+    }
+  }
+  //Open Confirm dialog
+  const handleDeleteClick = (promo) => {
+    setSelectedPromo(promo);
+    setConfirmOpen(true)
+  }
+  const handleConfirmDelete = async () => {
+    try {
+      if (!selectedPromo?._id) return;//Neu chua chon promotion nao thi thoat
+      console.log("Deleting promotion:", selectedPromo._id);//Goi API voi id 
+      await removePromotion(selectedPromo._id);
+      setToast({ show: true, type: "success", message: "Promotion removed successfully!" });
+      console.log("Promotion is remove succesfully");
+      setConfirmOpen(false);
+      setSelectedPromo(null);
+      await fetchData(page);//Fetch data load lai ds promotion
+    } catch (error) {
+      setToast({ show: true, type: "error", message: "Failed to remove promotion!" });
     }
   }
   return (
@@ -161,7 +185,9 @@ const PromotionManagement = () => {
                 </span>
               </div>
               <div className="col-span-2 flex items-center justify-center space-x-3">
-                <button className="px-3 py-1 border border-[#b85c49] text-[#b85c49] rounded-lg hover:bg-[#fbe9e6] transition-all duration-300">
+                <button
+                  onClick={() => handleDeleteClick(promo)}
+                  className="px-3 py-1 border border-[#b85c49] text-[#b85c49] rounded-lg hover:bg-[#fbe9e6] transition-all duration-300">
                   Delete
                 </button>
 
@@ -185,6 +211,26 @@ const PromotionManagement = () => {
         form={form}
         setForm={setForm}
       />
+
+      {/* Confirm Delete */}
+      <ConfirmDialog
+        isOpen={confirmOpen}
+        title="Confirm Delete"
+        message={`Are you sure you want to delete promotion "${selectedPromo?.code}"?`}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setConfirmOpen(false)}
+      />
+     {toast.show && (
+  <Toast
+    type="success"
+    title="Payment processed"
+    message="Transaction ID: #14402"
+    onClose={() => setToast({ ...toast, show: false })}
+  />
+)}
+
+
+
     </div>
   );
 };
