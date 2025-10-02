@@ -1,64 +1,62 @@
-// Vo Lam Thuy Vi
 import React, { useEffect, useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { ShoppingCart, Bell } from "phosphor-react";
 import { getUserCart } from "@/services/cartService";
+import { useAuthStore } from "@/stores/useAuthStore";
+import { Button } from "@/components/ui/button";
+import { toast } from "react-toastify";
 
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
     const [cartItems, setCartItems] = useState([]);
     const [notifications, setNotifications] = useState([]);
     const [showNotificationTooltip, setShowNotificationTooltip] = useState(false);
-    const [hasNotificationFeature, setHasNotificationFeature] = useState(false); // Flag to enable/disable notification feature
-    
+    const [hasNotificationFeature, setHasNotificationFeature] = useState(false);
+    const { user, logout } = useAuthStore();
+    const navigate = useNavigate();
+
     useEffect(() => {
         const fetchCart = async () => {
             try {
                 const res = await getUserCart();
                 setCartItems(res.data?.items || []);
             } catch (error) {
-                console.error(error.message)
+                console.error(error.message);
             }
-        }
+        };
         fetchCart();
-    }, [])
-    
-    // Function to enable notification feature (call this when implementing notifications)
+    }, []);
+
     const enableNotificationFeature = () => {
         setHasNotificationFeature(true);
     };
-    
-    // Function to add new notification (call this when creating new notifications)
-    // Usage: addNotification({ id: Date.now(), message: "New notification", time: "now" })
+
     const addNotification = (notification) => {
         if (hasNotificationFeature) {
-            setNotifications(prev => [notification, ...prev]);
+            setNotifications((prev) => [notification, ...prev]);
         }
     };
-    
-    // Export these functions for use in other components when implementing notifications
-    // window.enableNotificationFeature = enableNotificationFeature;
-    // window.addNotification = addNotification;
-    
-    // Notification feature - currently disabled
+
     useEffect(() => {
-        // TODO: When notification feature is implemented, call enableNotificationFeature()
-        // and add API calls to fetch real notifications
         setHasNotificationFeature(false);
-        
         if (hasNotificationFeature) {
             // Future: Fetch notifications from API
             // fetchNotifications();
         } else {
-            // No notification feature yet - show empty state
             setNotifications([]);
         }
     }, [hasNotificationFeature]);
-    
-    const displaydItems = cartItems.slice(0, 3);
 
+    const handleLogout = async () => {
+        try {
+            await logout();
+            navigate("/login");
+        } catch (error) {
+            toast.error("Logout failed");
+        }
+    };
 
-
+    const displayedItems = cartItems.slice(0, 3);
 
     const navLinkClass = ({ isActive }) =>
         `relative transition-all duration-200 hover:scale-110 
@@ -90,9 +88,7 @@ export default function Navbar() {
                 <NavLink to="/post" className={navLinkClass}>
                     Blog
                 </NavLink>
-                <NavLink to="/Dashboard" className={navLinkClass}>
-                    Dashboard
-                </NavLink>
+
 
                 {/* Notification Icon */}
                 <div
@@ -101,14 +97,14 @@ export default function Navbar() {
                     onMouseLeave={() => setShowNotificationTooltip(false)}
                 >
                     <div className="relative">
-                        <Bell size={28} className="text-gray-600 hover:text-black transition-colors duration-200 cursor-pointer" />
+                        <Bell size={28} className="text-back hover:text-gray-600 transition-colors duration-200 cursor-pointer" />
                         {notifications.length > 0 && (
                             <span className="absolute -top-2 -right-2 text-xs bg-red-500 text-white w-5 h-5 flex items-center justify-center rounded-full shadow-md">
                                 {notifications.length}
                             </span>
                         )}
                     </div>
-                    
+
                     {/* Notification Tooltip */}
                     {showNotificationTooltip && (
                         <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
@@ -141,6 +137,7 @@ export default function Navbar() {
                     )}
                 </div>
 
+                {/* Cart Icon */}
                 <div
                     className="relative"
                     onMouseEnter={() => setIsOpen(true)}
@@ -165,7 +162,7 @@ export default function Navbar() {
                         <div className="p-4">
                             {cartItems.length > 0 ? (
                                 <ul className="divide-y divide-gray-200 max-h-60 overflow-y-auto">
-                                    {displaydItems.map((item) => (
+                                    {displayedItems.map((item) => (
                                         <li
                                             key={item.id}
                                             className="flex items-center gap-3 py-2 hover:bg-gray-50 rounded-md transition-colors"
@@ -193,13 +190,22 @@ export default function Navbar() {
                     </div>
                 </div>
 
-
-                <NavLink
-                    to="/login"
-                    className="ml-4 px-5 py-2 rounded-full bg-black text-white hover:bg-gray-800 transition-colors duration-200 shadow-md"
-                >
-                    Login
-                </NavLink>
+                {/* Conditional Login/Logout Button */}
+                {user ? (
+                    <Button
+                        className="ml-4 px-5 py-2 rounded-full bg-black text-white hover:bg-gray-800 transition-colors duration-200 shadow-md"
+                        onClick={handleLogout}
+                    >
+                        Logout
+                    </Button>
+                ) : (
+                    <NavLink
+                        to="/login"
+                        className="ml-4 px-5 py-2 rounded-full bg-black text-white hover:bg-gray-800 transition-colors duration-200 shadow-md"
+                    >
+                        Login
+                    </NavLink>
+                )}
             </div>
         </nav>
     );

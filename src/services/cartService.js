@@ -2,7 +2,7 @@
 import API_BASE_URL from "@/config/api";
 export async function addToCart(variation_id, quantity = 1) {
     const dataCart = await getUserCart();
-    if (dataCart.data.items.length === 10) {
+    if (dataCart.data.items.length === 5) {
         return 0;
     }
     const token = localStorage.getItem("token");
