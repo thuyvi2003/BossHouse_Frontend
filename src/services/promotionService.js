@@ -50,3 +50,23 @@ export async function createPromotion(promo) {
     return res.json();
 }
 
+export async function removePromotion(id) {
+    const token = localStorage.getItem("token")
+     const res = await fetch(`${API_BASE_URL}/promotions/${id}`, {
+        method: "PUT",
+        headers: {
+             "Content-Type": "application/json",
+             Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({is_hidden: true}), //Gui flag updated
+    });
+
+    console.log("Response status:", res.status);
+
+    if (!res.ok) {
+        const text = await res.text();
+        console.error("Failed response:", text);
+        throw new Error("Failed to remove promotion");
+    }
+    return res.json();
+}
