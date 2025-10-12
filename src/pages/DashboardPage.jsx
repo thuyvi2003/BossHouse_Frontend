@@ -5,6 +5,7 @@ import ProductManagement from "../components/ui/Dashboard/Products/ProductManage
 import ProductVariationManagement from "../components/ui/Dashboard/ProductVariations/ProductVariationManagement";
 import PromotionManagement from "../components/ui/Dashboard/Promotions/PromotionManagement";
 import BookingManager from "@/components/ui/Dashboard/Bookings/BookingManager";
+import ContactManager from "../components/ui/Dashboard/Contact/ContactManager";
 
 import {
   ChartBar,
@@ -33,6 +34,7 @@ export default function Dashboard() {
     { id: "promotion", icon: <FilmSlate size={22} />, label: "Promotion" },
     { id: "booking", icon: <CalendarCheck size={22} />, label: "Booking" },
     { id: "post", icon: <Note size={22} />, label: "Post" },
+    { id: "contact", icon: <User size={22} />, label: "Contact" },
   ];
 
   const renderContent = () => {
@@ -52,7 +54,9 @@ export default function Dashboard() {
       case "booking":
         return <BookingManager />;
       case "post":
-        return <PostManagement/>;
+        return <PostManagement />;
+      case "contact":
+        return <ContactManager />;
       default:
         return <h2 className="text-2xl font-bold">Welcome to Dashboard</h2>;
     }
@@ -61,7 +65,7 @@ export default function Dashboard() {
   return (
     <div className="flex min-h-screen bg-[#f7f7f7]">
       {/* Sidebar */}
-      <aside className="w-64 bg-[#222421] text-white flex flex-col overflow-y-auto">
+      <aside className="w-64 bg-[#222421] text-white flex flex-col overflow-y-auto h-screen">
         <div className="p-6 flex flex-col items-center gap-2">
           <img
             src={Logo}
@@ -77,11 +81,10 @@ export default function Dashboard() {
               <li key={item.id}>
                 <button
                   onClick={() => setActiveTab(item.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
-                    activeTab === item.id
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${activeTab === item.id
                       ? "bg-[#846551] text-white"
                       : "text-gray-300 hover:bg-slate-700 hover:text-white"
-                  }`}
+                    }`}
                 >
                   <span className="text-lg">{item.icon}</span>
                   <span className="font-medium">{item.label}</span>
@@ -104,15 +107,16 @@ export default function Dashboard() {
       </aside>
 
       {/* Main + Footer */}
-      <div className="flex flex-col flex-1 pb-4">
+      <div className="flex flex-col flex-1">
         {/* Main Content */}
         <main
-          className="flex-1 h-auto shadow-xl animate-fade-in bg-cover bg-center p-6 pb-4"
+          className="flex-1 shadow-xl animate-fade-in bg-cover bg-center p-6 pb-4 overflow-hidden"
           style={{ backgroundImage: `url(${Background})` }}
         >
           {renderContent()}
         </main>
       </div>
     </div>
+
   );
 }
