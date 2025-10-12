@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import bookingService from "../../../../services/bookingService";
 import { Plus, Minus, Calendar, Clock } from "lucide-react";
 import DatePicker from "react-datepicker";
@@ -24,6 +25,7 @@ function Modal({ children, onClose }) {
 export default function BookingForm({
   initialData,
   mode = "add", // "add" | "edit" | "view"
+  mode = "add", // "add" | "edit" | "view"
   options, // { users, pets, vets, services, existingBookings }
   onCancel,
   onSuccess,
@@ -36,6 +38,7 @@ export default function BookingForm({
     pet_id: "",
     services: [],
     veterinarian_id: "",
+    bookingDate: new Date(),
     bookingDate: new Date(),
     status: "PENDING",
     total_price: 0,
@@ -61,6 +64,10 @@ export default function BookingForm({
               typeof s.service_id === "object" && s.service_id !== null
                 ? s.service_id
                 : options.services.find((opt) => opt._id === s.service_id);
+            const serviceObj =
+              typeof s.service_id === "object" && s.service_id !== null
+                ? s.service_id
+                : options.services.find((opt) => opt._id === s.service_id);
             return {
               service_id: serviceObj?._id || s.service_id,
               quantity: s.quantity || 1,
@@ -69,6 +76,7 @@ export default function BookingForm({
             };
           }) || [],
         veterinarian_id: initialData.veterinarian_id?._id || "",
+        bookingDate,
         bookingDate,
         status: (initialData.status || "PENDING").toUpperCase(),
         total_price: initialData.total_price || 0,
@@ -158,11 +166,16 @@ export default function BookingForm({
       case "services":
         if (!value || value.length === 0)
           return "At least one service is required";
+        if (!value || value.length === 0)
+          return "At least one service is required";
         break;
+      case "bookingDate":
       case "bookingDate":
         if (!value) return "Date & Time are required";
         const now = new Date();
         if (!isEdit || (isEdit && !isPastBooking)) {
+          if (value < now) return "Cannot book in the past";
+          const hour = value.getHours();
           if (value < now) return "Cannot book in the past";
           const hour = value.getHours();
           if (hour < 8 || hour > 17)
@@ -182,6 +195,8 @@ export default function BookingForm({
 
     ["customer_id", "pet_id", "services", "bookingDate"].forEach((f) => {
       const value = form[f];
+    ["customer_id", "pet_id", "services", "bookingDate"].forEach((f) => {
+      const value = form[f];
       const err = validateField(f, value);
       if (err) newErrors[f] = err;
     });
@@ -192,8 +207,15 @@ export default function BookingForm({
     }
 
     const bookingDateTime = form.bookingDate.toISOString().slice(0, 16);
+    const bookingDateTime = form.bookingDate.toISOString().slice(0, 16);
 
     const conflict = form.services.some((s) =>
+      options.existingBookings?.some(
+        (b) =>
+          b.services?.some((bs) => bs.service_id === s.service_id) &&
+          new Date(b.booking_date).toISOString().slice(0, 16) ===
+            bookingDateTime &&
+          (mode !== "edit" || b._id !== form._id)
       options.existingBookings?.some(
         (b) =>
           b.services?.some((bs) => bs.service_id === s.service_id) &&
@@ -208,6 +230,10 @@ export default function BookingForm({
         services:
           "One or more selected services are already booked at this time.",
       });
+      setErrors({
+        services:
+          "One or more selected services are already booked at this time.",
+      });
       return;
     }
 
@@ -218,7 +244,12 @@ export default function BookingForm({
         service_id: s.service_id,
         quantity: s.quantity,
       })),
+      services: form.services.map((s) => ({
+        service_id: s.service_id,
+        quantity: s.quantity,
+      })),
       veterinarian_id: form.veterinarian_id || null,
+      booking_date: form.bookingDate.toISOString(),
       booking_date: form.bookingDate.toISOString(),
       status: form.status,
       total_price: form.total_price,
@@ -229,9 +260,14 @@ export default function BookingForm({
       if (mode === "add") await bookingService.create(payload);
       if (mode === "edit" && form._id)
         await bookingService.update(form._id, payload);
+      if (mode === "edit" && form._id)
+        await bookingService.update(form._id, payload);
       onSuccess && onSuccess();
     } catch (err) {
       console.error(err);
+      setErrors({
+        form: err.response?.data?.message || "Failed to save booking",
+      });
       setErrors({
         form: err.response?.data?.message || "Failed to save booking",
       });
@@ -253,6 +289,9 @@ export default function BookingForm({
         >
           <option value="">Select {label}</option>
           {optionsArr.map((opt) => (
+            <option key={opt._id} value={opt._id}>
+              {getLabel(opt)}
+            </option>
             <option key={opt._id} value={opt._id}>
               {getLabel(opt)}
             </option>
