@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { productService } from '@/services/productService';
+import CreateReviewForm from '@/components/ui/dashboard/reviews/CreateReviewForm';
+import ReviewList from '@/components/ui/dashboard/reviews/ReviewList';
 import { variationService } from '@/services/productVariationService';
 import {
   ShoppingCart,
@@ -424,15 +426,28 @@ const ProductDetailPage = () => {
             )}
 
             {activeTab === 'reviews' && (
-              <div className="space-y-6">
+              <div className="space-y-8">
                 <h3 className="text-xl font-semibold text-gray-900 mb-4">Customer Reviews</h3>
-                <div className="text-center py-12">
-                  <Star className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <h4 className="text-lg font-medium text-gray-900 mb-2">No reviews yet</h4>
-                  <p className="text-gray-600">Be the first to review this product!</p>
-                </div>
+
+                {/* Review Form + List */}
+                <ReviewList
+                  productId={id}
+                  productType="product"
+                  userToken={localStorage.getItem('token')}
+                  currentUserId={(() => {
+                    try {
+                      const u = JSON.parse(localStorage.getItem('user'));
+                      return u?._id || u?.id || null;
+                    } catch {
+                      return null;
+                    }
+                  })()}
+                  showCreateForm={true}
+                  allowReply={false}
+                />
               </div>
             )}
+
           </div>
         </div>
       </div>

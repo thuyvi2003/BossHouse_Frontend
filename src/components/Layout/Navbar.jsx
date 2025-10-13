@@ -1,17 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { ShoppingCart, Bell } from "phosphor-react";
+import { ShoppingCart } from "phosphor-react";
 import { getUserCart } from "@/services/cartService";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-toastify";
+import NotificationDropdown from "@/components/ui/NotificationDropdown";
 
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
     const [cartItems, setCartItems] = useState([]);
-    const [notifications, setNotifications] = useState([]);
-    const [showNotificationTooltip, setShowNotificationTooltip] = useState(false);
-    const [hasNotificationFeature, setHasNotificationFeature] = useState(false);
     const { user, logout } = useAuthStore();
     const navigate = useNavigate();
 
@@ -26,26 +24,6 @@ export default function Navbar() {
         };
         fetchCart();
     }, []);
-
-    const enableNotificationFeature = () => {
-        setHasNotificationFeature(true);
-    };
-
-    const addNotification = (notification) => {
-        if (hasNotificationFeature) {
-            setNotifications((prev) => [notification, ...prev]);
-        }
-    };
-
-    useEffect(() => {
-        setHasNotificationFeature(false);
-        if (hasNotificationFeature) {
-            // Future: Fetch notifications from API
-            // fetchNotifications();
-        } else {
-            setNotifications([]);
-        }
-    }, [hasNotificationFeature]);
 
     const handleLogout = async () => {
         try {
@@ -92,52 +70,8 @@ export default function Navbar() {
                     Contact
                 </NavLink>
 
-                {/* Notification Icon */}
-                <div
-                    className="relative"
-                    onMouseEnter={() => setShowNotificationTooltip(true)}
-                    onMouseLeave={() => setShowNotificationTooltip(false)}
-                >
-                    <div className="relative">
-                        <Bell size={28} className="text-back hover:text-gray-600 transition-colors duration-200 cursor-pointer" />
-                        {notifications.length > 0 && (
-                            <span className="absolute -top-2 -right-2 text-xs bg-red-500 text-white w-5 h-5 flex items-center justify-center rounded-full shadow-md">
-                                {notifications.length}
-                            </span>
-                        )}
-                    </div>
-
-                    {/* Notification Tooltip */}
-                    {showNotificationTooltip && (
-                        <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                            <div className="p-3 border-b border-gray-200">
-                                <h3 className="font-semibold text-gray-900">Notifications</h3>
-                            </div>
-                            <div className="max-h-64 overflow-y-auto">
-                                {hasNotificationFeature ? (
-                                    notifications.length > 0 ? (
-                                        <ul className="divide-y divide-gray-100">
-                                            {notifications.map((notification) => (
-                                                <li key={notification.id} className="p-3 hover:bg-gray-50">
-                                                    <p className="text-sm text-gray-900">{notification.message}</p>
-                                                    <p className="text-xs text-gray-500 mt-1">{notification.time}</p>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    ) : (
-                                        <p className="text-center text-gray-500 py-4">
-                                            No notifications
-                                        </p>
-                                    )
-                                ) : (
-                                    <p className="text-center text-gray-500 py-4">
-                                        Notifications is empty
-                                    </p>
-                                )}
-                            </div>
-                        </div>
-                    )}
-                </div>
+                {/* Notification Dropdown */}
+                {user && <NotificationDropdown />}
 
                 {/* Cart Icon */}
                 <div
