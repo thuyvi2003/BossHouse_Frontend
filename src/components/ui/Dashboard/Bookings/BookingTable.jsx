@@ -1,3 +1,4 @@
+// src/components/Table/BookingTable.jsx
 import React, { useState, useMemo } from "react";
 import Pagination from "../../../Layout/Pagination";
 
@@ -6,7 +7,7 @@ export default function BookingTable({
   onEdit,
   onDeleteBooking,
   onView,
-  rowsPerPage = 8,
+  rowsPerPage = 6,
 }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -27,22 +28,32 @@ export default function BookingTable({
 
   const totalPages = Math.ceil(sortedBookings.length / rowsPerPage);
   const startIndex = (currentPage - 1) * rowsPerPage;
-  const currentBookings = sortedBookings.slice(startIndex, startIndex + rowsPerPage);
+  const currentBookings = sortedBookings.slice(
+    startIndex,
+    startIndex + rowsPerPage
+  );
 
   const handleDeleteClick = (id) => {
     setSelectedId(id);
     setShowConfirm(true);
   };
+
   const confirmDelete = () => {
     if (selectedId) onDeleteBooking(selectedId);
     setShowConfirm(false);
     setSelectedId(null);
   };
 
+  // === Grid columns: STT | Customer | Pet | Services | DateTime | Status | Actions ===
+  // Customer 140px, Pet 140px để có khoảng cách vừa phải
+  const gridCols = "grid grid-cols-[30px_140px_140px_1fr_140px_80px_minmax(160px,1fr)] gap-2";
+
   return (
-    <div className="overflow-hidden bg-white rounded-lg shadow-lg">
+    <div className="overflow-hidden bg-white rounded-lg shadow-lg text-sm w-full">
       {/* Table Header */}
-      <div className="grid grid-cols-[40px_150px_120px_1fr_150px_100px_120px] gap-2 px-4 py-3 text-xs font-bold text-gray-700 uppercase tracking-wider bg-[#f5f3f2] border-b">
+      <div
+        className={`${gridCols} px-2 py-2 font-semibold text-gray-700 uppercase tracking-wide bg-gray-100 border-b items-center`}
+      >
         <div>#</div>
         <div>Customer</div>
         <div>Pet</div>
@@ -53,79 +64,111 @@ export default function BookingTable({
       </div>
 
       {/* Table Body */}
-      <div className="max-h-[650px] divide-y divide-gray-100">
+      <div className="max-h-[600px] divide-y divide-gray-100 overflow-y-auto">
         {currentBookings.length === 0 && (
-          <div className="px-4 py-4 text-gray-500 italic">No bookings found.</div>
+          <div className="px-2 py-3 text-gray-500 italic text-center">
+            No bookings found.
+          </div>
         )}
 
         {currentBookings.map((b, idx) => {
           const bookingDate = b.booking_date ? new Date(b.booking_date) : null;
           const isPast = bookingDate && bookingDate < new Date();
           const dateStr = bookingDate
-            ? bookingDate.toLocaleDateString()
+            ? `${bookingDate.getDate().toString().padStart(2, "0")}-${(
+              bookingDate.getMonth() + 1
+            )
+              .toString()
+              .padStart(2, "0")}-${bookingDate.getFullYear()}`
             : "-";
           const timeStr = bookingDate
-            ? bookingDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+            ? bookingDate.toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })
             : "-";
 
           return (
             <div
               key={b._id || idx}
-              className={`relative px-6 py-5 grid grid-cols-[40px_150px_120px_1fr_150px_100px_120px] gap-2 items-center
-                bg-white hover:bg-gray-50 transition-all duration-150
-                ${isPast ? "bg-gray-50 text-gray-500 italic" : ""}`}
+              className={`${gridCols} px-2 py-2 items-center ${isPast ? "bg-gray-50 text-gray-500 italic" : "bg-white hover:bg-gray-50"
+                } transition`}
             >
               <div className="font-semibold">{startIndex + idx + 1}</div>
+
+              {/* Customer */}
               <div className="truncate">{b.user_id?.name || "Unknown"}</div>
-              <div className="truncate">{b.pet_id?.species || "Unknown"}</div>
-              <div className="flex flex-wrap gap-1 overflow-hidden max-w-full">
+
+              {/* Pet: name (type) */}
+              <div className="truncate">
+                {b.pet_id
+                  ? `${b.pet_id?.name || "Unknown"} (${b.pet_id?.species || "Unknown"})`
+                  : "Unknown"}
+              </div>
+
+              {/* Services */}
+              <div className="truncate flex gap-1 overflow-hidden max-w-full">
                 {Array.isArray(b.services) && b.services.length > 0 ? (
-                  b.services.map((s) => (
-                    <span
-                      key={s._id || s.service_id?._id}
-                      className="px-2 py-0.5 text-xs bg-gray-100 border rounded-md text-gray-700 truncate"
-                    >
-                      {s.name || s.service_id?.name || "Service"} × {s.quantity || 1}
-                    </span>
-                  ))
+                  <>
+                    {b.services.slice(0, 2).map((s) => (
+                      <span
+                        key={s._id || s.service_id?._id}
+                        className="px-1 py-0.5 text-xs bg-gray-100 border rounded truncate"
+                        title={`${s.name || s.service_id?.name || "Service"} × ${s.quantity || 1}`}
+                      >
+                        {s.name || s.service_id?.name || "Service"} × {s.quantity || 1}
+                      </span>
+                    ))}
+                    {b.services.length > 2 && (
+                      <span className="px-1 py-0.5 text-xs bg-gray-200 border rounded text-gray-600">
+                        +{b.services.length - 2} more
+                      </span>
+                    )}
+                  </>
                 ) : (
-                  <span className="text-gray-400 italic">No service</span>
+                  <span className="text-gray-400 italic text-xs truncate">No service</span>
                 )}
               </div>
-              <div>{dateStr} {timeStr}</div>
+
+
+              {/* Date & Time */}
+              <div className="text-xs truncate">{dateStr} {timeStr}</div>
+
+              {/* Status */}
               <div>
                 <span
-                  className={`px-2 py-1 text-xs rounded-full font-semibold ${
-                    b.status === "PENDING"
+                  className={`px-1 py-0.5 text-xs rounded-full font-semibold ${b.status === "PENDING"
                       ? "bg-yellow-100 text-yellow-700"
                       : b.status === "CONFIRMED"
-                      ? "bg-blue-100 text-blue-700"
-                      : b.status === "COMPLETED"
-                      ? "bg-green-100 text-green-700"
-                      : b.status === "CANCELED"
-                      ? "bg-red-100 text-red-700"
-                      : "bg-gray-100 text-gray-600"
-                  }`}
+                        ? "bg-blue-100 text-blue-700"
+                        : b.status === "COMPLETED"
+                          ? "bg-green-100 text-green-700"
+                          : b.status === "CANCELED"
+                            ? "bg-red-100 text-red-700"
+                            : "bg-gray-100 text-gray-600"
+                    }`}
                 >
                   {b.status}
                 </span>
               </div>
-              <div className="flex justify-center gap-1">
+
+              {/* Actions */}
+              <div className="flex justify-center gap-1 text-xs">
                 <button
                   onClick={() => onView(b)}
-                  className="px-2 py-1 text-xs border rounded hover:bg-gray-100"
+                  className="px-1 py-0.5 border rounded hover:bg-gray-100"
                 >
                   View
                 </button>
                 <button
                   onClick={() => onEdit(b)}
-                  className="px-2 py-1 text-xs border rounded hover:bg-blue-50 border-blue-600 text-blue-600"
+                  className="px-1 py-0.5 border rounded hover:bg-blue-50 border-blue-500 text-blue-600"
                 >
                   Edit
                 </button>
                 <button
                   onClick={() => handleDeleteClick(b._id)}
-                  className="px-2 py-1 text-xs border rounded hover:bg-red-50 border-red-600 text-red-600"
+                  className="px-1 py-0.5 border rounded hover:bg-red-50 border-red-500 text-red-600"
                 >
                   Delete
                 </button>
@@ -137,7 +180,7 @@ export default function BookingTable({
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="p-4 bg-gray-50 border-t flex justify-center">
+        <div className="p-3 bg-gray-50 border-t flex justify-center">
           <Pagination
             page={currentPage}
             totalPages={totalPages}

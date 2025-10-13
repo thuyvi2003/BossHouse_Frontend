@@ -88,7 +88,9 @@ export default function Navbar() {
                 <NavLink to="/post" className={navLinkClass}>
                     Blog
                 </NavLink>
-
+                <NavLink to="/contact" className={navLinkClass}>
+                    Contact
+                </NavLink>
 
                 {/* Notification Icon */}
                 <div
