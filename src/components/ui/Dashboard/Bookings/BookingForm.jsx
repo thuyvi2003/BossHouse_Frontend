@@ -4,6 +4,23 @@ import { Plus, Minus, Calendar, Clock } from "lucide-react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
+// Modal wrapper
+function Modal({ children, onClose }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl p-6 animate-fade-in overflow-auto relative">
+        <button
+          className="absolute top-3 right-3 text-gray-500 hover:text-red-600 text-2xl font-bold"
+          onClick={onClose}
+        >
+          ×
+        </button>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export default function BookingForm({
   initialData,
   mode = "add", // "add" | "edit" | "view"
@@ -14,7 +31,6 @@ export default function BookingForm({
 }) {
   const isView = mode === "view";
   const isEdit = mode === "edit";
-
   const [form, setForm] = useState({
     customer_id: "",
     pet_id: "",
@@ -29,9 +45,8 @@ export default function BookingForm({
   const [errors, setErrors] = useState({});
   const [isPastBooking, setIsPastBooking] = useState(false);
   const datePickerRef = useRef(null);
-  const timePickerRef = useRef(null);
 
-  // Init form
+  // --- Init form data ---
   useEffect(() => {
     const now = new Date();
     if (initialData) {
@@ -63,7 +78,7 @@ export default function BookingForm({
     }
   }, [initialData, options.services]);
 
-  // Calculate total price
+  // --- Calculate total price ---
   useEffect(() => {
     const total = form.services.reduce((sum, s) => {
       const service =
@@ -73,7 +88,7 @@ export default function BookingForm({
     setForm((prev) => ({ ...prev, total_price: total }));
   }, [form.services, options.services]);
 
-  // Add / Remove service
+  // --- Add/Remove services ---
   const handleAddService = (serviceId) => {
     if (isEdit && isPastBooking) return;
     setForm((prev) => {
@@ -124,14 +139,14 @@ export default function BookingForm({
     });
   };
 
-  // Change form field
+  // --- Field change ---
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
-  // Validation
+  // --- Validation ---
   const validateField = (name, value) => {
     switch (name) {
       case "customer_id":
@@ -160,7 +175,7 @@ export default function BookingForm({
     return null;
   };
 
-  // Submit
+  // --- Submit ---
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = {};
@@ -223,20 +238,12 @@ export default function BookingForm({
     }
   };
 
-  // Dropdown render
-  const renderDropdown = (
-    name,
-    label,
-    optionsArr,
-    getLabel,
-    disabled = false
-  ) => {
+  // --- Dropdown render ---
+  const renderDropdown = (name, label, optionsArr, getLabel, disabled = false) => {
     const bgClass = disabled ? "bg-gray-100" : "";
     return (
       <div>
-        <label className="block text-sm font-medium text-gray-700">
-          {label}
-        </label>
+        <label className="block text-sm font-medium text-gray-700">{label}</label>
         <select
           name={name}
           value={form[name]}
@@ -251,9 +258,7 @@ export default function BookingForm({
             </option>
           ))}
         </select>
-        {errors[name] && (
-          <p className="text-red-600 text-xs mt-1">{errors[name]}</p>
-        )}
+        {errors[name] && <p className="text-red-600 text-xs mt-1">{errors[name]}</p>}
       </div>
     );
   };
@@ -261,7 +266,7 @@ export default function BookingForm({
   const disableCustomerPet = isView || isEdit;
   const disableOtherFields = isView || (isEdit && isPastBooking);
 
-  // Status options
+  // --- Status options ---
   let statusOptions = [
     { _id: "PENDING", name: "Pending" },
     { _id: "CONFIRMED", name: "Confirmed" },
@@ -280,11 +285,7 @@ export default function BookingForm({
     );
   }
 
-  // Helpers for rolling time selector
-  const hours12 = Array.from({ length: 12 }, (_, i) => i + 1);
-  const minutes = Array.from({ length: 60 }, (_, i) => i);
-  const ampm = ["AM", "PM"];
-
+  // --- Time helpers ---
   const setHour = (h) => {
     const newDate = new Date(form.bookingDate);
     const currentHour = newDate.getHours();
@@ -292,13 +293,11 @@ export default function BookingForm({
     newDate.setHours(isPM ? (h % 12) + 12 : h % 12);
     setForm((prev) => ({ ...prev, bookingDate: newDate }));
   };
-
   const setMinute = (m) => {
     const newDate = new Date(form.bookingDate);
     newDate.setMinutes(m);
     setForm((prev) => ({ ...prev, bookingDate: newDate }));
   };
-
   const setAMPM = (v) => {
     const newDate = new Date(form.bookingDate);
     let h = newDate.getHours();
@@ -309,263 +308,219 @@ export default function BookingForm({
   };
 
   return (
-    <div className="flex justify-center mt-4 pb-4 bg-gray-50 min-h-screen overflow-auto">
-      <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-4xl animate-fade-in">
+    <Modal onClose={onCancel}>
+      <form onSubmit={handleSubmit} className="space-y-6">
         <h3 className="text-2xl font-bold text-yellow-800 mb-6">
-          {mode === "add"
-            ? "Add Booking"
-            : isEdit
-            ? "Edit Booking"
-            : "View Booking"}
+          {mode === "add" ? "Add Booking" : isEdit ? "Edit Booking" : "View Booking"}
         </h3>
 
         {errors.form && <div className="text-red-600 mb-4">{errors.form}</div>}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Customer, Pet, Veterinarian */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {renderDropdown(
-              "customer_id",
-              "Customer",
-              options.users,
-              (o) => o.name,
-              disableCustomerPet
+        {/* Customer, Pet, Veterinarian */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {renderDropdown(
+            "customer_id",
+            "Customer",
+            options.users,
+            (o) => o.name,
+            disableCustomerPet
+          )}
+          {renderDropdown(
+            "pet_id",
+            "Pet",
+            options.pets,
+            (o) => (o.name ? `${o.species} - ${o.name}` : o.species),
+            disableCustomerPet
+          )}
+          {renderDropdown(
+            "veterinarian_id",
+            "Veterinarian",
+            options.vets,
+            (o) => `${o.user_id?.name} (${o.specialty})`,
+            disableOtherFields
+          )}
+        </div>
+
+        {/* Services */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Services</label>
+          {!isView && !disableOtherFields && (
+            <select
+              onChange={(e) => {
+                if (e.target.value) {
+                  handleAddService(e.target.value);
+                  e.target.value = "";
+                }
+              }}
+              className="w-full border rounded p-2 mb-3 focus:ring-2 focus:ring-yellow-600 focus:border-transparent"
+            >
+              <option value="">Select a service</option>
+              {options.services.map((s) => (
+                <option key={s._id} value={s._id}>
+                  {s.name} - ${s.base_price} - {s.duration_minutes} mins
+                </option>
+              ))}
+            </select>
+          )}
+          {errors.services && <p className="text-red-600 text-xs">{errors.services}</p>}
+          <div className="flex flex-wrap gap-2 mt-2">
+            {form.services.length === 0 && (
+              <div className="p-2 border rounded bg-gray-50">No services selected</div>
             )}
-            {renderDropdown(
-              "pet_id",
-              "Pet",
-              options.pets,
-              (o) => (o.name ? `${o.species} - ${o.name}` : o.species),
-              disableCustomerPet
-            )}
-            {renderDropdown(
-              "veterinarian_id",
-              "Veterinarian",
-              options.vets,
-              (o) => `${o.user_id?.name} (${o.specialty})`,
-              disableOtherFields
-            )}
+            {form.services.map((s) => (
+              <div
+                key={s.service_id}
+                className="flex items-center gap-2 px-3 py-1 rounded-full shadow-sm text-yellow-800 bg-yellow-100"
+              >
+                <span>{s.name} × {s.quantity}</span>
+                {!isView && !disableOtherFields && (
+                  <div className="flex gap-1">
+                    <button
+                      type="button"
+                      onClick={() => handleAddService(s.service_id)}
+                      className="w-6 h-6 flex items-center justify-center bg-green-500 text-white rounded-full"
+                    >
+                      <Plus size={12} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveService(s.service_id)}
+                      className="w-6 h-6 flex items-center justify-center bg-red-500 text-white rounded-full"
+                    >
+                      <Minus size={12} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Date & Time */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+            <div className="relative">
+              <DatePicker
+                ref={datePickerRef}
+                selected={form.bookingDate}
+                onChange={(date) => {
+                  if (!date) return;
+                  setForm((prev) => {
+                    const newDate = new Date(prev.bookingDate);
+                    newDate.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
+                    return { ...prev, bookingDate: newDate };
+                  });
+                }}
+                dateFormat="dd-MM-yyyy"
+                disabled={disableOtherFields}
+                className={`w-full border rounded p-2 pl-7 focus:ring-2 focus:ring-yellow-600 focus:border-transparent ${
+                  disableOtherFields ? "bg-gray-100" : ""
+                }`}
+              />
+              <Calendar
+                className="absolute left-2 top-2 w-5 h-5 text-gray-500 cursor-pointer"
+                onClick={() =>
+                  datePickerRef.current && datePickerRef.current.setOpen(true)
+                }
+              />
+            </div>
           </div>
 
-          {/* Services */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Services
-            </label>
-            {!isView && !disableOtherFields && (
+            <label className="block text-sm font-medium text-gray-700 mb-1">Time</label>
+            <div className="flex items-center gap-1">
+              <Clock className="w-5 h-5 text-gray-500" />
               <select
-                onChange={(e) => {
-                  if (e.target.value) {
-                    handleAddService(e.target.value);
-                    e.target.value = "";
-                  }
-                }}
-                className="w-full border rounded p-2 mb-3 focus:ring-2 focus:ring-yellow-600 focus:border-transparent"
+                className="border rounded p-2 w-14"
+                value={form.bookingDate.getHours() % 12 || 12}
+                onChange={(e) => setHour(parseInt(e.target.value))}
+                disabled={disableOtherFields}
               >
-                <option value="">Select a service</option>
-                {options.services.map((s) => (
-                  <option key={s._id} value={s._id}>
-                    {s.name} - ${s.base_price} - {s.duration_minutes} mins
-                  </option>
+                {Array.from({ length: 12 }, (_, i) => i + 1).map((h) => (
+                  <option key={h} value={h}>{h}</option>
                 ))}
               </select>
+              <span className="font-semibold">:</span>
+              <select
+                className="border rounded p-2 w-14"
+                value={form.bookingDate.getMinutes()}
+                onChange={(e) => setMinute(parseInt(e.target.value))}
+                disabled={disableOtherFields}
+              >
+                {Array.from({ length: 60 }, (_, i) => (
+                  <option key={i} value={i}>{i.toString().padStart(2, "0")}</option>
+                ))}
+              </select>
+              <select
+                className="border rounded p-2 w-16"
+                value={form.bookingDate.getHours() >= 12 ? "PM" : "AM"}
+                onChange={(e) => setAMPM(e.target.value)}
+                disabled={disableOtherFields}
+              >
+                <option value="AM">AM</option>
+                <option value="PM">PM</option>
+              </select>
+            </div>
+            {errors.bookingDate && (
+              <p className="text-red-600 text-xs mt-1">{errors.bookingDate}</p>
             )}
-            {errors.services && (
-              <p className="text-red-600 text-xs">{errors.services}</p>
-            )}
-            <div className="flex flex-wrap gap-2 mt-2">
-              {form.services.length === 0 && (
-                <div className="p-2 border rounded bg-gray-50">
-                  No services selected
-                </div>
-              )}
-              {form.services.map((s) => (
-                <div
-                  key={s.service_id}
-                  className="flex items-center gap-2 px-3 py-1 rounded-full shadow-sm text-yellow-800 bg-yellow-100"
-                >
-                  <span>
-                    {s.name} × {s.quantity}
-                  </span>
-                  {!isView && !disableOtherFields && (
-                    <div className="flex gap-1">
-                      <button
-                        type="button"
-                        onClick={() => handleAddService(s.service_id)}
-                        className="w-6 h-6 flex items-center justify-center bg-green-500 text-white rounded-full"
-                      >
-                        <Plus size={12} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveService(s.service_id)}
-                        className="w-6 h-6 flex items-center justify-center bg-red-500 text-white rounded-full"
-                      >
-                        <Minus size={12} />
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
           </div>
+        </div>
 
-          {/* Date & Time */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Date
-              </label>
-              <div className="relative">
-                <DatePicker
-                  ref={datePickerRef}
-                  selected={form.bookingDate}
-                  onChange={(date) => {
-                    if (!date) return;
-                    setForm((prev) => {
-                      const newDate = new Date(prev.bookingDate);
-                      newDate.setFullYear(
-                        date.getFullYear(),
-                        date.getMonth(),
-                        date.getDate()
-                      );
-                      return { ...prev, bookingDate: newDate };
-                    });
-                  }}
-                  dateFormat="MMMM d, yyyy"
-                  disabled={disableOtherFields}
-                  className={`w-full border rounded p-2 pl-7 focus:ring-2 focus:ring-yellow-600 focus:border-transparent ${
-                    disableOtherFields ? "bg-gray-100" : ""
-                  }`}
-                />
-                <Calendar
-                  className="absolute left-2 top-2 w-5 h-5 text-gray-500 cursor-pointer"
-                  onClick={() =>
-                    datePickerRef.current && datePickerRef.current.setOpen(true)
-                  }
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Time
-              </label>
-              <div className="flex items-center gap-1">
-                <Clock className="w-5 h-5 text-gray-500" />
-                {/* Hour */}
-                <select
-                  className="border rounded p-2 w-14"
-                  value={form.bookingDate.getHours() % 12 || 12}
-                  onChange={(e) => setHour(parseInt(e.target.value))}
-                  disabled={disableOtherFields}
-                >
-                  {Array.from({ length: 12 }, (_, i) => i + 1).map((h) => (
-                    <option key={h} value={h}>
-                      {h}
-                    </option>
-                  ))}
-                </select>
-                <span className="font-semibold">:</span>
-                {/* Minute */}
-                <select
-                  className="border rounded p-2 w-14"
-                  value={form.bookingDate.getMinutes()}
-                  onChange={(e) => setMinute(parseInt(e.target.value))}
-                  disabled={disableOtherFields}
-                >
-                  {Array.from({ length: 60 }, (_, i) => (
-                    <option key={i} value={i}>
-                      {i.toString().padStart(2, "0")}
-                    </option>
-                  ))}
-                </select>
-                {/* AM/PM */}
-                <select
-                  className="border rounded p-2 w-16"
-                  value={form.bookingDate.getHours() >= 12 ? "PM" : "AM"}
-                  onChange={(e) => setAMPM(e.target.value)}
-                  disabled={disableOtherFields}
-                >
-                  <option value="AM">AM</option>
-                  <option value="PM">PM</option>
-                </select>
-              </div>
-              {errors.bookingDate && (
-                <p className="text-red-600 text-xs mt-1">
-                  {errors.bookingDate}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Status & Total */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              {renderDropdown(
-                "status",
-                "Status",
-                statusOptions,
-                (o) => o.name,
-                isView
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Total Price
-              </label>
-              <div className="p-2 border rounded font-semibold text-yellow-800 bg-gray-50">
-                ${form.total_price}
-              </div>
-            </div>
-          </div>
-
-          {/* Note */}
+        {/* Status & Total */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>{renderDropdown("status", "Status", statusOptions, (o) => o.name, isView)}</div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Note
-            </label>
-            <textarea
-              name="note"
-              value={form.note}
-              onChange={handleChange}
-              disabled={disableOtherFields}
-              className={`w-full border rounded p-2 focus:ring-2 focus:ring-yellow-600 focus:border-transparent ${
-                disableOtherFields ? "bg-gray-100" : ""
-              }`}
-              placeholder="Optional note..."
-            />
+            <label className="block text-sm font-medium text-gray-700">Total Price</label>
+            <div className="p-2 border rounded font-semibold text-yellow-800 bg-gray-50">
+              ${form.total_price}
+            </div>
           </div>
+        </div>
 
-          {/* Buttons */}
-          <div className="flex justify-center gap-4 mt-6">
+        {/* Note */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Note</label>
+          <textarea
+            name="note"
+            value={form.note}
+            onChange={handleChange}
+            disabled={disableOtherFields}
+            className={`w-full border rounded p-2 focus:ring-2 focus:ring-yellow-600 focus:border-transparent ${
+              disableOtherFields ? "bg-gray-100" : ""
+            }`}
+          />
+        </div>
+
+        {/* Buttons */}
+        <div className="flex justify-end gap-4 mt-4">
+          {isView && (
             <button
               type="button"
-              onClick={onCancel}
-              className="px-5 py-2 bg-gray-400 hover:bg-gray-500 text-white rounded-lg shadow"
+              onClick={onEditClick}
+              className="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700"
             >
-              {isView ? "Back to List" : "Cancel"}
+              Edit
             </button>
-            {isView && (
-              <button
-                type="button"
-                onClick={() => onEditClick && onEditClick(initialData)}
-                className="px-5 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg shadow"
-              >
-                Edit
-              </button>
-            )}
-            {(mode === "add" || isEdit) && (
-              <button
-                type="submit"
-                className="px-5 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg shadow"
-              >
-                {isEdit ? "Save Changes" : "Save"}
-              </button>
-            )}
-          </div>
-        </form>
-      </div>
-    </div>
+          )}
+          <button
+            type="button"
+            onClick={onCancel}
+            className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+          >
+            Cancel
+          </button>
+          {!isView && (
+            <button
+              type="submit"
+              className="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700"
+            >
+              Save
+            </button>
+          )}
+        </div>
+      </form>
+    </Modal>
   );
 }

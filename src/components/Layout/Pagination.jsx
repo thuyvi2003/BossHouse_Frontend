@@ -22,7 +22,7 @@ const Pagination = ({ page, totalPages, onPageChange }) => {
     };
 
     return (
-        <div className="flex justify-center items-center space-x-3 py-6">
+        <div className="flex justify-center items-center space-x-3 py-0">
             <div className="flex relative justify-center items-center">
 
                 <button

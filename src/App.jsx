@@ -23,7 +23,10 @@ import ResetPasswordPage from './pages/auth/ResetPasswordPage.jsx';
 import Services from './pages/Services.jsx';
 import UserBookingForm from './pages/UserBookingForm.jsx';
 import ProfilePage from './pages/ProfilePage.jsx';
-
+import ProfileLayout from './components/Layout/ProfileLayout.jsx';
+import ContactPage from './pages/ContactPage.jsx';
+import ContactHistory from "./pages/ContactHistory";
+import BookingHistory from "./pages/BookingHistory";
 
 function App() {
 
@@ -62,6 +65,12 @@ function App() {
             <Route path="/services" element={<Services />} />
             <Route path="/user-booking" element={<UserBookingForm />} />
             <Route path='/profile' element={<ProfilePage/>}/>
+            <Route path='/contact' element={<ContactPage />} />
+            <Route path="/profile" element={<ProfileLayout />}>
+              <Route index element={<ProfilePage />} />
+              <Route path="contact-history" element={<ContactHistory />} />
+              <Route path="booking-history" element={<BookingHistory />} />  {/* Thêm dòng này */}
+            </Route>
           </Routes>
 
           <ToastContainer position="top-right" autoClose={5000} />
