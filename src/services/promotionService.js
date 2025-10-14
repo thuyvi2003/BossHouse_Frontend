@@ -1,5 +1,6 @@
 // src/services/promotionService.js
 import API_BASE_URL from "@/config/api";
+import axiosInstance from "@/config/axiosConfig";
 
 export async function getPromotionsList(page = 1, limit = 8, code ="", status="") {
     const token = localStorage.getItem("token");
@@ -70,3 +71,16 @@ export async function removePromotion(id) {
     }
     return res.json();
 }
+
+export const getUserClaimedPromotions = async () => {
+  return await axiosInstance.get("/promotions/claimed");
+};
+export const applyPromotion = async (promotionId) => {
+  try {
+    const res = await axiosInstance.post("/promotions/apply", { promotion_id: promotionId });
+    return res;
+  } catch (error) {
+    console.error("Failed to apply promotion:", error.response?.data || error.message);
+    throw error;
+  }
+};
