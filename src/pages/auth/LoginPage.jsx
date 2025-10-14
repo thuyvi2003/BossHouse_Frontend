@@ -34,7 +34,7 @@ export default function LoginPage() {
             toast.success("Login successful!");
             // Check the user role from the login result
             if (result.user.role === 'admin') {
-                navigate("/Dashboard");
+                navigate("/dashboard");
             } else {
                 navigate("/");
             }
