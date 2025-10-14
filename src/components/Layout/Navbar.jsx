@@ -7,6 +7,18 @@ import { Button } from "@/components/ui/button";
 import { toast } from "react-toastify";
 import { claimPromotion, getAvailablePromotions } from "@/services/promotionService";
 
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { User, LogOut } from "lucide-react";
+
+
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
     const [cartItems, setCartItems] = useState([]);
@@ -281,14 +293,40 @@ export default function Navbar() {
                     </div>
                 </div>
 
-                {/* Conditional Login/Logout Button */}
+                {/* Conditional Login/User Avatar Dropdown */}
                 {user ? (
-                    <Button
-                        className="ml-4 px-5 py-2 rounded-full bg-black text-white hover:bg-gray-800 transition-colors duration-200 shadow-md"
-                        onClick={handleLogout}
-                    >
-                        Logout
-                    </Button>
+                    <div className="ml-4">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="relative h-12 w-12 rounded-full">
+                                    <Avatar className="h-12 w-12">
+                                        <AvatarImage src={user.profile_image} alt={user.name} />
+                                        <AvatarFallback>{user.name?.charAt(0)}</AvatarFallback>
+                                    </Avatar>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" forceMount>
+                                <DropdownMenuLabel className="font-normal">
+                                    <div className="flex flex-col space-y-1">
+                                        <p className="text-sm font-medium leading-none">{user.name}</p>
+                                        <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                                    </div>
+                                </DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem asChild>
+                                    <NavLink to="/profile" className="w-full">
+                                        <User className="mr-2" />
+                                        Profile
+                                    </NavLink>
+                                </DropdownMenuItem>
+
+                                <DropdownMenuItem onClick={handleLogout} >
+                                    <LogOut className="mr-2" />
+                                    Logout
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
                 ) : (
                     <NavLink
                         to="/login"

@@ -49,7 +49,7 @@ export default function LoginPage() {
         if (result.success) {
             toast.success("Google login successful!");
             if (result.user.role === 'admin') {
-                navigate("/Dashboard");
+                navigate("/dashboard");
             } else {
                 navigate("/");
             }
