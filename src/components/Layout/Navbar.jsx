@@ -11,6 +11,10 @@ export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
     const [cartItems, setCartItems] = useState([]);
     const { user, logout } = useAuthStore();
+    const [promotions, setPromotions] = useState([]);
+    const [showPromoTooltip, setShowPromoTooltip] = useState(false);
+
+
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -33,6 +37,36 @@ export default function Navbar() {
             toast.error("Logout failed");
         }
     };
+
+
+    const fetchPromotions = async () => {
+        try {
+            const res = await getAvailablePromotions();
+            setPromotions(res.data?.data?.promotions || []);
+            console.log("Promotion day ne", res.data?.data?.promotions)
+        } catch (error) {
+            console.error("Failed to fetch promotions:", error.message);
+        }
+    };
+    useEffect(() => {
+        if (showPromoTooltip) fetchPromotions();
+    }, [showPromoTooltip]);
+
+
+    const handleClaimPromotion = async (promotionId) => {
+        try {
+            await claimPromotion(promotionId);
+            toast.success("Promotion claimed successfully 🎉");
+            setShowPromoTooltip(false);
+
+            // Cập nhật lại danh sách (nếu muốn)
+            fetchPromotions();
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Failed to claim promotion");
+            setShowPromoTooltip(false);
+        }
+    };
+
 
     const displayedItems = cartItems.slice(0, 3);
 
@@ -73,6 +107,60 @@ export default function Navbar() {
                 {/* Notification Dropdown */}
                 {user && <NotificationDropdown />}
 
+                {/* Promotion  */}
+                <div
+                    className="relative"
+                    onMouseEnter={() => setShowPromoTooltip(true)}
+                    onMouseLeave={() => setShowPromoTooltip(false)}
+                >
+                    <Gift size={28} className="text-black hover:text-gray-600 transition cursor-pointer" />
+                    {promotions.length > 0 && (
+                        <span className="absolute -top-2 -right-2 text-xs bg-green-500 text-white w-5 h-5 flex items-center justify-center rounded-full shadow-md">
+                            {promotions.length}
+                        </span>
+                    )}
+                    {showPromoTooltip && (
+                        <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border before:absolute before:w-[40%] before:h-[40px]  before:-top-4 before:right-0 border-gray-200 z-50 animate-fade-in">
+                            <div className="p-3 border-b border-gray-200">
+                                <h3 className="font-semibold text-gray-900">Available Promotions</h3>
+                            </div>
+
+                            <div className="max-h-72 overflow-y-auto">
+                                {promotions.length > 0 ? (
+                                    <ul className="divide-y divide-gray-100">
+                                        {promotions.map((promo) => (
+                                            <li
+                                                key={promo._id}
+                                                className="p-3 hover:bg-gray-50 transition flex justify-between items-center"
+                                            >
+                                                <div>
+                                                    <p className="text-sm font-medium text-gray-800">
+                                                        {promo.description || promo.code}
+                                                    </p>
+                                                    <p className="text-xs text-gray-500">
+                                                        {promo.promotion_type === "percent"
+                                                            ? `Giảm ${promo.promotion_value}%`
+                                                            : `Giảm ${promo.promotion_value}đ`}
+                                                    </p>
+                                                </div>
+                                                <button
+                                                    onClick={() => handleClaimPromotion(promo._id)}
+                                                    className="text-xs px-3 py-1 rounded bg-[#846551] text-white hover:bg-[#6d5041] transition"
+                                                >
+                                                    Claim
+                                                </button>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <p className="text-center text-gray-500 py-4">
+                                        No promotions available
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
                 {/* Cart Icon */}
                 <div
                     className="relative"
@@ -90,7 +178,7 @@ export default function Navbar() {
                         </div>
                     </NavLink>
                     <div
-                        className={`absolute right-0 mt-2 w-72 bg-white border rounded-xl shadow-xl transition-all duration-300 origin-top transform ${isOpen
+                        className={`absolute right-0 mt-2 w-72 bg-white border  rounded-xl shadow-xl transition-all duration-300 origin-top transform ${isOpen
                             ? "scale-100 opacity-100 translate-y-0"
                             : "scale-95 opacity-0 -translate-y-2 pointer-events-none"
                             }`}

@@ -23,7 +23,7 @@ import ResetPasswordPage from './pages/auth/ResetPasswordPage.jsx';
 import Services from './pages/Services.jsx';
 import UserBookingForm from './pages/UserBookingForm.jsx';
 import ProfilePage from './pages/ProfilePage.jsx';
-import ProfileLayout from './components/Layout/ProfileLayout.jsx';
+import ProfileLayout from './components/ui/Profile/ProfileLayout.jsx';
 import ContactPage from './pages/ContactPage.jsx';
 import ContactHistory from "./pages/ContactHistory.jsx";
 import BookingHistory from "./pages/BookingHistory.jsx";
