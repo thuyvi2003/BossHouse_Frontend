@@ -35,7 +35,8 @@ const NotificationDropdown = () => {
   const fetchNotifications = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:3000/api/notifications', {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+      const response = await fetch(`${API_BASE_URL}/api/notifications`, {
         headers: {
           'Authorization': `Bearer ${userToken}`
         }
@@ -43,43 +44,18 @@ const NotificationDropdown = () => {
 
       if (response.ok) {
         const result = await response.json();
-        console.log('Notification Dropdown API response:', result); // Debug log
-        console.log('Result.data type:', typeof result.data);
-        console.log('Result.data is array:', Array.isArray(result.data));
-        console.log('Result.data length:', result.data?.length);
-        
-        // Handle different response formats
-        let notificationsData = [];
-        if (result.data && result.data.notifications && Array.isArray(result.data.notifications)) {
-          notificationsData = result.data.notifications;
-          console.log('Using result.data.notifications, count:', notificationsData.length);
-        } else if (Array.isArray(result.data)) {
-          notificationsData = result.data;
-          console.log('Using result.data, count:', notificationsData.length);
-        } else if (Array.isArray(result)) {
-          notificationsData = result;
-          console.log('Using result directly, count:', notificationsData.length);
-        } else if (result.notifications && Array.isArray(result.notifications)) {
-          notificationsData = result.notifications;
-          console.log('Using result.notifications, count:', notificationsData.length);
-        } else {
-          console.log('No valid data found, result keys:', Object.keys(result));
-        }
-        
-        console.log('All notifications before filter:', notificationsData);
-        
-        const activeNotifications = notificationsData.filter(notification => 
-          notification.status === 'active'
+        const list = (
+          (result?.data?.notifications && Array.isArray(result.data.notifications) && result.data.notifications) ||
+          (Array.isArray(result?.data) && result.data) ||
+          (Array.isArray(result) && result) ||
+          (Array.isArray(result?.notifications) && result.notifications) ||
+          []
         );
-        
-        console.log('Active notifications after filter:', activeNotifications);
-        console.log('Active notifications count:', activeNotifications.length);
-        
-        setNotifications(activeNotifications);
-        
-        // Count unread notifications (assuming all are unread for simplicity)
-        // In a real app, you'd track read status
-        setUnreadCount(activeNotifications.length);
+        setNotifications(list);
+        setUnreadCount(list.length);
+      } else {
+        setNotifications([]);
+        setUnreadCount(0);
       }
     } catch (error) {
       console.error('Error fetching notifications:', error);
@@ -91,7 +67,9 @@ const NotificationDropdown = () => {
   };
 
   const handleToggleDropdown = () => {
-    setIsOpen(!isOpen);
+    const next = !isOpen;
+    setIsOpen(next);
+    if (next) fetchNotifications();
   };
 
   const formatDate = (dateString) => {
@@ -113,11 +91,17 @@ const NotificationDropdown = () => {
 
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div
+      className="relative"
+      ref={dropdownRef}
+      onMouseEnter={() => { setIsOpen(true); fetchNotifications(); }}
+      onMouseLeave={() => { setIsOpen(false); }}
+    >
       {/* Bell Icon with Badge */}
       <button
-        onClick={handleToggleDropdown}
+        onClick={() => { setIsOpen(false); navigate('/notifications'); }}
         className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+        aria-label="Notifications"
       >
         <Bell className="w-6 h-6" />
         {unreadCount > 0 && (
@@ -184,14 +168,7 @@ const NotificationDropdown = () => {
             )}
           </div>
 
-          {/* Footer */}
-          {notifications.length > 0 && (
-            <div className="p-3 border-t border-gray-200 bg-gray-50">
-              <button onClick={() => { setIsOpen(false); navigate('/notifications'); }} className="w-full text-center text-sm text-blue-600 hover:text-blue-800 font-medium">
-                View All Notifications
-              </button>
-            </div>
-          )}
+          {/* Footer removed per request */}
         </div>
       )}
     </div>

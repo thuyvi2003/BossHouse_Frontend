@@ -6,6 +6,7 @@ import { useAuthStore } from "@/stores/useAuthStore";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-toastify";
 import NotificationDropdown from "@/components/ui/NotificationDropdown";
+import notificationService from "@/services/notificationService";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -24,6 +25,9 @@ export default function Navbar() {
     const { user, logout } = useAuthStore();
     const [promotions, setPromotions] = useState([]);
     const [showPromoTooltip, setShowPromoTooltip] = useState(false);
+    const [hasNotificationFeature, setHasNotificationFeature] = useState(true);
+    const [notifications, setNotifications] = useState([]);
+    const [showNotificationTooltip, setShowNotificationTooltip] = useState(false);
 
 
     const navigate = useNavigate();
@@ -39,6 +43,32 @@ export default function Navbar() {
         };
         fetchCart();
     }, []);
+
+    const enableNotificationFeature = () => {
+        setHasNotificationFeature(true);
+    };
+
+    const addNotification = (notification) => {
+        if (hasNotificationFeature) {
+            setNotifications((prev) => [notification, ...prev]);
+        }
+    };
+
+    useEffect(() => {
+        const fetchNotif = async () => {
+            try {
+                const res = await notificationService.getAllNotifications({ limit: 5 });
+                const list = (res?.data?.notifications) ?? (res?.data) ?? (res?.notifications) ?? res ?? [];
+                setNotifications(Array.isArray(list) ? list : []);
+            } catch (e) {
+                setNotifications([]);
+            }
+        };
+        if (showNotificationTooltip) {
+            setHasNotificationFeature(true);
+            fetchNotif();
+        }
+    }, [showNotificationTooltip]);
 
     const handleLogout = async () => {
         try {
