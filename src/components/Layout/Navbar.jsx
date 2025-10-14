@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { ShoppingCart } from "phosphor-react";
+import { ShoppingCart, Bell, Gift } from "phosphor-react";
 import { getUserCart } from "@/services/cartService";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { Button } from "@/components/ui/button";

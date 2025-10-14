@@ -63,25 +63,21 @@ function App() {
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-            {/* Main Pages */}
+            {/* Other Pages */}
             <Route path="/products" element={<ProductPage />} />
             <Route path="/product/:id" element={<ProductDetailPage />} />
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/Dashboard" element={<Dashboard />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/post" element={<BlogScreen />} />
             <Route path="/post/:id" element={<PostDetail />} />
             <Route path="/services" element={<Services />} />
             <Route path="/user-booking" element={<UserBookingForm />} />
-
-            {/* Profile + Contact + Booking History */}
             <Route path="/profile" element={<ProfileLayout />}>
               <Route index element={<ProfilePage />} />
               <Route path="contact-history" element={<ContactHistory />} />
               <Route path="booking-history" element={<BookingHistory />} />
             </Route>
             <Route path="/contact" element={<ContactPage />} />
-
-            {/* Notification Pages */}
             <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/notifications/:id" element={<NotificationDetailPage />} />
           </Routes>
