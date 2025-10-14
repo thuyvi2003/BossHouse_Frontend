@@ -1,50 +1,86 @@
-import axios from "axios";
+// src/services/optionService.js
+import API_BASE_URL from "@/config/api";
+import axiosInstance from "@/config/axiosConfig";
 
-const API_BASE = "http://localhost:3000/api";
+const USERS_API = `${API_BASE_URL}/users`;
+const PETS_API = `${API_BASE_URL}/pets`;
+const SERVICES_API = `${API_BASE_URL}/services`;
+const VETS_API = `${API_BASE_URL}/veterinarians`;
 
 const optionService = {
   getUsers: async () => {
-    const res = await axios.get(`${API_BASE}/users`);
-    return res.data.data; // [{_id, name}, ...]
-  },
-  getCurrentUser: async () => {
-    const token = localStorage.getItem("token");
-    const res = await axios.get(`${API_BASE}/users/me`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    return res.data; // hoặc res.data.data nếu bạn gói dữ liệu
-  },
-  getPets: async () => {
-    const res = await axios.get(`${API_BASE}/pets`);
-    return res.data.data;
-  },
-  createPet: async (petData) => {
-    const token = localStorage.getItem("token");
-    const res = await axios.post(`${API_BASE}/pets`, petData, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    return res.data.data || res.data;
-  },
-  getServices: async () => {
-    const res = await axios.get(`${API_BASE}/services`);
-    return res.data.data;
-  },
-  getVets: async () => {
-    const res = await axios.get(`${API_BASE}/veterinarians`);
-    return res.data.data;
+    try {
+      const res = await axiosInstance.get(USERS_API);
+      return res.data.data;
+    } catch (error) {
+      console.error("Failed to fetch users:", error.response?.data || error.message);
+      throw error;
+    }
   },
 
-  // Nếu muốn gọn hơn, có thể viết 1 hàm chung
+  getCurrentUser: async () => {
+    try {
+      const res = await axiosInstance.get(`${USERS_API}/me`);
+      return res.data.data || res.data;
+    } catch (error) {
+      console.error("Failed to fetch current user:", error.response?.data || error.message);
+      throw error;
+    }
+  },
+
+  getPets: async () => {
+    try {
+      const res = await axiosInstance.get(PETS_API);
+      return res.data.data;
+    } catch (error) {
+      console.error("Failed to fetch pets:", error.response?.data || error.message);
+      throw error;
+    }
+  },
+
+  createPet: async (petData) => {
+    try {
+      const res = await axiosInstance.post(PETS_API, petData);
+      return res.data.data || res.data;
+    } catch (error) {
+      console.error("Failed to create pet:", error.response?.data || error.message);
+      throw error;
+    }
+  },
+
+  getServices: async () => {
+    try {
+      const res = await axiosInstance.get(SERVICES_API);
+      return res.data.data;
+    } catch (error) {
+      console.error("Failed to fetch services:", error.response?.data || error.message);
+      throw error;
+    }
+  },
+
+  getVets: async () => {
+    try {
+      const res = await axiosInstance.get(VETS_API);
+      return res.data.data;
+    } catch (error) {
+      console.error("Failed to fetch veterinarians:", error.response?.data || error.message);
+      throw error;
+    }
+  },
+
   getAllOptions: async () => {
-    const [users, pets, services, vets] = await Promise.all([
-      optionService.getUsers(),
-      optionService.getPets(),
-      optionService.getServices(),
-      optionService.getVets(),
-    ]);
-    return { users, pets, services, vets };
+    try {
+      const [users, pets, services, vets] = await Promise.all([
+        optionService.getUsers(),
+        optionService.getPets(),
+        optionService.getServices(),
+        optionService.getVets(),
+      ]);
+      return { users, pets, services, vets };
+    } catch (error) {
+      console.error("Failed to fetch all options:", error.response?.data || error.message);
+      throw error;
+    }
   },
 };
 

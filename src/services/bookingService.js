@@ -1,62 +1,104 @@
-import axios from "axios";
+// src/services/bookingService.js
+import API_BASE_URL from "@/config/api";
+import axiosInstance from "@/config/axiosConfig";
 
-const API = "http://localhost:3000/api/bookings";
+const BOOKING_API = `${API_BASE_URL}/bookings`;
 
 const bookingService = {
-  getAll: async () => {
-    const token = localStorage.getItem("token");
-    const res = await axios.get(API, { headers: { Authorization: `Bearer ${token}` } });
-    return res.data.data;
+  getAllBookings: async () => {
+    try {
+      const res = await axiosInstance.get(BOOKING_API);
+      return res.data.data;
+    } catch (error) {
+      console.error("Failed to fetch all bookings:", error.response?.data || error.message);
+      throw error;
+    }
   },
 
-  getById: async (id) => {
-    const token = localStorage.getItem("token");
-    const res = await axios.get(`${API}/${id}`, { headers: { Authorization: `Bearer ${token}` } });
-    return res.data.data;
+  getBookingById: async (id) => {
+    try {
+      const res = await axiosInstance.get(`${BOOKING_API}/${id}`);
+      return res.data.data;
+    } catch (error) {
+      console.error(`Failed to fetch booking ${id}:`, error.response?.data || error.message);
+      throw error;
+    }
   },
 
-  create: async (data) => {
-    const token = localStorage.getItem("token");
-    const res = await axios.post(API, data, { headers: { Authorization: `Bearer ${token}` } });
-    return res.data.data;
+  createBooking: async (booking) => {
+    try {
+      const res = await axiosInstance.post(BOOKING_API, booking);
+      return res.data.data;
+    } catch (error) {
+      console.error("Failed to create booking:", error.response?.data || error.message);
+      throw error;
+    }
   },
 
-  update: async (id, data) => {
-    const token = localStorage.getItem("token");
-    const res = await axios.put(`${API}/${id}`, data, { headers: { Authorization: `Bearer ${token}` } });
-    return res.data.data;
+  updateBooking: async (id, booking) => {
+    try {
+      const res = await axiosInstance.put(`${BOOKING_API}/${id}`, booking);
+      return res.data.data;
+    } catch (error) {
+      console.error(`Failed to update booking ${id}:`, error.response?.data || error.message);
+      throw error;
+    }
   },
 
-  remove: async (id) => {
-    const token = localStorage.getItem("token");
-    const res = await axios.delete(`${API}/${id}`, { headers: { Authorization: `Bearer ${token}` } });
-    return res.data.data;
+  removeBooking: async (id) => {
+    try {
+      const res = await axiosInstance.delete(`${BOOKING_API}/${id}`);
+      return res.data.data;
+    } catch (error) {
+      console.error(`Failed to remove booking ${id}:`, error.response?.data || error.message);
+      throw error;
+    }
   },
 
-  search: async (query) => {
-    const token = localStorage.getItem("token");
-    const res = await axios.get(`${API}/search?q=${encodeURIComponent(query)}`, { headers: { Authorization: `Bearer ${token}` } });
-    return res.data.data;
+  searchBookings: async (query) => {
+    try {
+      const url = new URL(`${BOOKING_API}/search`);
+      url.searchParams.append("q", query);
+
+      const res = await axiosInstance.get(url.toString());
+      return res.data.data;
+    } catch (error) {
+      console.error(`Failed to search bookings with query "${query}":`, error.response?.data || error.message);
+      throw error;
+    }
   },
 
-  filter: async (status) => {
-    const token = localStorage.getItem("token");
-    const res = await axios.get(`${API}/filter?status=${status}`, { headers: { Authorization: `Bearer ${token}` } });
-    return res.data.data;
+  filterBookings: async (status) => {
+    try {
+      const url = new URL(`${BOOKING_API}/filter`);
+      url.searchParams.append("status", status);
+
+      const res = await axiosInstance.get(url.toString());
+      return res.data.data;
+    } catch (error) {
+      console.error(`Failed to filter bookings with status "${status}":`, error.response?.data || error.message);
+      throw error;
+    }
   },
 
-  cancel: async (id) => {
-    const token = localStorage.getItem("token");
-    const res = await axios.put(`${API}/${id}/cancel`, null, { headers: { Authorization: `Bearer ${token}` } });
-    return res.data.data;
+  cancelBooking: async (id) => {
+    try {
+      const res = await axiosInstance.put(`${BOOKING_API}/${id}/cancel`);
+      return res.data.data;
+    } catch (error) {
+      console.error(`Failed to cancel booking ${id}:`, error.response?.data || error.message);
+      throw error;
+    }
   },
 
   getMyBookings: async () => {
-    const token = localStorage.getItem("token");
-    const res = await axios.get(`${API}/my-bookings`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    return res.data.data;
+    try {
+      const res = await axiosInstance.get(`${BOOKING_API}/my-bookings`);
+      return res.data.data;
+    } catch (error) {
+      console.error("Failed to fetch my bookings:", error.response?.data || error.message);
+      throw error;
+    }
   },
 };
 
