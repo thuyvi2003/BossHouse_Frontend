@@ -1,13 +1,17 @@
+import { useAuthStore } from "@/stores/useAuthStore";
+import { PasswordChange } from "@/components/ui/Profile/PasswordChange";
+import { DeleteAccount } from "@/components/ui/Profile/DeleteAccount";
+
 export default function ProfilePage() {
+  const { user } = useAuthStore();
+
   return (
     <div className="flex-1 overflow-auto">
-      {/* Header with gradient BossHouse style */}
-      <div className="h-48 bg-gradient-to-br from-[#d7cbbf] via-[#f9f5f1] to-[#846551] relative">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-[#d7cbbf] opacity-40 rounded-full blur-3xl"></div>
-      </div>
 
       {/* Profile Content */}
-      <div className="max-w-5xl mx-auto px-8 mt-20">
+      <div className="max-w-5xl mx-auto p-6">
+        <h2 className="text-3xl font-bold mb-6 text-yellow-800">Profile</h2>
+
         {/* Profile Header */}
         <div className="bg-white rounded-xl shadow-sm p-8 mb-6">
           <div className="flex items-start gap-6">
@@ -92,6 +96,21 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* Change Password Section */}
+      <div className="max-w-5xl mx-auto p-6">
+        <div className="bg-white rounded-xl shadow-sm p-8 mb-6">
+          <PasswordChange />
+        </div>
+      </div>
+
+      {/* Delete Account Section */}
+      <div className="max-w-5xl mx-auto p-6">
+        <div className="bg-white rounded-xl shadow-sm p-8 mb-6">
+          <DeleteAccount />
+        </div>
+      </div>
+
     </div>
   );
 }
