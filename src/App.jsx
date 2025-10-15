@@ -25,22 +25,29 @@ import UserBookingForm from './pages/UserBookingForm.jsx';
 import ProfilePage from './pages/ProfilePage.jsx';
 import ProfileLayout from './components/ui/Profile/ProfileLayout.jsx';
 import ContactPage from './pages/ContactPage.jsx';
-import ContactHistory from "./pages/ContactHistory";
-import BookingHistory from "./pages/BookingHistory";
+import ContactHistory from "./pages/ContactHistory.jsx";
+import BookingHistory from "./pages/BookingHistory.jsx";
+import NotificationsPage from './pages/NotificationsPage.jsx';
+import NotificationDetailPage from './pages/NotificationDetailPage.jsx';
 
 function App() {
-
   const location = useLocation();
-
-  const { checkAuth, isCheckingAuth } = useAuthStore();
-
+  const { checkAuth } = useAuthStore();
   const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
-  const authRoutes = ["/login", "/register", "/verify-otp", "/forgot-password", "/reset-password"];
+
+  const authRoutes = [
+    "/login",
+    "/register",
+    "/verify-otp",
+    "/forgot-password",
+    "/reset-password"
+  ];
   const hideLayout = authRoutes.includes(location.pathname);
+
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <div className="flex flex-col min-h-screen">
@@ -55,7 +62,8 @@ function App() {
             <Route path="/verify-otp" element={<VerifyOtpPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
-            {/* Other page */}
+
+            {/* Other Pages */}
             <Route path="/products" element={<ProductPage />} />
             <Route path="/product/:id" element={<ProductDetailPage />} />
             <Route path="/Dashboard" element={<Dashboard />} />
@@ -64,12 +72,10 @@ function App() {
             <Route path="/post/:id" element={<PostDetail />} />
             <Route path="/services" element={<Services />} />
             <Route path="/user-booking" element={<UserBookingForm />} />
-            <Route path='/profile' element={<ProfilePage/>}/>
-            <Route path='/contact' element={<ContactPage />} />
             <Route path="/profile" element={<ProfileLayout />}>
               <Route index element={<ProfilePage />} />
               <Route path="contact-history" element={<ContactHistory />} />
-              <Route path="booking-history" element={<BookingHistory />} />  {/* Thêm dòng này */}
+              <Route path="booking-history" element={<BookingHistory />} />
             </Route>
             <Route path='/contact' element={<ContactPage />} />
             <Route path="/profile" element={<ProfileLayout />}>
@@ -77,11 +83,13 @@ function App() {
               <Route path="contact-history" element={<ContactHistory />} />
               <Route path="booking-history" element={<BookingHistory />} />  {/* Thêm dòng này */}
             </Route>
+            <Route path="/notifications" element={<NotificationsPage />} />
+            <Route path="/notifications/:id" element={<NotificationDetailPage />} />
           </Routes>
 
           <ToastContainer position="top-right" autoClose={5000} />
-
         </main>
+
         {!hideLayout && <Footer />}
       </div>
     </GoogleOAuthProvider>

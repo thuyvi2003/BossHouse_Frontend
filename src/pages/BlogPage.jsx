@@ -6,18 +6,53 @@ import DOMPurify from 'dompurify';
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 
 function BlogCard({ post }) {
-	const imgSrc = post.image ? (post.image.startsWith('http') ? post.image : `${API_BASE}${post.image}`) : '';
+	// Handle different image URL types
+	let imgSrc = '';
+	if (post.image && post.image.trim() !== '') {
+		if (post.image.startsWith('data:')) {
+			// Base64 data URL - use directly
+			imgSrc = post.image;
+		} else if (post.image.startsWith('http')) {
+			// Full HTTP URL - use directly
+			imgSrc = post.image;
+		} else {
+			// Relative path - prepend API_BASE
+			imgSrc = `${API_BASE}${post.image}`;
+		}
+	}
+	
+	console.log('BlogScreen: Post', post._id, '- title:', post.title, '- image field:', post.image, '- final imgSrc:', imgSrc);
+	
 	return (
 		<div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
 			{imgSrc && (
-				<img src={imgSrc} alt={post.title} className="h-40 w-full object-cover" />
+				<img 
+					src={imgSrc} 
+					alt={post.title} 
+					className="h-40 w-full object-cover"
+					onError={(e) => {
+						console.log('BlogScreen: Image load error for post:', post._id, 'src:', e.target.src);
+						e.target.style.display = 'none';
+					}}
+					onLoad={() => {
+						console.log('BlogScreen: Image loaded successfully for post:', post._id);
+					}}
+				/>
 			)}
 			<div className="p-4 flex flex-col gap-2 flex-1">
 				<h3 className="text-lg font-semibold line-clamp-2">{post.title}</h3>
 				<p
 					className="text-sm text-gray-600 line-clamp-3"
 					dangerouslySetInnerHTML={{
-						__html: DOMPurify.sanitize(post.description),
+						__html: DOMPurify.sanitize(post.description || '', {
+							ALLOWED_TAGS: [
+								"b","strong","i","em","u","s","sub","sup",
+								"p","br","span","div","ul","ol","li","blockquote",
+								"h1","h2","h3","h4","h5","h6"
+							],
+							ALLOWED_ATTR: ["style","class","align","dir"],
+							KEEP_CONTENT: true
+						}),
 					}}
 				></p>
 

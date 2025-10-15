@@ -1,0 +1,92 @@
+[33m205e404[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mdev[m[33m)[m HEAD@{0}: pull origin dev: Merge made by the 'ort' strategy.
+[33m12c74eb[m HEAD@{1}: checkout: moving from NguyenNV to dev
+[33m21f80ec[m[33m ([m[1;31morigin/BonVT2[m[33m, [m[1;32mNguyenNV[m[33m)[m HEAD@{2}: pull origin BonVT2: Fast-forward
+[33m6ce95fd[m[33m ([m[1;31morigin/NguyenNV[m[33m)[m HEAD@{3}: commit: tạo trang Manage Review và Notification
+[33m12c74eb[m HEAD@{4}: checkout: moving from dev to NguyenNV
+[33m12c74eb[m HEAD@{5}: pull origin dev: Merge made by the 'ort' strategy.
+[33ma5a6f4b[m HEAD@{6}: reset: moving to HEAD
+[33ma5a6f4b[m HEAD@{7}: pull: Merge made by the 'ort' strategy.
+[33m71d1f94[m HEAD@{8}: pull origin dev: Merge made by the 'ort' strategy.
+[33m69a6773[m HEAD@{9}: commit: Update BlogScreen (local changes)
+[33ma9f01fd[m HEAD@{10}: pull: Fast-forward
+[33me161ab8[m HEAD@{11}: checkout: moving from ViVLT to dev
+[33m91bcb75[m[33m ([m[1;32mViVLT[m[33m)[m HEAD@{12}: commit: ViVLT: Add check limit of cart
+[33me161ab8[m HEAD@{13}: checkout: moving from dev to ViVLT
+[33me161ab8[m HEAD@{14}: pull: Fast-forward
+[33mfc95788[m HEAD@{15}: checkout: moving from ViVLT to dev
+[33m7f0b83e[m HEAD@{16}: commit: ViVLT: Update check stock UI
+[33mfc95788[m HEAD@{17}: checkout: moving from dev to ViVLT
+[33mfc95788[m HEAD@{18}: pull: Fast-forward
+[33m8f4ae46[m HEAD@{19}: checkout: moving from ViVLT to dev
+[33m01b730b[m HEAD@{20}: commit: ViVLT: Css ui Booking management
+[33m8f4ae46[m HEAD@{21}: checkout: moving from dev to ViVLT
+[33m8f4ae46[m HEAD@{22}: pull: Fast-forward
+[33m869d1c0[m HEAD@{23}: checkout: moving from ViVLT to dev
+[33m869d1c0[m HEAD@{24}: checkout: moving from dev to ViVLT
+[33m869d1c0[m HEAD@{25}: pull: Fast-forward
+[33m678930d[m HEAD@{26}: checkout: moving from ViVLT to dev
+[33mbe89142[m HEAD@{27}: commit: ViVLT:Add function edit quantity cart UI
+[33m678930d[m HEAD@{28}: checkout: moving from dev to ViVLT
+[33m678930d[m HEAD@{29}: pull: Fast-forward
+[33mbc9a7ca[m HEAD@{30}: checkout: moving from ViVLT to dev
+[33mcfa6387[m HEAD@{31}: commit: ViVLT: Add pagination promotion UI
+[33mbc9a7ca[m HEAD@{32}: checkout: moving from dev to ViVLT
+[33mbc9a7ca[m HEAD@{33}: reset: moving to origin/dev
+[33m3c6f083[m HEAD@{34}: pull: Merge made by the 'ort' strategy.
+[33m36b6966[m HEAD@{35}: checkout: moving from ViVLT to dev
+[33m36b6966[m HEAD@{36}: checkout: moving from dev to ViVLT
+[33m36b6966[m HEAD@{37}: checkout: moving from ViVLT to dev
+[33m3ee5b50[m HEAD@{38}: checkout: moving from dev to ViVLT
+[33m36b6966[m HEAD@{39}: checkout: moving from ViVLT to dev
+[33m3ee5b50[m HEAD@{40}: checkout: moving from dev to ViVLT
+[33m36b6966[m HEAD@{41}: reset: moving to 36b6966
+[33m36b6966[m HEAD@{42}: reset: moving to 36b6966
+[33m3ee5b50[m HEAD@{43}: checkout: moving from ViVLT to dev
+[33m3ee5b50[m HEAD@{44}: checkout: moving from dev to ViVLT
+[33m3ee5b50[m HEAD@{45}: reset: moving to 3ee5b50
+[33m36b6966[m HEAD@{46}: reset: moving to 36b6966
+[33m36b6966[m HEAD@{47}: checkout: moving from ViVLT to dev
+[33m3ee5b50[m HEAD@{48}: checkout: moving from dev to ViVLT
+[33m36b6966[m HEAD@{49}: commit: fix: add validation to CreatePromotionModal & update cart service
+[33m3ee5b50[m HEAD@{50}: checkout: moving from ViVLT to dev
+[33m3ee5b50[m HEAD@{51}: checkout: moving from dev to ViVLT
+[33m3ee5b50[m HEAD@{52}: pull: Fast-forward
+[33m7a40cd3[m HEAD@{53}: checkout: moving from ViVLT to dev
+[33mc86d21d[m HEAD@{54}: commit: ViVLT: Edit sum cart
+[33m7a40cd3[m HEAD@{55}: checkout: moving from dev to ViVLT
+[33m7a40cd3[m HEAD@{56}: pull: Fast-forward
+[33m51cb372[m HEAD@{57}: checkout: moving from ViVLT to dev
+[33m5a0a72a[m HEAD@{58}: commit: ViVLT: Remove CartItem frontend
+[33m51cb372[m HEAD@{59}: checkout: moving from dev to ViVLT
+[33m51cb372[m HEAD@{60}: pull: Fast-forward
+[33m56f4c54[m HEAD@{61}: checkout: moving from ViVLT to dev
+[33m62b362c[m HEAD@{62}: commit: ViVLT:Add to Cart frontend
+[33m56f4c54[m HEAD@{63}: checkout: moving from dev to ViVLT
+[33m56f4c54[m HEAD@{64}: pull: Fast-forward
+[33ma5776a3[m HEAD@{65}: checkout: moving from ViVLT to dev
+[33mce95a25[m HEAD@{66}: commit: ViVLT: Connect api frontend Create and getList promotion
+[33ma5776a3[m HEAD@{67}: checkout: moving from dev to ViVLT
+[33ma5776a3[m HEAD@{68}: pull: Fast-forward
+[33m9fe47f7[m HEAD@{69}: checkout: moving from ViVLT to dev
+[33m43b4737[m HEAD@{70}: commit: ViVLT: Add services, config
+[33m9fe47f7[m HEAD@{71}: checkout: moving from dev to ViVLT
+[33m9fe47f7[m HEAD@{72}: pull: Fast-forward
+[33m931b55d[m HEAD@{73}: checkout: moving from ViVLT to dev
+[33mddb3aff[m HEAD@{74}: commit: ViVLT: Edit footer and navbar
+[33m931b55d[m HEAD@{75}: checkout: moving from dev to ViVLT
+[33m931b55d[m HEAD@{76}: pull: Fast-forward
+[33m091a0ad[m HEAD@{77}: checkout: moving from ViVLT to dev
+[33m610889a[m HEAD@{78}: commit: ViVLT: Add navbar + footer + ScreenCart
+[33m091a0ad[m HEAD@{79}: checkout: moving from dev to ViVLT
+[33m091a0ad[m HEAD@{80}: pull: Fast-forward
+[33me52ca87[m HEAD@{81}: checkout: moving from ViVLT to dev
+[33ma3dec69[m HEAD@{82}: commit: ViVLT: Add Interface Dashboard and PromotionManagement
+[33m3226ccc[m HEAD@{83}: commit: Thuy Vi
+[33mcc28668[m HEAD@{84}: commit: ViVLT:Fix readme
+[33m53f0abb[m HEAD@{85}: commit: ViVLT: Add rule branch
+[33me52ca87[m HEAD@{86}: checkout: moving from dev to ViVLT
+[33me52ca87[m HEAD@{87}: pull: Fast-forward
+[33mc7725cc[m[33m ([m[1;32mmain[m[33m)[m HEAD@{88}: checkout: moving from ViVLT to dev
+[33m58c465d[m HEAD@{89}: commit: ViVLT: add
+[33mc7725cc[m[33m ([m[1;32mmain[m[33m)[m HEAD@{90}: checkout: moving from main to ViVLT
+[33mc7725cc[m[33m ([m[1;32mmain[m[33m)[m HEAD@{91}: clone: from https://github.com/thuyvi2003/BossHouse_Frontend.git
