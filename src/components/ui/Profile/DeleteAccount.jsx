@@ -25,7 +25,7 @@ export function DeleteAccount() {
     const handleDelete = async () => {
         try {
             await deleteAccount();
-            toast.success('Your account has been deleted');
+            toast.success('Account has been deleted!');
             setShowDialog(false);
             await logout();
             navigate('/login');
