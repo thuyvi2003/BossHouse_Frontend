@@ -2,7 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import DOMPurify from "dompurify";
 import RichTextEditor from '../../RichTextEditor';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+const API_BASE = 'http://localhost:3000';
+console.log('PostManagement: API_BASE:', API_BASE);
 
 function Modal({ open, onClose, children, title, footer }) {
   if (!open) return null;
@@ -58,15 +59,28 @@ export default function PostManagement() {
 	const createFileRef = useRef(null);
 	const editFileRef = useRef(null);
 
+	// Sanitize helper that preserves basic formatting and alignment
+	function sanitizeHtml(html) {
+		return DOMPurify.sanitize(html || "", {
+			ALLOWED_TAGS: [
+				"b","strong","i","em","u","s","sub","sup",
+				"p","br","span","div","ul","ol","li","blockquote",
+				"h1","h2","h3","h4","h5","h6","table","thead","tbody","tr","td","th","hr","pre","code"
+			],
+			ALLOWED_ATTR: ["style","class","align","dir"],
+			KEEP_CONTENT: true
+		});
+	}
+
 	const listUrl = useMemo(() => {
 		const hasQuery = Boolean(query?.trim());
-		const base = hasQuery ? `${API_BASE}/api/posts/search` : `${API_BASE}/api/posts/filter`;
+		// Use admin route for PostManagement dashboard
+		const base = hasQuery ? `${API_BASE}/api/posts/search` : `${API_BASE}/api/posts/admin/filter`;
 		const url = new URL(base);
 		if (hasQuery) url.searchParams.set('q', query.trim());
 		if (category) url.searchParams.set('category', category);
-		if (!hasQuery && status) url.searchParams.set('status', status);
-		// For admin dashboard, we want to see all posts including INACTIVE ones
-		// The backend filterPosts endpoint should return all posts for admin
+		// Always apply status filter for admin dashboard
+		if (status) url.searchParams.set('status', status);
 		url.searchParams.set('limit', String(limit));
 		url.searchParams.set('skip', String((page - 1) * limit));
 		return url.toString();
@@ -76,13 +90,30 @@ export default function PostManagement() {
 		setLoading(true);
 		setError('');
 		try {
-			const res = await fetch(listUrl);
+			console.log('PostManagement: Loading posts from URL:', listUrl);
+			console.log('PostManagement: Current status filter:', status);
+			const headers = authHeaders();
+			console.log('PostManagement: Auth headers:', headers);
+			const res = await fetch(listUrl, { headers });
 			if (!res.ok) throw new Error(`Failed to load posts (${res.status})`);
 			const json = await res.json();
+			console.log('PostManagement: API response:', json);
 			const result = json.data?.posts ? json.data : { posts: json.data || [], total: json.data?.total || 0 };
+			console.log('PostManagement: Processed result:', result);
+			console.log('PostManagement: Posts statuses:', result.posts?.map(p => ({ id: p._id, status: p.status, title: p.title })));
+			console.log('PostManagement: Total posts found:', result.posts?.length || 0);
+			
+			// Debug: Check if we have any INACTIVE posts
+			const inactivePosts = result.posts?.filter(p => p.status === 'INACTIVE') || [];
+			console.log('PostManagement: INACTIVE posts found:', inactivePosts.length);
+			if (inactivePosts.length > 0) {
+				console.log('PostManagement: INACTIVE posts:', inactivePosts.map(p => ({ id: p._id, status: p.status, title: p.title })));
+			}
+			
 			setPosts(result.posts || []);
 			setTotal(result.total || (result.posts?.length || 0));
 		} catch (e) {
+			console.error('PostManagement: Error loading posts:', e);
 			setError(e.message || 'Error loading posts');
 		} finally {
 			setLoading(false);
@@ -117,6 +148,7 @@ export default function PostManagement() {
 
 	function authHeaders() {
 		const token = localStorage.getItem('access_token') || localStorage.getItem('token') || '';
+		console.log('PostManagement: Auth token:', token ? 'Present' : 'Missing');
 		return {
 			'Content-Type': 'application/json',
 			...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -144,7 +176,9 @@ export default function PostManagement() {
 		const parser = new DOMParser();
 		const doc = parser.parseFromString(htmlContent, 'text/html');
 		const img = doc.querySelector('img');
-		return img ? img.src : '';
+		const imageSrc = img ? img.src : '';
+		console.log('PostManagement: Extracted image from HTML:', imageSrc);
+		return imageSrc;
 	}
 
 	// Remove images from HTML content, keep only text
@@ -311,36 +345,81 @@ export default function PostManagement() {
 								<td className="px-3 py-2">{(page - 1) * limit + idx + 1}</td>
 								<td className="px-3 py-2 font-medium max-w-[200px] break-words" title={p.title}>{p.title}</td>
 								<td className="px-3 py-2 max-w-[300px] text-gray-600 break-words">
-									<div
-										className="line-clamp-2"
-										dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(p.description) }}
-									/>
+								<div
+									className="line-clamp-2"
+									dangerouslySetInnerHTML={{ __html: sanitizeHtml(p.description) }}
+								/>
 								</td>
 
 								<td className="px-3 py-2 text-gray-600 break-words">{p.created_by || '—'}</td>
 								<td className="px-3 py-2">
-									<span className={`px-2 py-1 rounded text-xs ${p.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : p.status === 'DRAFT' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-200 text-gray-700'}`}>{p.status}</span>
+									<span className={`px-2 py-1 rounded text-xs font-medium ${p.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : p.status === 'DRAFT' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
+										{p.status === 'INACTIVE' ? '🚫 INACTIVE' : p.status}
+									</span>
 								</td>
 								<td className="px-4 py-3">
-									{p.image ? (
-										<img 
-											src={p.image.startsWith('http') ? p.image : `${API_BASE}${p.image}`} 
-											alt="thumb" 
-											className="h-10 w-14 object-cover rounded-md"
-											onError={(e) => {
-												e.target.style.display = 'none';
-												e.target.nextSibling.style.display = 'inline';
-											}}
-										/>
-									) : null}
-									<span style={{display: p.image ? 'none' : 'inline'}} className="text-gray-400 text-xs">No image</span>
+									{(() => {
+										// Get image from post.image field
+										let imageUrl = p.image && p.image.trim() !== '' ? p.image : '';
+										
+										// If no image field, try to extract from description
+										if (!imageUrl && p.description && p.description.includes('<img')) {
+											const imgMatch = p.description.match(/<img[^>]+src="([^"]+)"/);
+											imageUrl = imgMatch ? imgMatch[1] : '';
+										}
+										
+										console.log('PostManagement: Post', p._id, '- title:', p.title);
+										console.log('PostManagement: Post', p._id, '- image field:', p.image);
+										console.log('PostManagement: Post', p._id, '- description contains img:', p.description?.includes('<img'));
+										console.log('PostManagement: Post', p._id, '- final image:', imageUrl);
+										
+										if (imageUrl) {
+											// Handle different image URL types
+											let fullImageUrl;
+											if (imageUrl.startsWith('data:')) {
+												// Base64 data URL - use directly
+												fullImageUrl = imageUrl;
+											} else if (imageUrl.startsWith('http')) {
+												// Full HTTP URL - use directly
+												fullImageUrl = imageUrl;
+											} else {
+												// Relative path - prepend API_BASE
+												fullImageUrl = `${API_BASE}${imageUrl}`;
+											}
+											
+											console.log('PostManagement: Post', p._id, '- full image URL:', fullImageUrl);
+											return (
+												<div className="relative">
+													<img 
+														src={fullImageUrl} 
+														alt="thumb" 
+														className="h-10 w-14 object-cover rounded-md border"
+														onError={(e) => {
+															console.log('PostManagement: Image load error for post:', p._id, 'src:', e.target.src);
+															e.target.style.display = 'none';
+														}}
+														onLoad={() => {
+															console.log('PostManagement: Image loaded successfully for post:', p._id);
+														}}
+													/>
+													<span className="text-gray-400 text-xs" style={{display: 'none'}}>No image</span>
+												</div>
+											);
+										} else {
+											return <span className="text-gray-400 text-xs">No image</span>;
+										}
+									})()}
 								</td>
 								<td className="px-3 py-2">{new Date(p.created_at || p.createdAt).toLocaleDateString()}</td>
 								<td className="px-3 py-2">
 									<div className="flex gap-2 justify-end">
 										<button onClick={() => setViewPost(p)} className="px-2.5 py-1 rounded border border-gray-300 hover:bg-gray-50" title="View">👁️</button>
 										<button onClick={() => handleEditClick(p)} className="px-2.5 py-1 rounded bg-amber-500 text-white hover:bg-amber-600" title="Edit">✎</button>
-										<button onClick={() => setDeletePost(p)} className="px-2.5 py-1 rounded bg-red-600 text-white hover:bg-red-700" title="Delete">🗑️</button>
+										{p.status === 'INACTIVE' ? (
+											<button onClick={async () => { try { await apiUpdate(p._id, { status: 'ACTIVE' }); resetAndReload(); alert('Post has been reactivated!'); } catch (e) { alert(e.message); } }} className="px-2.5 py-1 rounded bg-green-600 text-white hover:bg-green-700" title="Reactivate">↻</button>
+										) : (
+											<button onClick={() => setDeletePost(p)} className="px-2.5 py-1 rounded bg-red-600 text-white hover:bg-red-700" title="Deactivate">🗑️</button>
+										)}
 									</div>
 								</td>
 							</tr>
@@ -373,20 +452,56 @@ export default function PostManagement() {
 
 			{/* View Modal */}
 			<Modal open={Boolean(viewPost)} onClose={() => setViewPost(null)} title={viewPost?.title || 'View Post'}>
-				{viewPost && (
-					<div className="space-y-4">
-						{viewPost.image && <img src={viewPost.image.startsWith('http') ? viewPost.image : `${API_BASE}${viewPost.image}`} alt={viewPost.title} className="w-full rounded" />}
-						<h3 className="text-2xl font-bold">{viewPost.title}</h3>
-						<div
-							className="prose prose-sm max-w-none text-gray-700"
-							dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(viewPost.description) }}
-						/>
-						<div className="text-sm text-gray-500 flex items-center justify-between">
-							<span>{viewPost.created_by || 'Unknown'}</span>
-							<span>{new Date(viewPost.created_at || viewPost.createdAt).toLocaleDateString()}</span>
+				{viewPost && (() => {
+					// Get image from post.image field or extract from description
+					let imageUrl = viewPost.image && viewPost.image.trim() !== '' ? viewPost.image : '';
+					if (!imageUrl && viewPost.description && viewPost.description.includes('<img')) {
+						const imgMatch = viewPost.description.match(/<img[^>]+src="([^"]+)"/);
+						imageUrl = imgMatch ? imgMatch[1] : '';
+					}
+					
+					console.log('PostManagement: View modal - post:', viewPost._id, 'image field:', viewPost.image, 'final image:', imageUrl);
+					
+					// Handle different image URL types
+					let fullImageUrl = '';
+					if (imageUrl) {
+						if (imageUrl.startsWith('data:')) {
+							// Base64 data URL - use directly
+							fullImageUrl = imageUrl;
+						} else if (imageUrl.startsWith('http')) {
+							// Full HTTP URL - use directly
+							fullImageUrl = imageUrl;
+						} else {
+							// Relative path - prepend API_BASE
+							fullImageUrl = `${API_BASE}${imageUrl}`;
+						}
+					}
+					
+					return (
+						<div className="space-y-4">
+							{fullImageUrl && (
+								<img 
+									src={fullImageUrl} 
+									alt={viewPost.title} 
+									className="w-full rounded"
+									onError={(e) => {
+										console.log('PostManagement: View modal image load error:', e.target.src);
+										e.target.style.display = 'none';
+									}}
+								/>
+							)}
+							<h3 className="text-2xl font-bold">{viewPost.title}</h3>
+									<div
+										className="prose prose-sm max-w-none text-gray-700"
+										dangerouslySetInnerHTML={{ __html: sanitizeHtml(viewPost.description) }}
+									/>
+							<div className="text-sm text-gray-500 flex items-center justify-between">
+								<span>{viewPost.created_by || 'Unknown'}</span>
+								<span>{new Date(viewPost.created_at || viewPost.createdAt).toLocaleDateString()}</span>
+							</div>
 						</div>
-					</div>
-				)}
+					);
+				})()}
 			</Modal>
 
 			{/* Create Modal */}
@@ -408,15 +523,24 @@ export default function PostManagement() {
 						}
 						
 						try {
-							const extractedImage = extractFirstImage(createForm.description);
+							// Extract image from description using regex (more reliable)
+							let extractedImage = '';
+							if (createForm.description && createForm.description.includes('<img')) {
+								const imgMatch = createForm.description.match(/<img[^>]+src="([^"]+)"/);
+								extractedImage = imgMatch ? imgMatch[1] : '';
+							}
+							
 							const cleanDescription = removeImagesFromDescription(createForm.description);
-							await apiCreate({
+							console.log('PostManagement: Creating post with extracted image:', extractedImage);
+							
+							const result = await apiCreate({
 								title: createForm.title,
 								description: cleanDescription,
 								category: createForm.category,
 								status: 'ACTIVE',
 								image: extractedImage
 							});
+							console.log('PostManagement: Created post result:', result);
 							resetAndReload();
 						} catch (e) { alert(e.message); }
 					}} className="px-4 py-2 rounded bg-indigo-600 text-white">Submit</button>
@@ -488,13 +612,25 @@ export default function PostManagement() {
 						}
 						
 						try {
-							const extractedImage = extractFirstImage(editForm.description);
+							// Extract image from description using regex (more reliable)
+							let extractedImage = '';
+							if (editForm.description && editForm.description.includes('<img')) {
+								const imgMatch = editForm.description.match(/<img[^>]+src="([^"]+)"/);
+								extractedImage = imgMatch ? imgMatch[1] : '';
+							}
+							
 							const cleanDescription = removeImagesFromDescription(editForm.description);
+							console.log('PostManagement: Updating post with extracted image:', extractedImage);
+							
+							// Use extracted image or keep existing image
+							const finalImage = extractedImage || editPost.image || '';
+							console.log('PostManagement: Final image for update:', finalImage);
+							
 							await apiUpdate(editPost._id, {
 								title: editForm.title,
 								description: cleanDescription,
 								category: editForm.category,
-								image: extractedImage || editPost.image || ''
+								image: finalImage
 							});
 							resetAndReload();
 						} catch (e) { alert(e.message); }
@@ -549,14 +685,31 @@ export default function PostManagement() {
 			</Modal>
 
 			{/* Delete confirm */}
-			<Modal open={Boolean(deletePost)} onClose={() => setDeletePost(null)} title="Confirm Delete" footer={
+			<Modal open={Boolean(deletePost)} onClose={() => setDeletePost(null)} title="Confirm Deactivate Post" footer={
 				<div className="flex justify-end gap-2">
 					<button onClick={() => setDeletePost(null)} className="px-4 py-2 rounded border">No</button>
-					<button onClick={async () => { if (!deletePost) return; try { await apiDelete(deletePost._id); resetAndReload(); } catch (e) { alert(e.message); } }} className="px-4 py-2 rounded bg-red-600 text-white">Yes, Delete</button>
+					<button onClick={async () => { 
+						if (!deletePost) return; 
+						try { 
+							console.log('PostManagement: Deactivating post:', deletePost._id);
+							await apiDelete(deletePost._id); 
+							console.log('PostManagement: Post deactivated, reloading...');
+							load(); // Only reload, don't reset filters
+							setDeletePost(null);
+							alert('Post has been deactivated (soft delete)'); 
+						} catch (e) { 
+							console.error('PostManagement: Error deactivating post:', e);
+							alert(e.message); 
+						} 
+					}} className="px-4 py-2 rounded bg-red-600 text-white">Yes, Deactivate</button>
 				</div>
 			}>
 				{deletePost && (
-					<p className="text-gray-700">Are you sure you want to delete post: <span className="font-semibold">{deletePost.title}</span>?</p>
+					<div className="text-gray-700">
+						<p>Are you sure you want to deactivate this post?</p>
+						<p className="font-semibold text-lg mt-2">{deletePost.title}</p>
+						<p className="text-sm text-gray-500 mt-2">Note: This will set the post status to INACTIVE (soft delete). The post will remain in the database but won't be visible to users.</p>
+					</div>
 				)}
 			</Modal>
 			</div>

@@ -1,18 +1,47 @@
 import React, { useEffect, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { ShoppingCart, Bell } from "phosphor-react";
+import { ShoppingCart, Bell, Gift } from "phosphor-react";
 import { getUserCart } from "@/services/cartService";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-toastify";
+import NotificationDropdown from "@/components/ui/NotificationDropdown";
+import notificationService from "@/services/notificationService";
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { User, LogOut } from "lucide-react";
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { User, LogOut } from "lucide-react";
+
 
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
     const [cartItems, setCartItems] = useState([]);
+    const { user, logout } = useAuthStore();
+    const [promotions, setPromotions] = useState([]);
+    const [showPromoTooltip, setShowPromoTooltip] = useState(false);
+    const [hasNotificationFeature, setHasNotificationFeature] = useState(true);
     const [notifications, setNotifications] = useState([]);
     const [showNotificationTooltip, setShowNotificationTooltip] = useState(false);
-    const [hasNotificationFeature, setHasNotificationFeature] = useState(false);
-    const { user, logout } = useAuthStore();
+
+
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -38,14 +67,20 @@ export default function Navbar() {
     };
 
     useEffect(() => {
-        setHasNotificationFeature(false);
-        if (hasNotificationFeature) {
-            // Future: Fetch notifications from API
-            // fetchNotifications();
-        } else {
-            setNotifications([]);
+        const fetchNotif = async () => {
+            try {
+                const res = await notificationService.getAllNotifications({ limit: 5 });
+                const list = (res?.data?.notifications) ?? (res?.data) ?? (res?.notifications) ?? res ?? [];
+                setNotifications(Array.isArray(list) ? list : []);
+            } catch (e) {
+                setNotifications([]);
+            }
+        };
+        if (showNotificationTooltip) {
+            setHasNotificationFeature(true);
+            fetchNotif();
         }
-    }, [hasNotificationFeature]);
+    }, [showNotificationTooltip]);
 
     const handleLogout = async () => {
         try {
@@ -55,6 +90,36 @@ export default function Navbar() {
             toast.error("Logout failed");
         }
     };
+
+
+    const fetchPromotions = async () => {
+        try {
+            const res = await getAvailablePromotions();
+            setPromotions(res.data?.data?.promotions || []);
+            console.log("Promotion day ne", res.data?.data?.promotions)
+        } catch (error) {
+            console.error("Failed to fetch promotions:", error.message);
+        }
+    };
+    useEffect(() => {
+        if (showPromoTooltip) fetchPromotions();
+    }, [showPromoTooltip]);
+
+
+    const handleClaimPromotion = async (promotionId) => {
+        try {
+            await claimPromotion(promotionId);
+            toast.success("Promotion claimed successfully 🎉");
+            setShowPromoTooltip(false);
+
+            // Cập nhật lại danh sách (nếu muốn)
+            fetchPromotions();
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Failed to claim promotion");
+            setShowPromoTooltip(false);
+        }
+    };
+
 
     const displayedItems = cartItems.slice(0, 3);
 
@@ -92,53 +157,63 @@ export default function Navbar() {
                     Contact
                 </NavLink>
 
-                {/* Notification Icon */}
+                {/* Notification Dropdown */}
+                {user && <NotificationDropdown />}
+
+                {/* Promotion  */}
                 <div
                     className="relative"
-                    onMouseEnter={() => setShowNotificationTooltip(true)}
-                    onMouseLeave={() => setShowNotificationTooltip(false)}
+                    onMouseEnter={() => setShowPromoTooltip(true)}
+                    onMouseLeave={() => setShowPromoTooltip(false)}
                 >
-                    <div className="relative">
-                        <Bell size={28} className="text-back hover:text-gray-600 transition-colors duration-200 cursor-pointer" />
-                        {notifications.length > 0 && (
-                            <span className="absolute -top-2 -right-2 text-xs bg-red-500 text-white w-5 h-5 flex items-center justify-center rounded-full shadow-md">
-                                {notifications.length}
-                            </span>
-                        )}
-                    </div>
-
-                    {/* Notification Tooltip */}
-                    {showNotificationTooltip && (
-                        <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                    <Gift size={28} className="text-black hover:text-gray-600 transition cursor-pointer" />
+                    {promotions.length > 0 && (
+                        <span className="absolute -top-2 -right-2 text-xs bg-green-500 text-white w-5 h-5 flex items-center justify-center rounded-full shadow-md">
+                            {promotions.length}
+                        </span>
+                    )}
+                    {showPromoTooltip && (
+                        <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border before:absolute before:w-[40%] before:h-[40px]  before:-top-4 before:right-0 border-gray-200 z-50 animate-fade-in">
                             <div className="p-3 border-b border-gray-200">
-                                <h3 className="font-semibold text-gray-900">Notifications</h3>
+                                <h3 className="font-semibold text-gray-900">Available Promotions</h3>
                             </div>
-                            <div className="max-h-64 overflow-y-auto">
-                                {hasNotificationFeature ? (
-                                    notifications.length > 0 ? (
-                                        <ul className="divide-y divide-gray-100">
-                                            {notifications.map((notification) => (
-                                                <li key={notification.id} className="p-3 hover:bg-gray-50">
-                                                    <p className="text-sm text-gray-900">{notification.message}</p>
-                                                    <p className="text-xs text-gray-500 mt-1">{notification.time}</p>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    ) : (
-                                        <p className="text-center text-gray-500 py-4">
-                                            No notifications
-                                        </p>
-                                    )
+
+                            <div className="max-h-72 overflow-y-auto">
+                                {promotions.length > 0 ? (
+                                    <ul className="divide-y divide-gray-100">
+                                        {promotions.map((promo) => (
+                                            <li
+                                                key={promo._id}
+                                                className="p-3 hover:bg-gray-50 transition flex justify-between items-center"
+                                            >
+                                                <div>
+                                                    <p className="text-sm font-medium text-gray-800">
+                                                        {promo.description || promo.code}
+                                                    </p>
+                                                    <p className="text-xs text-gray-500">
+                                                        {promo.promotion_type === "percent"
+                                                            ? `Giảm ${promo.promotion_value}%`
+                                                            : `Giảm ${promo.promotion_value}đ`}
+                                                    </p>
+                                                </div>
+                                                <button
+                                                    onClick={() => handleClaimPromotion(promo._id)}
+                                                    className="text-xs px-3 py-1 rounded bg-[#846551] text-white hover:bg-[#6d5041] transition"
+                                                >
+                                                    Claim
+                                                </button>
+                                            </li>
+                                        ))}
+                                    </ul>
                                 ) : (
                                     <p className="text-center text-gray-500 py-4">
-                                        Notifications is empty
+                                        No promotions available
                                     </p>
                                 )}
                             </div>
                         </div>
                     )}
                 </div>
-
                 {/* Cart Icon */}
                 <div
                     className="relative"
@@ -156,7 +231,7 @@ export default function Navbar() {
                         </div>
                     </NavLink>
                     <div
-                        className={`absolute right-0 mt-2 w-72 bg-white border rounded-xl shadow-xl transition-all duration-300 origin-top transform ${isOpen
+                        className={`absolute right-0 mt-2 w-72 bg-white border  rounded-xl shadow-xl transition-all duration-300 origin-top transform ${isOpen
                             ? "scale-100 opacity-100 translate-y-0"
                             : "scale-95 opacity-0 -translate-y-2 pointer-events-none"
                             }`}
@@ -192,14 +267,40 @@ export default function Navbar() {
                     </div>
                 </div>
 
-                {/* Conditional Login/Logout Button */}
+                {/* Conditional Login/User Avatar Dropdown */}
                 {user ? (
-                    <Button
-                        className="ml-4 px-5 py-2 rounded-full bg-black text-white hover:bg-gray-800 transition-colors duration-200 shadow-md"
-                        onClick={handleLogout}
-                    >
-                        Logout
-                    </Button>
+                    <div className="ml-4">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="relative h-12 w-12 rounded-full">
+                                    <Avatar className="h-12 w-12">
+                                        <AvatarImage src={user.profile_image} alt={user.name} />
+                                        <AvatarFallback>{user.name?.charAt(0)}</AvatarFallback>
+                                    </Avatar>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" forceMount>
+                                <DropdownMenuLabel className="font-normal">
+                                    <div className="flex flex-col space-y-1">
+                                        <p className="text-sm font-medium leading-none">{user.name}</p>
+                                        <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                                    </div>
+                                </DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem asChild>
+                                    <NavLink to="/profile" className="w-full">
+                                        <User className="mr-2" />
+                                        Profile
+                                    </NavLink>
+                                </DropdownMenuItem>
+
+                                <DropdownMenuItem onClick={handleLogout} >
+                                    <LogOut className="mr-2" />
+                                    Logout
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
                 ) : (
                     <NavLink
                         to="/login"
