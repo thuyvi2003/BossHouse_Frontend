@@ -29,6 +29,7 @@ import ContactHistory from "./pages/ContactHistory.jsx";
 import BookingHistory from "./pages/BookingHistory.jsx";
 import NotificationsPage from './pages/NotificationsPage.jsx';
 import NotificationDetailPage from './pages/NotificationDetailPage.jsx';
+import WishlistPage from './pages/WishlistPage.jsx';
 
 function App() {
   const location = useLocation();
@@ -76,12 +77,13 @@ function App() {
               <Route index element={<ProfilePage />} />
               <Route path="contact-history" element={<ContactHistory />} />
               <Route path="booking-history" element={<BookingHistory />} />
+               <Route path="wishlist" element={<WishlistPage />} />
             </Route>
             <Route path='/contact' element={<ContactPage />} />
             <Route path="/profile" element={<ProfileLayout />}>
               <Route index element={<ProfilePage />} />
               <Route path="contact-history" element={<ContactHistory />} />
-              <Route path="booking-history" element={<BookingHistory />} />  {/* Thêm dòng này */}
+              <Route path="booking-history" element={<BookingHistory />} />
             </Route>
             <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/notifications/:id" element={<NotificationDetailPage />} />
