@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { productService } from '@/services/productService';
+import CreateReviewForm from '@/components/ui/dashboard/reviews/CreateReviewForm';
+import ReviewList from '@/components/ui/dashboard/reviews/ReviewList';
 import { variationService } from '@/services/productVariationService';
 import {
   ShoppingCart,
@@ -14,13 +16,14 @@ import {
   Truck,
   Shield,
   RotateCcw,
-  Share2,
   Check,
   X,
   ChevronDown,
   ChevronUp
 } from 'lucide-react';
 import { addToCart } from '@/services/cartService';
+import Toast from '@/components/Layout/Toast';
+import { addToWishlist } from '@/services/wishListService';
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -35,6 +38,9 @@ const ProductDetailPage = () => {
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [activeTab, setActiveTab] = useState('description');
   const [showVariations, setShowVariations] = useState(false);
+  const [isAddToWishlist, setIsAddToWishlist] = useState(false);
+  const [toast, setToast] = useState(null);
+
 
   // Fetch product details and variations
   useEffect(() => {
@@ -87,21 +93,77 @@ const ProductDetailPage = () => {
   const handleAddToCart = async () => {
     try {
       if (!selectedVariation) {
-        alert("Please select a variation first!");
+        setToast({
+          type: "warning",
+          title: "Notice",
+          message: "Please select a product variation first!",
+        });
         return;
       }
       const response = await addToCart(selectedVariation._id, quantity);
-      if (response == 0) {
-        alert(`You must be remove one item before add new item into cart`);
+      if (response === 0) {
+        setToast({
+          type: "warning",
+          title: "Notice",
+          message: "You must remove one item before adding a new one.",
+        });
         return;
       }
-      console.log("Cart after add:", response.data);
-      alert(`Added ${quantity} x ${selectedVariation.name} to cart!`);
-      navigate("/cart")
+      setToast({
+        type: "success",
+        title: "Success!",
+        message: `Added ${quantity} × ${selectedVariation.name} to cart!`,
+      });
+      setTimeout(() => navigate("/cart"), 1500);
     } catch (error) {
-      console.error(error);
+      setToast({
+        type: "error",
+        title: "Failed!",
+        message: error.response?.data?.message || "Failed to add product to cart.",
+      });
     }
   }
+  const handleAddToWishlist = async () => {
+    try {
+      setLoading(true);
+      if (!selectedVariation) {
+        setToast({
+          type: "warning",
+          title: "Notice",
+          message: "Please select a product variation first!",
+        });
+        return;
+      }
+      const res = await addToWishlist(selectedVariation._id);
+      if (res.success === false && res.message === "Product already in wishlist") {
+        setToast({
+          type: "warning",
+          title: "Notice",
+          message: "Product already exists in your wishlist.",
+        });
+        return;
+      }
+
+      if (res.success) {
+        setIsAddToWishlist(true);
+        setToast({
+          type: "success",
+          title: "Success!",
+          message: "Product added to wishlist successfully.",
+        });
+      }
+    } catch (error) {
+      console.log("error detail:", error);
+      setToast({
+        type: "error",
+        title: "Failed!",
+        message: error.response?.data?.message || "Failed to add to wishlist",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   // Handle variation selection
   const handleVariationSelect = (variation) => {
@@ -345,9 +407,22 @@ const ProductDetailPage = () => {
                   {currentStock === 0 ? "Out of Stock" : "Add to Cart"}
                 </button>
 
-                <button className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-300">
-                  <Share2 className="w-5 h-5" />
+                <button
+                  onClick={handleAddToWishlist}
+                  disabled={loading || isAddToWishlist}
+                  className={`px-3 py-2 border border-gray-300 rounded-lg flex items-center justify-center 
+    transition-all duration-300 hover:bg-gray-50 relative z-50
+    ${isAddToWishlist ? "bg-yellow-50 border-yellow-400" : ""}
+  `}
+                >
+                  <Star
+                    className={`w-5 h-5 transition-transform duration-300 
+      ${isAddToWishlist ? "fill-yellow-400 text-yellow-500 scale-125" : "text-gray-500"} 
+      ${loading ? "animate-pulse" : ""}
+    `}
+                  />
                 </button>
+
               </div>
             </div>
 
@@ -424,18 +499,39 @@ const ProductDetailPage = () => {
             )}
 
             {activeTab === 'reviews' && (
-              <div className="space-y-6">
+              <div className="space-y-8">
                 <h3 className="text-xl font-semibold text-gray-900 mb-4">Customer Reviews</h3>
-                <div className="text-center py-12">
-                  <Star className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <h4 className="text-lg font-medium text-gray-900 mb-2">No reviews yet</h4>
-                  <p className="text-gray-600">Be the first to review this product!</p>
-                </div>
+
+                {/* Review Form + List */}
+                <ReviewList
+                  productId={id}
+                  productType="product"
+                  userToken={localStorage.getItem('token')}
+                  currentUserId={(() => {
+                    try {
+                      const u = JSON.parse(localStorage.getItem('user'));
+                      return u?._id || u?.id || null;
+                    } catch {
+                      return null;
+                    }
+                  })()}
+                  showCreateForm={true}
+                  allowReply={false}
+                />
               </div>
             )}
+
           </div>
         </div>
       </div>
+      {toast && (
+        <Toast
+          type={toast.type}
+          title={toast.title}
+          message={toast.message}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 };
