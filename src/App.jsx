@@ -71,12 +71,6 @@ function App() {
               <Route path="contact-history" element={<ContactHistory />} />
               <Route path="booking-history" element={<BookingHistory />} />  {/* Thêm dòng này */}
             </Route>
-            <Route path='/contact' element={<ContactPage />} />
-            <Route path="/profile" element={<ProfileLayout />}>
-              <Route index element={<ProfilePage />} />
-              <Route path="contact-history" element={<ContactHistory />} />
-              <Route path="booking-history" element={<BookingHistory />} />  {/* Thêm dòng này */}
-            </Route>
           </Routes>
 
           <ToastContainer position="top-right" autoClose={5000} />
