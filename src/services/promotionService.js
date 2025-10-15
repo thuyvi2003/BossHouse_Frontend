@@ -2,33 +2,11 @@
 import API_BASE_URL from "@/config/api";
 import axiosInstance from "@/config/axiosConfig";
 
-export async function getPromotionsList(page = 1, limit = 8, code = "", status = "") {
-    const token = localStorage.getItem("token");
-    const url = new URL(`${API_BASE_URL}/promotions`);
-    url.searchParams.append("page", page);
-    url.searchParams.append("limit", limit);
-    if (code) url.searchParams.append("code", code);
-    if (status) url.searchParams.append("status", status);
-
-    const res = await fetch(url, {
-        method: "GET",
-        headers: {
-            Authorization: `Bearer ${token}`
-        },
-    });
-
-    console.log("Response status:", res.status);
-
-    if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`Failed to fetch promotions: ${text}`);
-    }
-
-    const data = await res.json();
-    console.log("Parsed data:", data);
-    return data;
-}
-
+export const getPromotionsList = async (page = 1, limit = 8) => {
+    console.log("dôdoododododo")
+    const res = await axiosInstance.get("/promotions/admin", { params: { page, limit } });
+    return res.data;
+};
 
 
 
@@ -71,10 +49,21 @@ export async function removePromotion(id) {
     }
     return res.json();
 }
+export const searchPromotions = async (code = "", status = "") => {
+    const params = {};
+    if (code) params.code = code;
+    if (status) params.status = status;
+    const res = await axiosInstance.get("/promotions/search", { params });
+    return res.data;
+};
+
 
 export const getUserClaimedPromotions = async () => {
     return await axiosInstance.get("/promotions/claimed");
 };
+
+
+
 export const applyPromotion = async (promotionId) => {
     try {
         const res = await axiosInstance.post("/promotions/apply", { promotion_id: promotionId });
@@ -89,6 +78,6 @@ export const getAvailablePromotions = async () => {
     return await axiosInstance.get("/promotions/available");
 }
 
-export const claimPromotion = async  (promotionId) =>{
-return await axiosInstance.post(`/promotions/${promotionId}/claim`);
+export const claimPromotion = async (promotionId) => {
+    return await axiosInstance.post(`/promotions/${promotionId}/claim`);
 }
