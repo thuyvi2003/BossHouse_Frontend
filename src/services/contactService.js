@@ -10,7 +10,10 @@ const contactService = {
       const res = await axiosInstance.get(CONTACT_API);
       return res.data.data;
     } catch (error) {
-      console.error("Failed to fetch contacts:", error.response?.data || error.message);
+      console.error(
+        "Failed to fetch contacts:",
+        error.response?.data || error.message
+      );
       throw error;
     }
   },
@@ -20,7 +23,10 @@ const contactService = {
       const res = await axiosInstance.get(`${CONTACT_API}/${id}`);
       return res.data.data;
     } catch (error) {
-      console.error(`Failed to fetch contact ${id}:`, error.response?.data || error.message);
+      console.error(
+        `Failed to fetch contact ${id}:`,
+        error.response?.data || error.message
+      );
       throw error;
     }
   },
@@ -32,7 +38,10 @@ const contactService = {
       });
       return res.data;
     } catch (error) {
-      console.error("Failed to create contact:", error.response?.data || error.message);
+      console.error(
+        "Failed to create contact:",
+        error.response?.data || error.message
+      );
       throw error;
     }
   },
@@ -44,29 +53,42 @@ const contactService = {
       });
       return res.data;
     } catch (error) {
-      console.error(`Failed to update contact ${id}:`, error.response?.data || error.message);
+      console.error(
+        `Failed to update contact ${id}:`,
+        error.response?.data || error.message
+      );
       throw error;
     }
   },
 
   reply: async (id, formData) => {
     try {
-      const res = await axiosInstance.post(`${CONTACT_API}/${id}/reply`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const res = await axiosInstance.post(
+        `${CONTACT_API}/${id}/reply`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
       return res.data;
     } catch (error) {
-      console.error(`Failed to reply contact ${id}:`, error.response?.data || error.message);
+      console.error(
+        `Failed to reply contact ${id}:`,
+        error.response?.data || error.message
+      );
       throw error;
     }
   },
 
-  cancel: async (id) => {
+  delete: async (id) => {
     try {
-      const res = await axiosInstance.put(`${CONTACT_API}/${id}/cancel`);
-      return res.data.data;
+      const res = await axiosInstance.delete(`${CONTACT_API}/${id}`);
+      return res.data;
     } catch (error) {
-      console.error(`Failed to cancel contact ${id}:`, error.response?.data || error.message);
+      console.error(
+        `Failed to delete contact ${id}:`,
+        error.response?.data || error.message
+      );
       throw error;
     }
   },

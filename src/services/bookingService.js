@@ -5,7 +5,7 @@ import axiosInstance from "@/config/axiosConfig";
 const BOOKING_API = `${API_BASE_URL}/bookings`;
 
 const bookingService = {
-  getAllBookings: async () => {
+  getAll: async () => {
     try {
       const res = await axiosInstance.get(BOOKING_API);
       return res.data.data;
