@@ -28,8 +28,10 @@ const WishlistPage = () => {
         type: "error",
         title: "Failed!",
         message:
-          error.response?.data?.message || "Failed to fetch wishlist.",
+          error.response?.data.message || "Failed to fetch wishlist.",
+        
       });
+      console.log(toast)
     } finally {
       setLoading(false);
     }
@@ -174,7 +176,9 @@ const WishlistPage = () => {
         )}
       </div>
 
-      {toast && <Toast toast={toast} />}
+      {toast && <Toast type={toast.type} title={toast.title} message={toast?.message} onClose={  () => {
+            setToast(null)
+          }}/>}
     </div>
   );
 };

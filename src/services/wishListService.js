@@ -9,7 +9,7 @@ export const addToWishlist = async (productVariationId, note) => {
   return res.data;
 };
 
-export const getWishlist = async (page = 1, limit = 6) => {
+export const getWishlist = async (page = 1, limit = 8) => {
   const res = await axiosInstance.get(`/wishlists`,{
     params: { page, limit },
   });

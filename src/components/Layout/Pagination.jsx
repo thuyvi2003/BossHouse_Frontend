@@ -1,6 +1,6 @@
 // Vo Lam Thuy Vi
 import React from "react";
-import catBrown from "@/assets/cat_brown.png"; // nhớ import ảnh mèo nâu
+import catBrown from "@/assets/cat_brown.png";
 
 const Pagination = ({ page, totalPages, onPageChange }) => {
     const getPages = () => {
