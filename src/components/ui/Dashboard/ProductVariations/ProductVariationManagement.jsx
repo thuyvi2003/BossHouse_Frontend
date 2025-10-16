@@ -1,7 +1,8 @@
 // Vo Lam Thuy Vi
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { variationService } from "@/services/productVariationService";
 import { productService } from "@/services/productService";
+import Pagination from "@/components/Layout/Pagination";
 import {
   Plus,
   Search,
@@ -28,7 +29,7 @@ const ProductVariationManagement = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingVariation, setEditingVariation] = useState(null);
-  const [setPagination] = useState({
+  const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
     total: 0,
@@ -64,7 +65,7 @@ const ProductVariationManagement = () => {
   };
 
   // Fetch variations
-  const fetchVariations = async () => {
+  const fetchVariations = useCallback(async () => {
     setLoading(true);
     try {
       if (productFilter !== "all") {
@@ -72,11 +73,16 @@ const ProductVariationManagement = () => {
          console.log("Phản hồi API biến thể:", data);
          if (data.success) {
            const variations = Array.isArray(data.data) ? data.data : [];
-           setVariations(variations);
+           // Calculate paginated variations
+           const start = (pagination.page - 1) * pagination.limit;
+           const end = start + pagination.limit;
+           const paginatedVariations = variations.slice(start, end);
+           
+           setVariations(paginatedVariations);
            setPagination((prev) => ({
              ...prev,
-             total: variations.length || 0,
-             totalPages: 1, 
+             total: variations.length,
+             totalPages: Math.ceil(variations.length / pagination.limit),
            }));
          } else {
            console.warn("API lấy biến thể không thành công:", data.message);
@@ -106,7 +112,7 @@ const ProductVariationManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [productFilter, pagination.page, pagination.limit]);
 
   // Create variation
   const createVariation = async (e) => {
@@ -223,9 +229,9 @@ const ProductVariationManagement = () => {
   };
 
   // Handle pagination
-  // const handlePageChange = (newPage) => {
-  //   setPagination(prev => ({ ...prev, page: newPage }));
-  // };
+  const handlePageChange = (newPage) => {
+    setPagination(prev => ({ ...prev, page: newPage }));
+  };
 
   // Handle image upload
   const handleImageChange = (e) => {
@@ -240,9 +246,9 @@ const ProductVariationManagement = () => {
     fetchProducts();
   }, []);
 
-  // useEffect(() => {
-  //   fetchVariations();
-  // }, [productFilter, statusFilter]);
+  useEffect(() => {
+    fetchVariations();
+  }, [fetchVariations]);
 
   // Filter variations by search term and status
   const filteredVariations = variations.filter(variation => {
@@ -450,6 +456,14 @@ const ProductVariationManagement = () => {
         )}
       </div>
 
+      {/* Pagination */}
+      {filteredVariations.length > 0 && productFilter !== "all" && (
+        <Pagination
+          page={pagination.page}
+          totalPages={pagination.totalPages}
+          onPageChange={handlePageChange}
+        />
+      )}
 
       {/* Create Modal */}
       {showCreateModal && (

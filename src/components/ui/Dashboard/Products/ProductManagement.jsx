@@ -1,7 +1,8 @@
 // Vo Lam Thuy Vi
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { productService } from "@/services/productService";
 import { categoryService } from "@/services/categoryService";
+import Pagination from "@/components/Layout/Pagination";
 import {
     Plus,
     Search,
@@ -64,7 +65,7 @@ const ProductManagement = () => {
     };
 
     // Fetch products
-    const fetchProducts = async () => {
+    const fetchProducts = useCallback(async () => {
         setLoading(true);
         try {
             const params = {
@@ -93,7 +94,7 @@ const ProductManagement = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [pagination.page, pagination.limit, searchTerm, statusFilter, categoryFilter]);
 
     // Create product
     const createProduct = async (e) => {
@@ -207,10 +208,10 @@ const ProductManagement = () => {
         setPagination(prev => ({ ...prev, page: 1 }));
     };
 
-    // // Handle pagination
-    // const handlePageChange = (newPage) => {
-    //     setPagination(prev => ({ ...prev, page: newPage }));
-    // };
+    // Handle pagination
+    const handlePageChange = (newPage) => {
+        setPagination(prev => ({ ...prev, page: newPage }));
+    };
 
     // Handle image upload
     const handleImageChange = (e) => {
@@ -227,7 +228,7 @@ const ProductManagement = () => {
 
     useEffect(() => {
         fetchProducts();
-    }, [pagination.page, pagination.limit, searchTerm, statusFilter, categoryFilter]);
+    }, [fetchProducts]);
 
     return (
         <div className="bg-white shadow-xl overflow-hidden flex-1 animate-fade-in">
@@ -412,8 +413,14 @@ const ProductManagement = () => {
                 )}
             </div>
 
-
-            {/* Create Modal */}
+      {/* Pagination */}
+      {products.length > 0 && (
+        <Pagination
+          page={pagination.page}
+          totalPages={pagination.totalPages}
+          onPageChange={handlePageChange}
+        />
+      )}            {/* Create Modal */}
             {showCreateModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
