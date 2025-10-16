@@ -1,9 +1,16 @@
 import { useAuthStore } from "@/stores/useAuthStore";
 import { PasswordChange } from "@/components/ui/Profile/PasswordChange";
 import { DeleteAccount } from "@/components/ui/Profile/DeleteAccount";
+import { AccountActivityModal } from "@/components/ui/Profile/AccountActivityModal";
+
+import { Button } from "@/components/ui/button";
+
+import { useState } from "react";
+import { History } from "lucide-react";
 
 export default function ProfilePage() {
   const { user } = useAuthStore();
+  const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
 
   return (
     <div className="flex-1 overflow-auto">
@@ -12,6 +19,15 @@ export default function ProfilePage() {
       <div className="max-w-5xl mx-auto p-6">
         <h2 className="text-3xl font-bold mb-6 text-yellow-800">Profile</h2>
 
+        <div className="flex justify-end mb-4">
+          <Button
+            variant="outline"
+            onClick={() => setIsActivityModalOpen(true)}
+          >
+            <History className="h-4 w-4 mr-2" />
+            View Account Activity
+          </Button>
+        </div>
         {/* Profile Header */}
         <div className="bg-white rounded-xl shadow-sm p-8 mb-6">
           <div className="flex items-start gap-6">
@@ -26,6 +42,7 @@ export default function ProfilePage() {
                   <h1 className="text-3xl font-bold text-gray-900 mb-2">Olivia Rhye</h1>
                   <p className="text-gray-500">I'm a Product Designer based in Melbourne.</p>
                 </div>
+
               </div>
             </div>
           </div>
@@ -110,6 +127,11 @@ export default function ProfilePage() {
           <DeleteAccount />
         </div>
       </div>
+
+      <AccountActivityModal
+        open={isActivityModalOpen}
+        onOpenChange={setIsActivityModalOpen}
+      />
 
     </div>
   );

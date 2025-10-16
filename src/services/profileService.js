@@ -37,4 +37,22 @@ const deleteAccount = async () => {
     }
 };
 
-export { changePassword, deleteAccount };
+const getLoginHistory = async (page = 1, limit = 10) => {
+    try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get(
+            `${API_BASE_URL}/profile/login-history`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+                params: { page, limit },
+            }
+        );
+        return response.data;
+    } catch (error) {
+        throw new Error(error.response?.data?.message || "Failed to fetch login history");
+    }
+};
+
+export { changePassword, deleteAccount, getLoginHistory };
