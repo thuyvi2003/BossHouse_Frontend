@@ -29,26 +29,31 @@ export async function createPromotion(promo) {
     return res.json();
 }
 
-export async function removePromotion(id) {
-    const token = localStorage.getItem("token")
-    const res = await fetch(`${API_BASE_URL}/promotions/${id}`, {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ is_hidden: true }), //Gui flag updated
-    });
+export const removePromotion = async (id) => {
+    try {
+        const res = await axiosInstance.put(`/promotions/${id}`, {
+            is_hidden: true, // gửi flag ẩn
+        });
 
-    console.log("Response status:", res.status);
-
-    if (!res.ok) {
-        const text = await res.text();
-        console.error("Failed response:", text);
-        throw new Error("Failed to remove promotion");
+        console.log("Promotion removed:", res.data);
+        return res.data;
+    } catch (error) {
+        console.error("Failed to remove promotion:", error.response?.data || error.message);
+        throw error.response?.data || new Error("Failed to remove promotion");
     }
-    return res.json();
+};
+
+export const updatePromotion = async (id, updateData) => {
+    try {
+        const res = await axiosInstance.put(`promotions/update/${id}`,updateData);
+        console.log("Updated is sucess", res);
+        return res.data
+    } catch (error) {
+        throw error.response?.data || new Error("Failed to edit promotion");
+
+    }
 }
+
 export const searchPromotions = async (code = "", status = "") => {
     const params = {};
     if (code) params.code = code;

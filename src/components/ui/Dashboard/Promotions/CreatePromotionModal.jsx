@@ -155,6 +155,7 @@ export default function CreatePromotionModal({
                             }}
                             dateFormat="dd/MM/yyyy"
                             placeholderText="dd/mm/yyyy"
+                            minDate={new Date()}
                             className="w-full px-4 py-2 border border-[#d7cbbf] rounded-lg focus:ring-2 focus:ring-[#846551] focus:border-[#846551] text-gray-800"
                         />
                         {errors.expires_at && (
