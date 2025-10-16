@@ -1,13 +1,14 @@
 // Vo Lam Thuy Vi
 import React, { useEffect, useState } from "react";
 import CreatePromotionModal from "./CreatePromotionModal";
-import { createPromotion, getPromotionsList, removePromotion, searchPromotions } from "@/services/promotionService";
+import { createPromotion, getPromotionsList, removePromotion, searchPromotions, updatePromotion } from "@/services/promotionService";
 import { Tag } from "phosphor-react";
 import Pagination from "@/components/Layout/Pagination";
 import dayjs from "dayjs";
 import ConfirmDialog from "@/components/Layout/ConfirmDialog";
 import Toast from "@/components/Layout/Toast";
 import PromotionDetailModal from "./PromotionDetailModal";
+import EditPromotionModal from "./EditPromotionModal";
 
 const PromotionManagement = () => {
   const [promotions, setPromotions] = useState([]);
@@ -20,6 +21,7 @@ const PromotionManagement = () => {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [selectedPromo, setSelectedPromo] = useState(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
   const [toast, setToast] = useState({ show: false, type: "success", message: "" });
 
   const [form, setForm] = useState({
@@ -97,6 +99,38 @@ const PromotionManagement = () => {
     setSelectedPromo(promo);
     setConfirmOpen(true)
   }
+  //Open Edit form
+  const handleEditClick = (promo) => {
+    setSelectedPromo(promo);
+    setForm({
+      code: promo.code || "",
+      description: promo.description || "",
+      promotion_type: promo.promotion_type || "",
+      promotion_value: promo.promotion_value || "",
+      expires_at: promo.expires_at || "",
+    })
+    setEditModalOpen(true)
+  }
+
+  const handleEditPromotion = async () => {
+    try {
+      if (!selectedPromo?._id) return;
+      const promotionEdited = await updatePromotion(selectedPromo._id, {
+        description: form.description,
+        promotion_value: Number(form.promotion_value),
+        expires_at: form.expires_at ? dayjs(form.expires_at).format("YYYY-MM-DD") : "",
+      });
+      setToast({ show: true, type: "success", message: "Promotion updated successfully!" });
+      console.log("Promotion is edit successfully", promotionEdited);
+      setEditModalOpen(false);
+      setSelectedPromo(null);
+      await fetchData();
+    } catch (error) {
+      console.error("Error updating promotion:", error);
+      setToast({ show: true, type: "error", message: "Failed to update promotion!" });
+    }
+  };
+
   const handleConfirmDelete = async () => {
     try {
       if (!selectedPromo?._id) return;//Neu chua chon promotion nao thi thoat
@@ -228,6 +262,12 @@ const PromotionManagement = () => {
                   View
                 </button>
                 <button
+                  onClick={() => handleEditClick(promo)}
+                  className="px-3 py-1 border border-[#5a4639] text-[#5a4639] rounded-lg hover:bg-[#ebe2da] transition-all duration-300"
+                >
+                  Edit
+                </button>
+                <button
                   onClick={() => handleDeleteClick(promo)}
                   className="px-3 py-1 border border-[#b85c49] text-[#b85c49] rounded-lg hover:bg-[#fbe9e6] transition-all duration-300">
                   Delete
@@ -262,16 +302,26 @@ const PromotionManagement = () => {
         onConfirm={handleConfirmDelete}
         onCancel={() => setConfirmOpen(false)}
       />
+
+
       <PromotionDetailModal
         isOpen={detailOpen}
         promotion={selectedPromo}
         onClose={() => setDetailOpen(false)} />
 
+
+      <EditPromotionModal
+        isOpen={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        onEdit={handleEditPromotion}
+        form={form}
+        setForm={setForm} />
+
       {toast.show && (
         <Toast
-          type="success"
-          title="Payment processed"
-          message="Transaction ID: #14402"
+          type={toast.type}
+          title={toast.title}
+          message={toast.message}
           onClose={() => setToast({ ...toast, show: false })}
         />
       )}
