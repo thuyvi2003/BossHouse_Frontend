@@ -77,7 +77,7 @@ function App() {
               <Route index element={<ProfilePage />} />
               <Route path="contact-history" element={<ContactHistory />} />
               <Route path="booking-history" element={<BookingHistory />} />
-               <Route path="wishlist" element={<WishlistPage />} />
+              <Route path="wishlist" element={<WishlistPage />} />
             </Route>
             <Route path='/contact' element={<ContactPage />} />
             <Route path="/profile" element={<ProfileLayout />}>
@@ -89,7 +89,15 @@ function App() {
             <Route path="/notifications/:id" element={<NotificationDetailPage />} />
           </Routes>
 
-          <ToastContainer position="top-right" autoClose={5000} />
+          <ToastContainer
+            position="top-right"
+            autoClose={5000}
+            hideProgressBar={false}
+            closeOnClick
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+          />
         </main>
 
         {!hideLayout && <Footer />}

@@ -28,20 +28,29 @@ import { toast } from "react-toastify";
 const ITEMS_PER_PAGE = 10;
 
 export function AccountActivityModal({ open, onOpenChange }) {
+    const [allLogs, setAllLogs] = useState([]);
     const [displayedLogs, setDisplayedLogs] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [sortDirection, setSortDirection] = useState("desc");
     const [page, setPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
     const scrollContainerRef = useRef(null);
 
-    const fetchLogs = async (pageNum) => {
+    const fetchLogs = async () => {
         try {
             setIsLoading(true);
-            const { loginHistory, pagination } = await getLoginHistory(pageNum, ITEMS_PER_PAGE);
-            setDisplayedLogs((prev) => pageNum === 1 ? loginHistory : [...prev, ...loginHistory]);
-            setTotalPages(pagination.totalPages);
-            setPage(pageNum);
+            // Fetch all logs with a high limit
+            const { loginHistory } = await getLoginHistory(1, 1000);
+            setAllLogs(loginHistory);
+            // Display first 10 logs, sorted by sortDirection
+            const sorted = loginHistory
+                .sort((a, b) => {
+                    const timeA = new Date(a.loginTime).getTime();
+                    const timeB = new Date(b.loginTime).getTime();
+                    return sortDirection === "desc" ? timeB - timeA : timeA - timeB;
+                })
+                .slice(0, ITEMS_PER_PAGE);
+            setDisplayedLogs(sorted);
+            setPage(1);
         } catch (error) {
             toast.error(error.message);
         } finally {
@@ -49,31 +58,34 @@ export function AccountActivityModal({ open, onOpenChange }) {
         }
     };
 
-    // Fetch initial logs when modal opens
+    // Fetch all logs when modal opens
     useEffect(() => {
         if (open) {
-            setSortDirection("desc"); // Reset to "Newest first" when modal opens
+            setSortDirection("desc"); // Reset to "Newest first"
+            setAllLogs([]);
             setDisplayedLogs([]);
             setPage(1);
-            fetchLogs(1);
+            fetchLogs();
         }
     }, [open]);
 
-    // Sort logs when direction changes
+    // Update displayed logs when sortDirection changes
     useEffect(() => {
-        if (displayedLogs.length > 0) {
-            const sorted = [...displayedLogs].sort((a, b) => {
-                const timeA = new Date(a.loginTime).getTime();
-                const timeB = new Date(b.loginTime).getTime();
-                return sortDirection === "desc" ? timeB - timeA : timeA - timeB;
-            });
+        if (allLogs.length > 0) {
+            const sorted = [...allLogs]
+                .sort((a, b) => {
+                    const timeA = new Date(a.loginTime).getTime();
+                    const timeB = new Date(b.loginTime).getTime();
+                    return sortDirection === "desc" ? timeB - timeA : timeA - timeB;
+                })
+                .slice(0, page * ITEMS_PER_PAGE);
             setDisplayedLogs(sorted);
         }
-    }, [sortDirection]);
+    }, [sortDirection, page, allLogs]);
 
     const loadMoreItems = () => {
-        if (isLoading || page >= totalPages) return;
-        fetchLogs(page + 1);
+        if (isLoading || displayedLogs.length >= allLogs.length) return;
+        setPage((prev) => prev + 1);
     };
 
     const handleScroll = (e) => {
@@ -195,7 +207,7 @@ export function AccountActivityModal({ open, onOpenChange }) {
                         </TableBody>
                     </Table>
                 </div>
-                {displayedLogs.length < totalPages * ITEMS_PER_PAGE && !isLoading && (
+                {displayedLogs.length < allLogs.length && !isLoading && (
                     <div className="text-center text-muted-foreground py-2 border-t">
                         Scroll down to load more
                     </div>
