@@ -52,7 +52,7 @@ export default function CreatePromotionModal({
     }
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8 transform transition-all animate-fade-in-up">
                 <h3 className="text-2xl font-extrabold mb-6 text-[#846551] flex items-center gap-2">
                     <Tag size={28} weight="bold" className="text-[#846551]" />
@@ -155,6 +155,7 @@ export default function CreatePromotionModal({
                             }}
                             dateFormat="dd/MM/yyyy"
                             placeholderText="dd/mm/yyyy"
+                            minDate={new Date()}
                             className="w-full px-4 py-2 border border-[#d7cbbf] rounded-lg focus:ring-2 focus:ring-[#846551] focus:border-[#846551] text-gray-800"
                         />
                         {errors.expires_at && (

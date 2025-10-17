@@ -94,7 +94,10 @@ export default function ContactTable({
               className={`${gridCols} px-3 py-2 items-center transition ${idx % 2 === 0 ? "bg-white hover:bg-yellow-50" : "bg-[#fcfaf9] hover:bg-yellow-50"
                 }`}
             >
-              <div className="font-semibold text-gray-800">{idx + 1}</div>
+              <div className="font-semibold text-gray-800">
+                {(currentPage - 1) * 6 + idx + 1}
+              </div>
+
               <div className="truncate text-sm" title={item.name || "-"}>{item.name || "-"}</div>
               <div className="truncate text-sm" title={item.email || "-"}>{item.email || "-"}</div>
               <div className="truncate text-sm" title={item.phone || "-"}>{item.phone || "-"}</div>
@@ -109,8 +112,8 @@ export default function ContactTable({
               <div className="text-center max-w-[80px]">
                 <span
                   className={`px-1 py-0.5 text-xs font-semibold rounded-full border ${item.status?.toLowerCase() === "complete"
-                      ? "border-green-200 bg-green-50 text-green-700"
-                      : "border-yellow-200 bg-yellow-50 text-yellow-700"
+                    ? "border-green-200 bg-green-50 text-green-700"
+                    : "border-yellow-200 bg-yellow-50 text-yellow-700"
                     }`}
                 >
                   {item.status?.toLowerCase() === "complete" ? "Complete" : "Pending"}
@@ -141,8 +144,8 @@ export default function ContactTable({
                     <button
                       onClick={() => onReply(item, item.status?.toLowerCase() === "complete")}
                       className={`px-2 py-0.5 border rounded flex items-center gap-1 ${item.status?.toLowerCase() === "complete"
-                          ? "bg-gray-400 hover:bg-gray-500 text-white"
-                          : "bg-blue-500 hover:bg-blue-600 text-white"
+                        ? "bg-gray-400 hover:bg-gray-500 text-white"
+                        : "bg-blue-500 hover:bg-blue-600 text-white"
                         }`}
                     >
                       <PaperPlane size={14} /> Reply

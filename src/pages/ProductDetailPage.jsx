@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { addToCart } from '@/services/cartService';
 import Toast from '@/components/Layout/Toast';
-import { addToWishlist } from '@/services/wishListService';
+import { addToWishlist, getWishlist } from '@/services/wishListService';
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -40,7 +40,7 @@ const ProductDetailPage = () => {
   const [showVariations, setShowVariations] = useState(false);
   const [isAddToWishlist, setIsAddToWishlist] = useState(false);
   const [toast, setToast] = useState(null);
-
+  const [isInWishlist, setIsInWishlist] = useState(false);
 
   // Fetch product details and variations
   useEffect(() => {
@@ -79,6 +79,10 @@ const ProductDetailPage = () => {
     }
   }, [id]);
 
+      useEffect(()=> {
+                  checkWishlist();
+
+      },[selectedVariation])
   // Handle quantity change
   const handleQuantityChange = (change) => {
     const newQuantity = quantity + change;
@@ -123,6 +127,32 @@ const ProductDetailPage = () => {
       });
     }
   }
+
+
+
+ const checkWishlist = async () => {
+  try {
+    const data = await getWishlist();
+    console.log("zzz", data.status);
+    console.log("wishlist data:", data.data);
+
+    if (Array.isArray(data.data)) {
+      const exists = data.data.some(
+        (item) => item.product_variation_id?._id === selectedVariation?._id
+      );
+      console.log("Existssssss", exists);
+      console.log("1" , selectedVariation)
+      setIsInWishlist(exists);
+    } else {
+      console.warn("⚠️ data.data không phải là mảng:", data.data);
+    }
+  } catch (error) {
+    console.error("Lỗi khi kiểm tra wishlist:", error);
+  }
+};
+
+
+
   const handleAddToWishlist = async () => {
     try {
       setLoading(true);
@@ -135,6 +165,11 @@ const ProductDetailPage = () => {
         return;
       }
       const res = await addToWishlist(selectedVariation._id);
+        setToast({
+        type: "success",
+        title: "Success!",
+        message: `Added ${quantity} × ${selectedVariation.name} to wishlist!`,
+      });
       if (res.success === false && res.message === "Product already in wishlist") {
         setToast({
           type: "warning",
@@ -409,15 +444,15 @@ const ProductDetailPage = () => {
 
                 <button
                   onClick={handleAddToWishlist}
-                  disabled={loading || isAddToWishlist}
+                  // disabled={loading || isAddToWishlist}
                   className={`px-3 py-2 border border-gray-300 rounded-lg flex items-center justify-center 
     transition-all duration-300 hover:bg-gray-50 relative z-50
-    ${isAddToWishlist ? "bg-yellow-50 border-yellow-400" : ""}
+    ${isInWishlist ? "bg-yellow-50 border-yellow-400" : ""}
   `}
                 >
                   <Star
                     className={`w-5 h-5 transition-transform duration-300 
-      ${isAddToWishlist ? "fill-yellow-400 text-yellow-500 scale-125" : "text-gray-500"} 
+      ${isInWishlist ? "fill-yellow-400 text-yellow-500 scale-125" : "text-gray-500"} 
       ${loading ? "animate-pulse" : ""}
     `}
                   />
