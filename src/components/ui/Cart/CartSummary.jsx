@@ -5,17 +5,18 @@ import { Navigate, useNavigate } from "react-router-dom";
 import Toast from "@/components/Layout/Toast";
 
 export default function CartSummary({ total, count }) {
-
-  const shipping = count > 0 ? 5000 : 0;
   const [promotions, setPromotions] = useState([]);
   const [selectedPromo, setSelectedPromo] = useState(null);
-  const [finalTotal, setFinalTotal] = useState(total + shipping)
+  const [finalTotal, setFinalTotal] = useState(total)
   const [toast, setToast] = useState(null);
   const navigate = useNavigate();
+
+  //Fetch ds promotion 
   const fetchPromotions = async () => {
     try {
       const res = await getUserClaimedPromotions();
       setPromotions(res.data?.data || []);
+      console.log("Promotion of user ",res.data.data)
     } catch (error) {
       console.error("Failed to fetch promotions:", error.message);
     }
@@ -25,8 +26,11 @@ export default function CartSummary({ total, count }) {
     fetchPromotions();
   }, []);
 
+
+
+
   useEffect(() => {
-    let newTotal = Number(total) + Number(shipping);
+    let newTotal = Number(total) ;
     const promoValue = Number(selectedPromo?.value || selectedPromo?.promotion_value || 0);
     if (selectedPromo) {
       if (selectedPromo.type === "percent") {
@@ -35,10 +39,8 @@ export default function CartSummary({ total, count }) {
         newTotal = Math.max(newTotal - promoValue, 0);
       }
     }
-
     setFinalTotal(newTotal);
-    console.log("ne hhehee", newTotal);
-  }, [total, shipping, selectedPromo]);
+  }, [total, selectedPromo]);
 
 
 
@@ -63,6 +65,7 @@ export default function CartSummary({ total, count }) {
     }
   };
 
+//Chua lam toi
   const handleCheckout = () => {
     navigate("/checkout", {
       state: {
@@ -71,6 +74,8 @@ export default function CartSummary({ total, count }) {
       }
     })
   }
+
+
   return (
     <div className="p-6 bg-[#fdfaf6] border border-gray-200 rounded shadow-sm">
       <h2 className="text-lg font-light mb-4 text-gray-700 tracking-wide uppercase">
@@ -79,13 +84,10 @@ export default function CartSummary({ total, count }) {
 
       <div className="flex justify-between text-sm py-2 border-b border-gray-200">
         <span className="text-gray-600">{count} Products</span>
-        <span className="text-gray-700">{total}đ</span>
+        <span className="text-gray-700">{total.toLocaleString()}đ</span>
       </div>
 
-      <div className="flex justify-between text-sm py-2 border-b border-gray-200">
-        <span className="text-gray-600">Shipping</span>
-        <span className="text-gray-700">{shipping}đ</span>
-      </div>
+    
 
 
       {/* Danh sách khuyến mãi */}
@@ -108,9 +110,9 @@ export default function CartSummary({ total, count }) {
                   {promo.description || promo.code}
                 </div>
                 <div className="text-xs text-gray-500">
-                  {promo.promotion_type === "percent"
-                    ? `Giảm ${promo.promotion_value}%`
-                    : `Giảm ${promo.promotion_value}đ`}
+                  {promo.type === "percent"
+                    ? `Reduce ${promo.value}%`
+                    : `Reduce ${promo.value.toLocaleString()}đ`}
                 </div>
                 <button
                   onClick={() => handleApplyPromotion(promo)}

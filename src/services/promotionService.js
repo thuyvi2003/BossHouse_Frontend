@@ -3,7 +3,7 @@ import API_BASE_URL from "@/config/api";
 import axiosInstance from "@/config/axiosConfig";
 
 export const getPromotionsList = async (page = 1, limit = 8) => {
-    console.log("dôdoododododo")
+   
     const res = await axiosInstance.get("/promotions/admin", { params: { page, limit } });
     return res.data;
 };

@@ -143,6 +143,7 @@ const ProductDetailPage = () => {
       console.log("Existssssss", exists);
       console.log("1" , selectedVariation)
       setIsInWishlist(exists);
+
     } else {
       console.warn("⚠️ data.data không phải là mảng:", data.data);
     }
@@ -180,6 +181,7 @@ const ProductDetailPage = () => {
       }
 
       if (res.success) {
+
         setIsAddToWishlist(true);
         setToast({
           type: "success",
@@ -196,6 +198,8 @@ const ProductDetailPage = () => {
       });
     } finally {
       setLoading(false);
+                   window.location.reload();
+
     }
   };
 
@@ -452,7 +456,7 @@ const ProductDetailPage = () => {
                 >
                   <Star
                     className={`w-5 h-5 transition-transform duration-300 
-      ${isInWishlist ? "fill-yellow-400 text-yellow-500 scale-125" : "text-gray-500"} 
+      ${isInWishlist || isAddToWishlist? "fill-yellow-400 text-yellow-500 scale-125" : "text-gray-500"} 
       ${loading ? "animate-pulse" : ""}
     `}
                   />
