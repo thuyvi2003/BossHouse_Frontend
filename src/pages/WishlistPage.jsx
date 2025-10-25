@@ -59,7 +59,7 @@ const WishlistPage = () => {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-10xl mx-auto px-4 py-12 animate-fade-in-up">
+      <div className="max-w-10xl mx-auto px-4 py-12 animate-fade-in-up ">
         {wishlist.length === 0 ? (
           <div className="text-center py-20 text-gray-500">
             <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
