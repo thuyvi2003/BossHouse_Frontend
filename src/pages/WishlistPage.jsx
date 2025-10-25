@@ -1,9 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, Outlet, useLocation } from "react-router-dom";
 import { Package, ArrowLeft, Heart, X } from "lucide-react";
 import Toast from "@/components/Layout/Toast";
-import { getWishlist } from "@/services/wishListService";
+import { clearAllWishlist, getWishlist, moveToCart, removeWishlistItem } from "@/services/wishListService";
 import Pagination from "@/components/Layout/Pagination";
+import dayjs from "dayjs";
+import "dayjs/locale/vi";
+import CreateGroupModal from "@/components/ui/Wishlist/CreateGroupModal";
+import WishlistGroupsPage from "@/components/ui/Wishlist/WishlistGroupsPage";
+
+// dayjs.locale("vi"); 
+
 
 const WishlistPage = () => {
   const [wishlist, setWishlist] = useState([]);
@@ -12,7 +19,8 @@ const WishlistPage = () => {
   const [page, setPage] = useState(1);
   const [limit] = useState(6);
   const [totalPages, setTotalPages] = useState(1);
-
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  const location = useLocation()
   const fetchWishlist = async (pageNum = 1) => {
     try {
       setLoading(true);
@@ -29,7 +37,7 @@ const WishlistPage = () => {
         title: "Failed!",
         message:
           error.response?.data.message || "Failed to fetch wishlist.",
-        
+
       });
       console.log(toast)
     } finally {
@@ -41,7 +49,51 @@ const WishlistPage = () => {
     fetchWishlist();
   }, []);
 
+  const handleRemove = async (id) => {
+    try {
+      await removeWishlistItem(id);
+      fetchWishlist(page);
+    } catch (error) {
+      console.error("Remove failed:", error);
+    }
+  };
 
+
+  const handleClearAllItems = async () => {
+    try {
+      await clearAllWishlist();
+      setWishlist([]);
+    } catch (error) {
+      console.error("Clear all failed:", error);
+
+    }
+  }
+
+  const handleMoveToCart = async (id) => {
+
+    try {
+      const res = await moveToCart(id);
+
+      setToast({
+        type: "success",
+        title: "Success",
+        message: res.message || "All items moved to cart successfully!",
+      });
+
+      fetchWishlist();
+    } catch (error) {
+      console.error("Clear all failed:", error);
+      setToast({
+        type: "error",
+        title: "Failed",
+        message: error.response?.data?.message || "Could not move all items",
+      });
+    }
+  };
+
+  if (location.pathname.endsWith("/groups")) {
+    return <WishlistGroupsPage />
+  }
   return (
     <div className="min-h-screen ">
       {/* Breadcrumb Header */}
@@ -67,6 +119,28 @@ const WishlistPage = () => {
           </div>
         ) : (
           <>
+            {/* Group Actions */}
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-semibold text-[#5a4639] flex items-center gap-2">
+                <Heart className="text-red-400 w-5 h-5" /> Manage Your Wishlist
+              </h2>
+
+              <div className="flex gap-4">
+                <Link
+                  to="groups"
+                  className="border border-[#d7cbbf] text-[#5a4639] px-4 py-2 rounded-lg font-medium hover:bg-[#f5f3f2] hover:shadow-sm transition-all"
+                >
+                  View Groups
+                </Link>
+                <Link
+                  className="bg-[#846551] text-white px-4 py-2 rounded-lg font-medium shadow-sm hover:shadow-md hover:scale-105 transition-transform"
+                  onClick={() => setShowCreateModal(true)}
+                >
+                  + Create Group
+                </Link>
+              </div>
+            </div>
+
             {/* Table Header */}
             <div className="rounded-lg overflow-hidden shadow-sm bg-[#d7cbbf] grid grid-cols-12 gap-4 px-6 py-4 text-sm font-semibold text-[#5a4639] tracking-wide">
               <div className="col-span-1"></div>
@@ -84,13 +158,14 @@ const WishlistPage = () => {
                 return (
                   <div
                     key={item._id}
-                    className={`grid grid-cols-12 gap-4 px-6 py-5 items-center transition-all duration-300 hover:bg-[#f5f3f2] hover:shadow-md ${
-                      i % 2 === 0 ? "bg-[#fff]" : "bg-[#fdfcfb]"
-                    }`}
+                    className={`grid grid-cols-12 gap-4 px-6 py-5 items-center transition-all duration-300 hover:bg-[#f5f3f2] hover:shadow-md ${i % 2 === 0 ? "bg-[#fff]" : "bg-[#fdfcfb]"
+                      }`}
                   >
                     {/* Remove */}
                     <div className="col-span-1">
-                      <button className="text-gray-400 hover:text-red-500 transition-transform hover:scale-110">
+                      <button
+                        className="text-gray-400 hover:text-red-500 transition-transform hover:scale-110"
+                        onClick={() => handleRemove(item._id)}>
                         <X className="w-5 h-5" />
                       </button>
                     </div>
@@ -111,9 +186,7 @@ const WishlistPage = () => {
                         >
                           {v?.name}
                         </Link>
-                        <p className="text-xs text-gray-500 mt-1">
-                          SKU: {v?.sku}
-                        </p>
+
                       </div>
                     </div>
 
@@ -126,21 +199,17 @@ const WishlistPage = () => {
 
                     {/* Date Added */}
                     <div className="col-span-2 text-center text-sm text-gray-600">
-                      {new Date(item.created_at || item.createdAt).toLocaleDateString("en-GB", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      })}
+                      {dayjs(item.created_at || item.createdAt).format("DD MMMM YYYY")}
+
                     </div>
 
                     {/* Status */}
                     <div className="col-span-2 text-center">
                       <span
-                        className={`text-sm font-medium px-3 py-1 rounded-full ${
-                          v?.status === "active"
-                            ? "bg-green-100 text-green-700"
-                            : "bg-red-100 text-red-700"
-                        }`}
+                        className={`text-sm font-medium px-3 py-1 rounded-full ${v?.status === "active"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-red-100 text-red-700"
+                          }`}
                       >
                         {v?.status === "active" ? "In Stock" : "Out of Stock"}
                       </span>
@@ -148,7 +217,8 @@ const WishlistPage = () => {
 
                     {/* Add to Cart */}
                     <div className="col-span-1 flex justify-end">
-                      <button className="bg-gradient-to-r from-[#846551] to-[#5a4639] text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm hover:shadow-md hover:scale-105 active:scale-95 transition-all">
+                      <button className="bg-gradient-to-r from-[#846551] to-[#5a4639] text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm hover:shadow-md hover:scale-105 active:scale-95 transition-all"
+                        onClick={() => handleMoveToCart(item._id)}>
                         Add to Cart
                       </button>
                     </div>
@@ -159,11 +229,13 @@ const WishlistPage = () => {
 
             {/* Bottom Section */}
             <div className="mt-10 flex justify-between items-center">
-              <button className="border border-[#d7cbbf] text-[#5a4639] px-6 py-2 rounded-lg font-medium hover:bg-[#f5f3f2] hover:shadow-sm transition-all">
+              <button
+                className="border border-[#d7cbbf] text-[#5a4639] px-6 py-2 rounded-lg font-medium hover:bg-[#f5f3f2] hover:shadow-sm transition-all"
+                onClick={handleClearAllItems}>
                 Clear Wishlist
               </button>
               <button className="bg-yellow-400 text-white px-6 py-2 rounded-lg font-medium hover:shadow-md hover:scale-105 transition-transform">
-                Add All to Cart
+                Share all cart
               </button>
             </div>
 
@@ -175,10 +247,20 @@ const WishlistPage = () => {
           </>
         )}
       </div>
-
-      {toast && <Toast type={toast.type} title={toast.title} message={toast?.message} onClose={  () => {
-            setToast(null)
-          }}/>}
+      {showCreateModal && (
+        <CreateGroupModal
+          onClose={() => setShowCreateModal(false)}
+          onSuccess={() => setToast({
+            type: "success",
+            title: "Success",
+            message: "Group created successfully!",
+          })}
+        />
+      )}
+      {toast && <Toast type={toast.type} title={toast.title} message={toast?.message} onClose={() => {
+        setToast(null)
+      }} />}
+      <Outlet />
     </div>
   );
 };

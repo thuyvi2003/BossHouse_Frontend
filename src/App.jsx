@@ -30,6 +30,7 @@ import BookingHistory from "./pages/BookingHistory.jsx";
 import NotificationsPage from './pages/NotificationsPage.jsx';
 import NotificationDetailPage from './pages/NotificationDetailPage.jsx';
 import WishlistPage from './pages/WishlistPage.jsx';
+import WishlistGroupsPage from './components/ui/Wishlist/WishlistGroupsPage.jsx';
 
 function App() {
   const location = useLocation();
@@ -77,7 +78,9 @@ function App() {
               <Route index element={<ProfilePage />} />
               <Route path="contact-history" element={<ContactHistory />} />
               <Route path="booking-history" element={<BookingHistory />} />
-              <Route path="wishlist" element={<WishlistPage />} />
+              <Route path="wishlist" element={<WishlistPage />} >
+                <Route path="groups" element={<WishlistGroupsPage/>} />
+              </Route>
             </Route>
             <Route path='/contact' element={<ContactPage />} />
             <Route path="/profile" element={<ProfileLayout />}>
