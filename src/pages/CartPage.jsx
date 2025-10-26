@@ -11,9 +11,8 @@ export default function Cart() {
   const fetchCart = async () => {
     try {
       const res = await getUserCart();
+      console.log("hellllo may friend",res.data?.items )
       setCart(res.data?.items || []);
-      console.log("ALOOOOOOOOOOOOOOO")
-
       const totalPrice = res.data?.items.reduce(
         (sum, item) => sum + (item.variation_id?.price || 0) * item.quantity,
         0

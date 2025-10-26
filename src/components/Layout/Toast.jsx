@@ -6,10 +6,11 @@ const Toast = ({ type = "success", title, message, onClose }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       onClose();
-    }, 4000); // tự động tắt sau 4 giây
+    }, 4000); 
     return () => clearTimeout(timer);
   }, [onClose]);
 
+  console.log("mes",message)
   const styles = {
     success: {
       bg: "bg-green-100",

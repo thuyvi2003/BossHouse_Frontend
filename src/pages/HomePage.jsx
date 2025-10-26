@@ -38,23 +38,37 @@ const HomePage = () => {
     const [selectedCategory] = useState('all');
     const [currentSlide, setCurrentSlide] = useState(0);
 
-    // Hero images
-    const heroImages = [
+    // Hero slides rendered as looping background videos
+    const heroSlides = [
         {
             id: 1,
-            image: "https://images.pexels.com/photos/32255028/pexels-photo-32255028.jpeg",
+            videoSrc: "https://youtu.be/bxAWHMhXyzc",
+            poster: "https://images.pexels.com/photos/7210740/pexels-photo-7210740.jpeg",
             title: "Premium Pet Products & Care",
             subtitle:
                 "Your one-stop shop for quality pet supplies and professional pet care services",
             buttonText: "Shop Now",
+            buttonLink: "/products",
         },
         {
             id: 2,
-            image: "https://images.pexels.com/photos/30457618/pexels-photo-30457618.jpeg",
+            videoSrc: "https://www.vecteezy.com/video/54311819-woman-snuggling-with-a-fluffy-samoyed-puppy-dog-in-the-warm-glow-of-sunset-exuding-love-happiness-and-gentle-affection-copy-space-for-your-text",
+            poster: "https://images.pexels.com/photos/4852949/pexels-photo-4852949.jpeg",
             title: "Happy Pets, Happy Life",
             subtitle:
                 "From grooming to health checkups - we care for your furry friends",
             buttonText: "Book Services",
+            buttonLink: "/services",
+        },
+        {
+            id: 3,
+            videoSrc: "https://cdn.coverr.co/videos/coverr-cat-in-a-pet-store-3009/1080p.mp4",
+            poster: "https://images.pexels.com/photos/5732466/pexels-photo-5732466.jpeg",
+            title: "Treats, Toys & Tail Wags",
+            subtitle:
+                "Explore curated delights to keep every pet healthy, happy, and engaged",
+            buttonText: "Discover Deals",
+            buttonLink: "/products",
         },
     ];
 
@@ -93,13 +107,13 @@ const HomePage = () => {
         fetchData();
     }, []);
 
-    // Auto-slide hero images
+    // Auto-rotate hero slides
     useEffect(() => {
         const timer = setInterval(() => {
-            setCurrentSlide((prev) => (prev + 1) % heroImages.length);
+            setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
         }, 5000);
         return () => clearInterval(timer);
-    }, [heroImages.length]);
+    }, [heroSlides.length]);
 
     // Filter products
     const filteredProducts = products.filter(product => {
@@ -112,11 +126,11 @@ const HomePage = () => {
     });
 
     const nextSlide = () => {
-        setCurrentSlide((prev) => (prev + 1) % heroImages.length);
+        setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
     };
 
     const prevSlide = () => {
-        setCurrentSlide((prev) => (prev - 1 + heroImages.length) % heroImages.length);
+        setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
     };
 
     if (loading) {
@@ -130,27 +144,32 @@ const HomePage = () => {
     return (
         <div className="min-h-screen bg-gray-50">
             {/* Hero Section */}
-            <section className="relative h-[70vh] overflow-hidden" data-aos="fade">
+            <section className="relative h-[100vh] overflow-hidden" data-aos="fade">
                 <div className="relative w-full h-full">
-                    {heroImages.map((hero, index) => (
+                    {heroSlides.map((hero, index) => (
                         <div
                             key={hero.id}
                             className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100' : 'opacity-0'
                                 }`}
                         >
                             <div className="w-full h-full relative" style={{ backgroundColor: '#846551' }}>
-                                <img
-                                    src={hero.image}
-                                    alt={hero.title}
+                                <video
+                                    src={hero.videoSrc}
+                                    poster={hero.poster}
                                     className="absolute inset-0 w-full h-full object-cover"
+                                    autoPlay
+                                    loop
+                                    muted
+                                    playsInline
                                 />
-                                <div className="relative z-10 flex items-center justify-center h-full">
-                                    <div className="text-center text-gray-900 max-w-4xl px-4" data-aos="zoom-in">
-                                        <h1 className="text-5xl md:text-6xl font-bold mb-6">{hero.title}</h1>
-                                        <p className="text-xl md:text-2xl mb-8">{hero.subtitle}</p>
+                                <div className="absolute inset-0 bg-gradient-to-tr from-black/70 via-black/40 to-transparent" />
+                                <div className="relative z-10 flex items-center justify-center h-full px-4">
+                                    <div className="text-center text-white max-w-4xl px-4" data-aos="zoom-in">
+                                        <h1 className="text-5xl md:text-6xl font-bold mb-6 drop-shadow-lg">{hero.title}</h1>
+                                        <p className="text-xl md:text-2xl mb-8 text-white/90 drop-shadow">{hero.subtitle}</p>
                                         <Link
-                                            to="/products"
-                                            className="inline-flex items-center px-8 py-4 bg-[#846551] text-white font-semibold rounded-lg hover:bg-[#5a4639] transition-all duration-300 transform hover:scale-105"
+                                            to={hero.buttonLink || '/products'}
+                                            className="inline-flex items-center px-8 py-4 bg-[#f4a261] text-white font-semibold rounded-lg hover:bg-[#e76f51] transition-all duration-300 transform hover:scale-105 shadow-lg shadow-black/20"
                                             data-aos="fade-up"
                                             data-aos-delay="200"
                                         >

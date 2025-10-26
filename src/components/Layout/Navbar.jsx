@@ -18,6 +18,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { User, LogOut } from "lucide-react";
+import { claimPromotion, getAvailablePromotions } from "@/services/promotionService";
 
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
@@ -28,10 +29,16 @@ export default function Navbar() {
     const [hasNotificationFeature, setHasNotificationFeature] = useState(true);
     const [notifications, setNotifications] = useState([]);
     const [showNotificationTooltip, setShowNotificationTooltip] = useState(false);
-
-
     const navigate = useNavigate();
 
+
+
+    /**
+     * 🚨 CẢNH BÁO:
+     * Mã nguồn này thuộc về Vo Lam Thuy Vi.
+     * Vui lòng KHÔNG tự ý chỉnh sửa hoặc xóa bất kỳ đoạn code nào bên dưới nếu chưa có sự cho phép.
+     * Mọi thay đổi không được phê duyệt có thể gây lỗi hệ thống hoặc mất dữ liệu.
+     */
     useEffect(() => {
         const fetchCart = async () => {
             try {
@@ -43,6 +50,9 @@ export default function Navbar() {
         };
         fetchCart();
     }, []);
+    // -----------------------------------------------------------------------------------------------------------------------------------------------
+
+
 
     const enableNotificationFeature = () => {
         setHasNotificationFeature(true);
@@ -80,24 +90,31 @@ export default function Navbar() {
     };
 
 
+
+    /**
+     * 🚨 CẢNH BÁO:
+     * Mã nguồn này thuộc về Vo Lam Thuy Vi.
+     * Vui lòng KHÔNG tự ý chỉnh sửa hoặc xóa bất kỳ đoạn code nào bên dưới nếu chưa có sự cho phép.
+     * Mọi thay đổi không được phê duyệt có thể gây lỗi hệ thống hoặc mất dữ liệu.
+     */
     const fetchPromotions = async () => {
         try {
             const res = await getAvailablePromotions();
-            setPromotions(res.data?.data?.promotions || []);
-            console.log("Promotion day ne", res.data?.data?.promotions)
+            setPromotions(res.data?.data || []);
+            console.log("Promotion day ne", res.data?.data)
         } catch (error) {
             console.error("Failed to fetch promotions:", error.message);
         }
     };
     useEffect(() => {
-        if (showPromoTooltip) fetchPromotions();
-    }, [showPromoTooltip]);
+        fetchPromotions();
+    }, []);
 
 
     const handleClaimPromotion = async (promotionId) => {
         try {
             await claimPromotion(promotionId);
-            toast.success("Promotion claimed successfully 🎉");
+            toast.success("Promotion claimed successfully");
             setShowPromoTooltip(false);
 
             // Cập nhật lại danh sách (nếu muốn)
@@ -106,7 +123,9 @@ export default function Navbar() {
             toast.error(error.response?.data?.message || "Failed to claim promotion");
             setShowPromoTooltip(false);
         }
-    };
+    };                                                                                                                                         
+    // ---------------------------------------------------------------------------------------------------------------------------------------
+
 
 
     const displayedItems = cartItems.slice(0, 3);
@@ -181,7 +200,7 @@ export default function Navbar() {
                                                     <p className="text-xs text-gray-500">
                                                         {promo.promotion_type === "percent"
                                                             ? `Giảm ${promo.promotion_value}%`
-                                                            : `Giảm ${promo.promotion_value}đ`}
+                                                            : `Giảm ${promo.promotion_value.toLocaleString()}đ`}
                                                     </p>
                                                 </div>
                                                 <button
