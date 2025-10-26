@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, Eye, Trash2, Edit, Bell } from 'lucide-react';
+import { io } from 'socket.io-client';
+import { Search, Plus, Eye, Trash2, Edit } from 'lucide-react';
 import { Button } from '../../button';
 import { Input } from '../../input';
 import { Card } from '../../card';
@@ -85,6 +86,27 @@ const NotificationManagement = () => {
     }
   };
 
+  // Realtime: connect to Socket.IO and refresh on new notifications
+  useEffect(() => {
+    const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+    const socket = io(baseURL, { transports: ['websocket'] });
+
+    // Optionally join personal room for targeted notifications
+    try {
+      const u = JSON.parse(localStorage.getItem('user'));
+      const userId = u?._id || u?.id;
+      if (userId) socket.emit('auth:join', String(userId));
+    } catch {}
+
+    socket.on('notification:new', () => {
+      // safest for filters/pagination: refetch list
+      fetchNotifications();
+    });
+
+    return () => socket.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
     setCurrentPage(1);
@@ -113,6 +135,7 @@ const NotificationManagement = () => {
     setSelectedNotification(notification);
     setShowDeleteModal(true);
   };
+
 
   const handleNotificationCreated = () => {
     setShowCreateModal(false);
@@ -233,7 +256,9 @@ const NotificationManagement = () => {
           </div>
         ) : notifications.length === 0 ? (
           <div className="text-center py-12">
-            <Bell className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <div className="w-16 h-16 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center">
+              <span className="text-2xl text-gray-400">📢</span>
+            </div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">No notifications available</h3>
             <p className="text-gray-500">Create your first notification to get started</p>
           </div>
@@ -259,13 +284,13 @@ const NotificationManagement = () => {
                         {(currentPage - 1) * itemsPerPage + index + 1}
                       </td>
                       <td className="px-4 py-4 text-sm text-gray-600">
-                        {notification.created_by?.username || 'System'}
+                        {notification.created_by?.name || notification.created_by?.username || 'System'}
                       </td>
                       <td className="px-4 py-4 text-sm font-medium text-gray-900">
                         {notification.title}
                       </td>
                       <td className="px-4 py-4 text-sm text-gray-600 max-w-xs truncate">
-                        {notification.description}
+                        {notification.content || notification.description || ''}
                       </td>
                       <td className="px-4 py-4 text-sm text-gray-600">
                         {formatDate(notification.created_at)}

@@ -6,6 +6,7 @@ import { Card } from '../../card';
 import { Star, Upload, X, Search, Filter, Eye, Trash2, Edit, MessageCircle } from 'lucide-react';
 import ReviewDetailModal from './ReviewDetailModal';
 import { toast } from 'react-hot-toast';
+import Pagination from "@/components/Layout/Pagination";
 
 const ReviewManagement = ({ userToken, isAdmin = false }) => {
   const [reviews, setReviews] = useState([]);
@@ -55,7 +56,7 @@ const ReviewManagement = ({ userToken, isAdmin = false }) => {
       });
 
       const result = await response.json();
-      
+
       if (response.ok) {
         setReviews(result.data.reviews || []);
         setPagination(result.data.pagination || {});
@@ -95,7 +96,7 @@ const ReviewManagement = ({ userToken, isAdmin = false }) => {
       });
 
       const result = await response.json();
-      
+
       if (response.ok) {
         setReviews(result.data.reviews || []);
         setPagination(result.data.pagination || {});
@@ -124,7 +125,7 @@ const ReviewManagement = ({ userToken, isAdmin = false }) => {
       });
 
       const result = await response.json();
-      
+
       if (response.ok) {
         const status = result?.data?.status;
         if (status === 'hidden') {
@@ -159,7 +160,7 @@ const ReviewManagement = ({ userToken, isAdmin = false }) => {
       });
 
       const result = await response.json();
-      
+
       if (response.ok) {
         setSelectedReview(result.data);
         setModalOptions({ openReply: !!opts.openReply, allowReply: !!opts.allowReply });
@@ -208,9 +209,8 @@ const ReviewManagement = ({ userToken, isAdmin = false }) => {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
         key={i}
-        className={`w-4 h-4 ${
-          i < rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
-        }`}
+        className={`w-4 h-4 ${i < rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+          }`}
       />
     ));
   };
@@ -264,7 +264,7 @@ const ReviewManagement = ({ userToken, isAdmin = false }) => {
                 className="px-3 py-2 border border-gray-300 rounded-md"
               >
                 <option value="">All Status</option>
-                <option value="visible">Unhidden</option>
+                <option value="visible">Visible</option>
                 <option value="hidden">Hidden</option>
               </select>
             )}
@@ -369,32 +369,12 @@ const ReviewManagement = ({ userToken, isAdmin = false }) => {
           </div>
         )}
 
-        {/* Pagination */}
-        {pagination.total_pages > 1 && (
-          <div className="px-4 py-3 border-t border-gray-200 flex justify-between items-center">
-            <div className="text-sm text-gray-700">
-              Showing {pagination.current_page} of {pagination.total_pages} pages
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handlePageChange(pagination.current_page - 1)}
-                disabled={pagination.current_page <= 1}
-              >
-                Previous
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handlePageChange(pagination.current_page + 1)}
-                disabled={pagination.current_page >= pagination.total_pages}
-              >
-                Next
-              </Button>
-            </div>
-          </div>
-        )}
+        <Pagination
+          page={filters.page}
+          totalPages={pagination.total_pages || pagination.totalPages || 1}
+          onPageChange={handlePageChange}
+        />
+
       </Card>
 
       {/* Review Detail Modal - reuse component with reply support */}

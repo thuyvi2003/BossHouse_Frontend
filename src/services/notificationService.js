@@ -26,6 +26,7 @@ class NotificationService {
       if (params.priority) queryParams.append('priority', params.priority);
       if (params.target_audience) queryParams.append('target_audience', params.target_audience);
       if (params.search) queryParams.append('search', params.search);
+      if (params.read_status) queryParams.append('read_status', params.read_status);
       
       // Add date filters
       if (params.start_date) queryParams.append('start_date', params.start_date);

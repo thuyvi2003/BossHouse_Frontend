@@ -14,6 +14,7 @@ export default function NotificationsPage() {
   const page = Number(searchParams.get("page") || 1);
   const limit = Number(searchParams.get("limit") || 10);
   const search = searchParams.get("search") || "";
+  const readStatus = searchParams.get("read_status") || "";
 
   const debounceRef = useRef(null);
   const [query, setQuery] = useState(search);
@@ -29,6 +30,8 @@ export default function NotificationsPage() {
         page,
         limit,
         search: search.trim() || undefined,
+        status: 'active',
+        read_status: readStatus || undefined,
       });
 
       // Support both shapes: { data, pagination } or just arrays
@@ -55,7 +58,7 @@ export default function NotificationsPage() {
   useEffect(() => {
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, limit, search]);
+  }, [page, limit, search, readStatus]);
 
   // Keep local query in sync when url search param changes (e.g., back/forward)
   useEffect(() => {
@@ -79,6 +82,17 @@ export default function NotificationsPage() {
   const onChangeLimit = (e) => {
     const next = new URLSearchParams(searchParams);
     next.set("limit", e.target.value);
+    next.set("page", "1");
+    setSearchParams(next);
+  };
+
+  const onChangeReadStatus = (e) => {
+    const next = new URLSearchParams(searchParams);
+    if (e.target.value) {
+      next.set("read_status", e.target.value);
+    } else {
+      next.delete("read_status");
+    }
     next.set("page", "1");
     setSearchParams(next);
   };
@@ -110,6 +124,16 @@ export default function NotificationsPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          <select
+            value={readStatus}
+            onChange={onChangeReadStatus}
+            className="border rounded-md px-3 py-2"
+          >
+            <option value="">All Notifications</option>
+            <option value="unread">Unread Only</option>
+            <option value="read">Read Only</option>
+          </select>
+          
           <span className="text-sm text-gray-600">Show</span>
           <select
             value={limit}
@@ -136,12 +160,24 @@ export default function NotificationsPage() {
             {notifications.map((n) => (
               <li
                 key={n._id}
-                className="p-4 hover:bg-gray-50 cursor-pointer"
-                onClick={() => navigate(`/notifications/${n._id}`)}
+                className={`p-4 hover:bg-gray-50 cursor-pointer ${n.is_read ? '' : 'font-semibold'}`}
+                onClick={async () => {
+                  try {
+                    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+                    await fetch(`${API_BASE_URL}/api/notifications/${n._id}/read`, {
+                      method: 'POST',
+                      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                    });
+                  } catch {}
+                  navigate(`/notifications/${n._id}`);
+                }}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <h3 className="font-medium text-gray-900 truncate">{n.title}</h3>
+                    <h3 className="text-gray-900 truncate flex items-center gap-2">
+                      {!n.is_read && <span className="inline-block w-2 h-2 rounded-full bg-blue-500" />}
+                      <span>{n.title}</span>
+                    </h3>
                     <p className="text-sm text-gray-600 line-clamp-2">{n.content || n.description}</p>
                   </div>
                   <span className="text-xs text-gray-500 flex-shrink-0">{formatDate(n.created_at || n.createdAt)}</span>
