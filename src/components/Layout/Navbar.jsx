@@ -202,7 +202,7 @@ export default function Navbar() {
                                                     <p className="text-xs text-gray-500">
                                                         {promo.promotion_type === "percent"
                                                             ? `Giảm ${promo.promotion_value}%`
-                                                            : `Giảm ${promo.promotion_value}đ`}
+                                                            : `Giảm ${promo.promotion_value.toLocaleString()}đ`}
                                                     </p>
                                                 </div>
                                                 <button
