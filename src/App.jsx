@@ -31,6 +31,7 @@ import NotificationsPage from './pages/NotificationsPage.jsx';
 import NotificationDetailPage from './pages/NotificationDetailPage.jsx';
 import WishlistPage from './pages/WishlistPage.jsx';
 import WishlistGroupsPage from './components/ui/Wishlist/WishlistGroupsPage.jsx';
+import SharedWishlistPage from './components/ui/Wishlist/SharedWishlistPage.jsx';
 
 function App() {
   const location = useLocation();
@@ -82,6 +83,7 @@ function App() {
                 <Route path="groups" element={<WishlistGroupsPage/>} />
               </Route>
             </Route>
+            <Route path="/share/wishlist/:groupId" element={<SharedWishlistPage />} />
             <Route path='/contact' element={<ContactPage />} />
             <Route path="/profile" element={<ProfileLayout />}>
               <Route index element={<ProfilePage />} />

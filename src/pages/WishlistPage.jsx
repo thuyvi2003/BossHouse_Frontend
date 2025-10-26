@@ -2,12 +2,13 @@ import React, { useEffect, useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { Package, ArrowLeft, Heart, X } from "lucide-react";
 import Toast from "@/components/Layout/Toast";
-import { clearAllWishlist, getWishlist, moveToCart, removeWishlistItem } from "@/services/wishListService";
+import { clearAllWishlist, getWishlist, moveToCart, moveToGroup, removeWishlistItem } from "@/services/wishListService";
 import Pagination from "@/components/Layout/Pagination";
 import dayjs from "dayjs";
 import "dayjs/locale/vi";
 import CreateGroupModal from "@/components/ui/Wishlist/CreateGroupModal";
 import WishlistGroupsPage from "@/components/ui/Wishlist/WishlistGroupsPage";
+import SelectGroupModal from "@/components/ui/Wishlist/SelectGroupModal";
 
 // dayjs.locale("vi"); 
 
@@ -19,7 +20,8 @@ const WishlistPage = () => {
   const [page, setPage] = useState(1);
   const [limit] = useState(6);
   const [totalPages, setTotalPages] = useState(1);
-  const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showGroupModal, setShowGroupModal] = useState(null);
   const location = useLocation()
   const fetchWishlist = async (pageNum = 1) => {
     try {
@@ -90,6 +92,27 @@ const WishlistPage = () => {
       });
     }
   };
+
+ const handleMoveToGroup = async (id) =>{
+   try {
+      const res = await moveToGroup(id);
+
+      setToast({
+        type: "success",
+        title: "Success",
+        message: res.message || "All items moved to group successfully!",
+      });
+
+      fetchWishlist();
+    } catch (error) {
+      console.error("Clear all failed:", error);
+      setToast({
+        type: "error",
+        title: "Failed",
+        message: error.response?.data?.message || "Could not move all items",
+      });
+    }
+ }
 
   if (location.pathname.endsWith("/groups")) {
     return <WishlistGroupsPage />
@@ -221,6 +244,12 @@ const WishlistPage = () => {
                         onClick={() => handleMoveToCart(item._id)}>
                         Add to Cart
                       </button>
+                      <button
+                        className="border border-[#d7cbbf] text-[#5a4639] px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#f5f3f2] transition-all"
+                      onClick={() => setShowGroupModal(item._id)}
+                      >
+                        Add to Group
+                      </button>
                     </div>
                   </div>
                 );
@@ -228,15 +257,13 @@ const WishlistPage = () => {
             </div>
 
             {/* Bottom Section */}
-            <div className="mt-10 flex justify-between items-center">
+            <div className="mt-10 flex justify-end items-center">
               <button
                 className="border border-[#d7cbbf] text-[#5a4639] px-6 py-2 rounded-lg font-medium hover:bg-[#f5f3f2] hover:shadow-sm transition-all"
                 onClick={handleClearAllItems}>
                 Clear Wishlist
               </button>
-              <button className="bg-yellow-400 text-white px-6 py-2 rounded-lg font-medium hover:shadow-md hover:scale-105 transition-transform">
-                Share all cart
-              </button>
+            
             </div>
 
             <Pagination
@@ -257,6 +284,21 @@ const WishlistPage = () => {
           })}
         />
       )}
+      {showGroupModal && (
+  <SelectGroupModal
+    wishlistId={showGroupModal}
+    onClose={() => setShowGroupModal(null)}
+    onSuccess={(message) => {
+      setToast({
+        type: "success",
+        title: "Success",
+        message,
+      });
+      fetchWishlist();
+    }}
+  />
+)}
+
       {toast && <Toast type={toast.type} title={toast.title} message={toast?.message} onClose={() => {
         setToast(null)
       }} />}

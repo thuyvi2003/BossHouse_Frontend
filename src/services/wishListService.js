@@ -34,6 +34,9 @@ export const moveToCart = async (id) => {
 };
 
 export const moveToGroup = async (id, newGroupId) => {
+if (!id || !newGroupId) {
+      throw new Error("Missing wishlist item ID or group ID");
+}
   const res = await axiosInstance.patch(`/wishlists/${id}/move-to-group`, {
     newGroupId,
   });
@@ -56,11 +59,17 @@ export const createWishlistGroup = async (name, description = "") => {
 
 
 export const shareWishlistGroup = async (groupId, visibility = "public") => {
-  const res = await axiosInstance.post(`/wishlists/groups/${groupId}/share`, {
+  const res = await axiosInstance.post(`/wishlists/share/${groupId}`, {
     visibility,
   });
   return res.data;
 };
+
+export const getSharedWishlistGroup = async (groupId) => {
+  const res = await axiosInstance.get(`/wishlists/shared/${groupId}`);
+  return res.data;
+};
+
 
 export const disableShare = async (groupId) => {
   const res = await axiosInstance.patch(`/wishlists/groups/${groupId}/unshare`);
