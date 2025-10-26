@@ -6,13 +6,15 @@ import ProductVariationManagement from "../components/ui/Dashboard/ProductVariat
 import PromotionManagement from "../components/ui/Dashboard/Promotions/PromotionManagement";
 import BookingManager from "@/components/ui/Dashboard/Bookings/BookingManager";
 import ContactManager from "../components/ui/Dashboard/Contact/ContactManager";
+import ScheduleManager from "@/components/ui/Dashboard/Schedule/ScheduleManager";
 
 import {
   ChartBar,
   User,
   Package,
   FilmSlate,
-  CalendarCheck,
+  CalendarCheck, 
+  Clock,  
   Note,
   Star,
   Bell,
@@ -41,6 +43,7 @@ export default function Dashboard() {
     { id: "contact", icon: <User size={22} />, label: "Contact" },
     { id: "review", icon: <Star size={22} />, label: "Review" },
     { id: "notification", icon: <Bell size={22} />, label: "Notification" },
+    { id: "schedule", icon: <Clock size={22} />, label: "Schedule" },
   ];
 
   const renderContent = () => {
@@ -69,6 +72,8 @@ export default function Dashboard() {
         return <ReviewManagement userToken={token} isAdmin={true} />;
       case "notification":
         return <NotificationManagement />;
+      case "schedule":
+        return <ScheduleManager />;    
       default:
         return <h2 className="text-2xl font-bold">Welcome to Dashboard</h2>;
     }

@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { productService } from '@/services/productService';
 import { categoryService } from '@/services/categoryService';
 import Background_product from '@/assets/Background_product.png'
+import ChatAIWidget from '@/components/ChatAIWidget';
+
 import AOS from "aos";
 import "aos/dist/aos.css";
 
@@ -552,7 +554,9 @@ const HomePage = () => {
                     </div>
                 </div>
             </section>
-
+            <div className="fixed bottom-4 right-4 z-50">
+                <ChatAIWidget />
+            </div>
         </div>
     );
 };

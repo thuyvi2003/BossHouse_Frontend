@@ -29,6 +29,8 @@ import ContactHistory from "./pages/ContactHistory.jsx";
 import BookingHistory from "./pages/BookingHistory.jsx";
 import NotificationsPage from './pages/NotificationsPage.jsx';
 import NotificationDetailPage from './pages/NotificationDetailPage.jsx';
+import ScheduleManager from './components/ui/Dashboard/Schedule/ScheduleManager.jsx';
+import ChatAIWidget from "./components/ChatAIWidget.jsx";
 
 function App() {
   const location = useLocation();
@@ -72,11 +74,6 @@ function App() {
             <Route path="/post/:id" element={<PostDetail />} />
             <Route path="/services" element={<Services />} />
             <Route path="/user-booking" element={<UserBookingForm />} />
-            <Route path="/profile" element={<ProfileLayout />}>
-              <Route index element={<ProfilePage />} />
-              <Route path="contact-history" element={<ContactHistory />} />
-              <Route path="booking-history" element={<BookingHistory />} />
-            </Route>
             <Route path='/contact' element={<ContactPage />} />
             <Route path="/profile" element={<ProfileLayout />}>
               <Route index element={<ProfilePage />} />
@@ -85,12 +82,18 @@ function App() {
             </Route>
             <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/notifications/:id" element={<NotificationDetailPage />} />
+            <Route path="/schedules" element={<ScheduleManager />} />
           </Routes>
 
           <ToastContainer position="top-right" autoClose={5000} />
         </main>
 
-        {!hideLayout && <Footer />}
+        {!hideLayout && (
+          <>
+            <ChatAIWidget />
+            <Footer />
+          </>
+        )}
       </div>
     </GoogleOAuthProvider>
   );

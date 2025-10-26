@@ -25,7 +25,7 @@ const bookingService = {
     }
   },
 
-  createBooking: async (booking) => {
+  create: async (booking) => {
     try {
       const res = await axiosInstance.post(BOOKING_API, booking);
       return res.data.data;
@@ -35,7 +35,7 @@ const bookingService = {
     }
   },
 
-  updateBooking: async (id, booking) => {
+  update: async (id, booking) => {
     try {
       const res = await axiosInstance.put(`${BOOKING_API}/${id}`, booking);
       return res.data.data;
@@ -45,7 +45,7 @@ const bookingService = {
     }
   },
 
-  removeBooking: async (id) => {
+  remove: async (id) => {
     try {
       const res = await axiosInstance.delete(`${BOOKING_API}/${id}`);
       return res.data.data;
@@ -55,7 +55,7 @@ const bookingService = {
     }
   },
 
-  searchBookings: async (query) => {
+  search: async (query) => {
     try {
       const url = new URL(`${BOOKING_API}/search`);
       url.searchParams.append("q", query);
@@ -68,7 +68,7 @@ const bookingService = {
     }
   },
 
-  filterBookings: async (status) => {
+  filter: async (status) => {
     try {
       const url = new URL(`${BOOKING_API}/filter`);
       url.searchParams.append("status", status);
@@ -81,7 +81,7 @@ const bookingService = {
     }
   },
 
-  cancelBooking: async (id) => {
+  cancel: async (id) => {
     try {
       const res = await axiosInstance.put(`${BOOKING_API}/${id}/cancel`);
       return res.data.data;
