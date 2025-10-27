@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { House, SquaresFour, Clock, ListChecks, Star } from "phosphor-react";
-import { CalendarCheck } from "phosphor-react";
+import { CalendarCheck,Receipt  } from "phosphor-react";
 
 export default function SidebarProfile() {
     return (
@@ -95,6 +95,17 @@ export default function SidebarProfile() {
                 >
                     <Star size={20} weight="duotone" />
                     <span className="text-sm">Wishlist</span>
+                </NavLink>
+                <NavLink
+                    to="/profile/orders/my"
+                    className={({ isActive }) =>
+                        `flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-[#f9f5f1] ${
+                            isActive ? "bg-[#f9f5f1]" : ""
+                        }`
+                    }
+                >
+                    <Receipt size={20} weight="duotone" />
+                    <span className="text-sm">Order History</span>
                 </NavLink>
             </nav>
 
