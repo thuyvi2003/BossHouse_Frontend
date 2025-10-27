@@ -104,7 +104,15 @@ export default function NotificationsPage() {
   };
 
   const formatDate = (dateString) => {
+    if (!dateString) return 'No date';
+    
     const date = new Date(dateString);
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      return 'Invalid date';
+    }
+    
     return date.toLocaleString();
   };
 

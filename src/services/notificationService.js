@@ -202,11 +202,16 @@ class NotificationService {
   // Helper method to get active notifications for homepage
   async getActiveNotifications() {
     try {
-      const result = await this.getAllNotifications({
-        status: 'active',
-        limit: 10
+      const response = await fetch(`${this.baseURL}/homepage?status=active&limit=10`, {
+        headers: this.getAuthHeaders()
       });
-      return result.data || [];
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      return result.data?.notifications || [];
     } catch (error) {
       console.error('Error fetching active notifications:', error);
       return [];
