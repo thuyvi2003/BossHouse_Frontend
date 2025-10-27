@@ -135,7 +135,7 @@ export default function CartSummary({ total, count }) {
       </div>
 
 
-      {/* Tổng tiền */}
+      {/* Total summary */}
       <div className="flex justify-between font-medium py-3 mt-2 bg-[#f3eee7] px-2 rounded">
         <span>Total</span>
         <span>{finalTotal.toLocaleString("vi-VN")}đ</span>
