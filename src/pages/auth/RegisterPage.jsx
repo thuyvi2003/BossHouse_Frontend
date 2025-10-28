@@ -17,8 +17,36 @@ export default function RegisterPage() {
     email: '',
     password: ''
   });
+  const [errors, setErrors] = useState({
+    name: '',
+    email: '',
+    password: ''
+  });
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+
+  const validateField = (name, value) => {
+    switch (name) {
+      case 'name':
+        if (!value || value.trim().length < 3) {
+          return 'Name must be at least 3 characters long';
+        }
+        return '';
+      case 'email':
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!value || !emailRegex.test(value)) {
+          return 'Please enter a valid email address';
+        }
+        return '';
+      case 'password':
+        if (!value || value.length < 6) {
+          return 'Password must be at least 6 characters long';
+        }
+        return '';
+      default:
+        return '';
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -26,12 +54,34 @@ export default function RegisterPage() {
       ...prev,
       [name]: value
     }));
+
+    // Clear error on change and validate live
+    const error = validateField(name, value);
+    setErrors(prev => ({
+      ...prev,
+      [name]: error
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
 
+    // Validate all fields on submit
+    const newErrors = {
+      name: validateField('name', formData.name),
+      email: validateField('email', formData.email),
+      password: validateField('password', formData.password)
+    };
+    setErrors(newErrors);
+
+    // Check if any errors
+    const hasErrors = Object.values(newErrors).some(error => error !== '');
+    if (hasErrors) {
+      toast.error('Please fix the errors before submitting');
+      return;
+    }
+
+    setIsLoading(true);
     try {
       const response = await axios.post(`${API_BASE_URL}/auth/register`, formData);
       toast.success(response.data.message);
@@ -58,7 +108,6 @@ export default function RegisterPage() {
           <p className="text-lg opacity-90">Everything your furry friends need</p>
         </div>
       </div>
-
       {/* Right side - Registration form */}
       <div className="w-full md:w-1/2 flex items-center justify-center p-8 bg-white">
         <div className="w-full max-w-md space-y-6">
@@ -70,13 +119,11 @@ export default function RegisterPage() {
               className="w-32 h-32 object-cover"
             />
           </div>
-
           {/* Header */}
           <div className="text-center space-y-2">
             <h1 className="text-3xl font-bold">Join BossHouse</h1>
             <p className="mt-2 text-gray-600">Create your account to get started</p>
           </div>
-
           {/* Registration Form */}
           <Card className="shadow-lg border-gray-200">
             <CardHeader>
@@ -97,12 +144,12 @@ export default function RegisterPage() {
                     placeholder="Enter your name"
                     value={formData.name}
                     onChange={handleInputChange}
-                    className="bg-gray-50 border-0"
+                    className={`bg-gray-50 border-0 ${errors.name ? 'border-red-500' : ''}`}
                     required
                     disabled={isLoading}
                   />
+                  {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
                 </div>
-
                 {/* Email */}
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
@@ -113,12 +160,12 @@ export default function RegisterPage() {
                     placeholder="Enter your email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="bg-gray-50 border-0"
+                    className={`bg-gray-50 border-0 ${errors.email ? 'border-red-500' : ''}`}
                     required
                     disabled={isLoading}
                   />
+                  {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
                 </div>
-
                 {/* Password */}
                 <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
@@ -130,7 +177,7 @@ export default function RegisterPage() {
                       placeholder="Create a password"
                       value={formData.password}
                       onChange={handleInputChange}
-                      className="bg-gray-50 border-0 pr-10"
+                      className={`bg-gray-50 border-0 pr-10 ${errors.password ? 'border-red-500' : ''}`}
                       required
                       disabled={isLoading}
                     />
@@ -149,8 +196,8 @@ export default function RegisterPage() {
                       )}
                     </Button>
                   </div>
+                  {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
                 </div>
-
                 {/* Sign Up Button */}
                 <Button
                   type="submit"
@@ -160,7 +207,6 @@ export default function RegisterPage() {
                   {isLoading ? 'Creating Account...' : 'Create Account'}
                 </Button>
               </form>
-
               {/* Sign In Link */}
               <div className="text-center text-sm">
                 <span className="text-gray-600">Already have an account? </span>
@@ -174,7 +220,6 @@ export default function RegisterPage() {
                 </Button>
               </div>
             </CardContent>
-
           </Card>
         </div>
       </div>
