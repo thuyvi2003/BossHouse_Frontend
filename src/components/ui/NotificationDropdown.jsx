@@ -74,6 +74,8 @@ const NotificationDropdown = () => {
         );
         console.log('Fetched notifications:', list);
         console.log('First notification:', list[0]);
+        console.log('First notification ID:', list[0]?._id || list[0]?.id);
+        console.log('First notification keys:', list[0] ? Object.keys(list[0]) : 'No notification');
         console.log('====================');
         setNotifications(list);
         const unread = list.filter(n => !n.is_read).length;
@@ -192,18 +194,24 @@ const NotificationDropdown = () => {
                     key={notification._id || notification.id || index}
                     className={`p-4 hover:bg-gray-50 transition-colors cursor-pointer ${notification.is_read ? '' : 'font-semibold'}`}
                     onClick={async () => {
+                      const notificationId = notification._id || notification.id;
+                      if (!notificationId) {
+                        console.error('Notification ID is missing:', notification);
+                        return;
+                      }
+                      
                       // mark as read then navigate
                       try {
                         const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
-                        await fetch(`${API_BASE_URL}/api/notifications/${notification._id}/read`, {
+                        await fetch(`${API_BASE_URL}/api/notifications/${notificationId}/read`, {
                           method: 'POST',
                           headers: { 'Authorization': `Bearer ${userToken}` }
                         });
-                        setNotifications(prev => prev.map(n => n._id === notification._id ? { ...n, is_read: true } : n));
+                        setNotifications(prev => prev.map(n => (n._id || n.id) === notificationId ? { ...n, is_read: true } : n));
                         setUnreadCount(prev => Math.max(0, prev - (notification.is_read ? 0 : 1)));
                       } catch {}
                       setIsOpen(false);
-                      navigate(`/notifications/${notification._id}`);
+                      navigate(`/notifications/${notificationId}`);
                     }}
                   >
                     <div className="flex items-start gap-3">
