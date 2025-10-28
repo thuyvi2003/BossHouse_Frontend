@@ -36,8 +36,18 @@ const NotificationDropdown = () => {
     try {
       setLoading(true);
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
-      // Force only ACTIVE notifications for all roles (including admin)
-      const response = await fetch(`${API_BASE_URL}/api/notifications?status=active`, {
+      
+      // Use different endpoints based on user role
+      let endpoint;
+      if (userRole === 'admin' || userRole === 'staff' || userRole === 'veterinarian') {
+        // Admin/Staff/Veterinarian can access full notification list
+        endpoint = `${API_BASE_URL}/api/notifications?status=active`;
+      } else {
+        // Regular users should use homepage endpoint
+        endpoint = `${API_BASE_URL}/api/notifications/homepage?status=active`;
+      }
+      
+      const response = await fetch(endpoint, {
         headers: {
           'Authorization': `Bearer ${userToken}`
         }

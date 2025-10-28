@@ -32,7 +32,16 @@ class NotificationService {
       if (params.start_date) queryParams.append('start_date', params.start_date);
       if (params.end_date) queryParams.append('end_date', params.end_date);
 
-      const url = `${this.baseURL}?${queryParams.toString()}`;
+      // Use different endpoints based on user role
+      const userRole = JSON.parse(localStorage.getItem('user') || '{}')?.role;
+      let baseEndpoint = this.baseURL;
+      
+      if (userRole !== 'admin' && userRole !== 'staff' && userRole !== 'veterinarian') {
+        // Regular users should use homepage endpoint
+        baseEndpoint = `${this.baseURL}/homepage`;
+      }
+
+      const url = `${baseEndpoint}?${queryParams.toString()}`;
       const response = await fetch(url, {
         headers: this.getAuthHeaders()
       });
