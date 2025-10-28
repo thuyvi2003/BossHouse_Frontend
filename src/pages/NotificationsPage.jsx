@@ -35,7 +35,7 @@ export default function NotificationsPage() {
       });
 
       // Support both shapes: { data, pagination } or just arrays
-      const list = Array.isArray(result?.data)
+      const rawList = Array.isArray(result?.data)
         ? result.data
         : Array.isArray(result?.data?.notifications)
         ? result.data.notifications
@@ -44,6 +44,18 @@ export default function NotificationsPage() {
         : Array.isArray(result?.notifications)
         ? result.notifications
         : [];
+
+      // Extract actual notification data from _doc property if it exists
+      const list = rawList.map(notification => {
+        if (notification._doc) {
+          // Data is in _doc property, extract it
+          return {
+            ...notification._doc,
+            is_read: notification.is_read
+          };
+        }
+        return notification;
+      });
 
       const pagination = result?.pagination || result?.data?.pagination;
       setTotalPages(pagination?.totalPages || pagination?.total_pages || 1);

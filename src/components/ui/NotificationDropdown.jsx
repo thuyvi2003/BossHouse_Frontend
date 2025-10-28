@@ -65,17 +65,30 @@ const NotificationDropdown = () => {
           isArray: Array.isArray(result.data?.notifications)
         });
         
-        const list = (
+        const rawList = (
           (result?.data?.notifications && Array.isArray(result.data.notifications) && result.data.notifications) ||
           (Array.isArray(result?.data) && result.data) ||
           (Array.isArray(result) && result) ||
           (Array.isArray(result?.notifications) && result.notifications) ||
           []
         );
-        console.log('Fetched notifications:', list);
-        console.log('First notification:', list[0]);
+        
+        // Extract actual notification data from _doc property if it exists
+        const list = rawList.map(notification => {
+          if (notification._doc) {
+            // Data is in _doc property, extract it
+            return {
+              ...notification._doc,
+              is_read: notification.is_read
+            };
+          }
+          return notification;
+        });
+        
+        console.log('Raw notifications:', rawList);
+        console.log('Processed notifications:', list);
         console.log('First notification ID:', list[0]?._id || list[0]?.id);
-        console.log('First notification keys:', list[0] ? Object.keys(list[0]) : 'No notification');
+        console.log('First notification title:', list[0]?.title);
         console.log('====================');
         setNotifications(list);
         const unread = list.filter(n => !n.is_read).length;
