@@ -44,14 +44,6 @@ const CreateNotificationModal = ({ notification, isOpen, onClose, onSuccess }) =
     }));
   };
 
-  const handleTargetUsersChange = (e) => {
-    const value = e.target.value;
-    const users = value.split(',').map(user => user.trim()).filter(user => user);
-    setFormData(prev => ({
-      ...prev,
-      target_users: users
-    }));
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -70,9 +62,9 @@ const CreateNotificationModal = ({ notification, isOpen, onClose, onSuccess }) =
         content: formData.description,
         title: formData.title,
         target_audience: formData.target_audience,
-        target_users: formData.target_audience === 'specific' ? formData.target_users : [],
+        target_users: [],
         // Set defaults for required backend fields
-        status: 'active', // Always create as active
+        status: isEdit ? notification.status : 'active', // Keep existing status when editing
         type: 'info',
         priority: 'medium'
       };
@@ -189,28 +181,10 @@ const CreateNotificationModal = ({ notification, isOpen, onClose, onSuccess }) =
             >
               <option value="all">All Users</option>
               <option value="admin">Admin Only</option>
-              <option value="staff">Staff Only</option>
-              <option value="veterinarian">Veterinarian Only</option>
               <option value="user">User Only</option>
-              <option value="specific">Specific Users</option>
             </select>
           </div>
 
-          {/* Specific Users */}
-          {formData.target_audience === 'specific' && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Target Users (comma-separated usernames)
-              </label>
-              <Input
-                type="text"
-                value={formData.target_users.join(', ')}
-                onChange={handleTargetUsersChange}
-                placeholder="username1, username2, username3"
-                className="w-full"
-              />
-            </div>
-          )}
 
 
 

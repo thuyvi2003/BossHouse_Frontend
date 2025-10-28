@@ -278,11 +278,11 @@ const PromotionManagement = () => {
         </div>
       </div>
 
-      <Pagination
-        page={page}
-        totalPages={totalPages}
-        onPageChange={(newPage) => fetchData(newPage)}
-      />
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          onPageChange={(newPage) => fetchData(newPage)}
+        />
 
       {/* Modal */}
       <CreatePromotionModal
