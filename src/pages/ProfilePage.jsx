@@ -4,7 +4,7 @@ import { DeleteAccount } from "@/components/ui/Profile/DeleteAccount";
 import { AccountActivityModal } from "@/components/ui/Profile/AccountActivityModal";
 import { EditProfileModal } from "@/components/ui/Profile/EditProfileModal";
 import { Button } from "@/components/ui/button";
-import { History, Pencil, Upload } from "lucide-react";
+import { History, Upload, Loader2, Pencil } from "lucide-react";
 import { useState, useEffect } from "react";
 import { getProfile, uploadAvatar } from "@/services/profileService";
 import { toast } from "react-toastify";
@@ -15,6 +15,7 @@ export default function ProfilePage() {
   const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
   const fetchProfile = async () => {
     try {
@@ -38,7 +39,7 @@ export default function ProfilePage() {
     if (!file) return;
 
     try {
-      setIsLoading(true);
+      setIsUploadingAvatar(true);
       const updatedUser = await uploadAvatar(file);
       setProfile((prev) => ({ ...prev, user: updatedUser }));
       updateUser(updatedUser); // Update useAuthStore user with new avatar
@@ -46,7 +47,7 @@ export default function ProfilePage() {
     } catch (error) {
       toast.error(error.message);
     } finally {
-      setIsLoading(false);
+      setIsUploadingAvatar(false);
     }
   };
 
@@ -87,14 +88,18 @@ export default function ProfilePage() {
                 htmlFor="avatar-upload"
                 className="absolute bottom-0 right-0 bg-yellow-800 text-white p-2 rounded-full cursor-pointer hover:bg-yellow-900"
               >
-                <Upload className="h-4 w-4" />
+                {isUploadingAvatar ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Upload className="h-4 w-4" />
+                )}
                 <input
                   id="avatar-upload"
                   type="file"
                   accept="image/*"
                   className="hidden"
                   onChange={handleAvatarUpload}
-                  disabled={isLoading}
+                  disabled={isUploadingAvatar}
                 />
               </label>
             </div>
