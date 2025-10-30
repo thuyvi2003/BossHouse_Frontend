@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Bell, ChevronDown, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { io } from 'socket.io-client';
 
 const NotificationDropdown = () => {
   const [notifications, setNotifications] = useState([]);
@@ -31,6 +32,70 @@ const NotificationDropdown = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  // Socket.IO real-time updates
+  useEffect(() => {
+    if (!userToken) return;
+
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+    const socket = io(API_BASE_URL, { transports: ['websocket'] });
+
+    // Join room theo userId để nhận thông báo riêng
+    try {
+      const user = JSON.parse(localStorage.getItem('user'));
+      const userId = user?._id || user?.id;
+      if (userId) socket.emit('auth:join', String(userId));
+    } catch (e) {
+      console.error('Error joining socket room:', e);
+    }
+
+    // Listen event notification mới
+    socket.on('notification:new', (notification) => {
+      // Kiểm tra notification có phù hợp với user không
+      const user = JSON.parse(localStorage.getItem('user')) || {};
+      const userId = user._id || user.id;
+      const userRole = user.role;
+      
+      // Filter theo target_audience
+      const shouldShow = 
+        notification.target_audience === 'all' ||
+        notification.target_audience === userRole ||
+        (notification.target_audience === 'specific' && 
+         Array.isArray(notification.target_users) && 
+         notification.target_users.some(uid => String(uid) === String(userId)));
+      
+      if (!shouldShow || notification.status !== 'active') return;
+      
+      // Thêm notification mới vào danh sách và cập nhật badge
+      setNotifications(prev => {
+        // Kiểm tra xem notification đã tồn tại chưa
+        const exists = prev.some(n => (n._id || n.id) === notification._id);
+        if (exists) return prev;
+        
+        // Thêm notification mới vào đầu danh sách
+        return [{ ...notification, is_read: false }, ...prev];
+      });
+      setUnreadCount(prev => prev + 1);
+    });
+
+    // Listen event khi notification được đánh dấu đã đọc
+    socket.on('notification:read', ({ notification_id, is_read }) => {
+      setNotifications(prev => 
+        prev.map(n => (n._id || n.id) === notification_id ? { ...n, is_read } : n)
+      );
+      
+      // Cập nhật unread count
+      if (is_read) {
+        setUnreadCount(prev => Math.max(0, prev - 1));
+      } else {
+        setUnreadCount(prev => prev + 1);
+      }
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [userToken]);
 
   const fetchNotifications = async () => {
     try {
