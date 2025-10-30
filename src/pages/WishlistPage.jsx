@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { Package, ArrowLeft, Heart, X } from "lucide-react";
 import Toast from "@/components/Layout/Toast";
-import { clearAllWishlist, getWishlist, moveToCart, moveToGroup, removeWishlistItem } from "@/services/wishListService";
+import { clearAllWishlist, getWishlist, markAsPurchased, moveToCart, removeWishlistItem } from "@/services/wishListService";
 import Pagination from "@/components/Layout/Pagination";
 import dayjs from "dayjs";
 import "dayjs/locale/vi";
@@ -92,33 +92,32 @@ const WishlistPage = () => {
       });
     }
   };
-
- const handleMoveToGroup = async (id) =>{
-   try {
-      const res = await moveToGroup(id);
+  const handleMarkAsPurchased = async (id) => {
+    try {
+      const res = await markAsPurchased(id);
 
       setToast({
         type: "success",
         title: "Success",
-        message: res.message || "All items moved to group successfully!",
+        message: res.message || "Item marked as purchased successfully!",
       });
 
       fetchWishlist();
     } catch (error) {
-      console.error("Clear all failed:", error);
+      console.error("Mark as purchased failed:", error);
       setToast({
         type: "error",
         title: "Failed",
-        message: error.response?.data?.message || "Could not move all items",
+        message: error.response?.data?.message || "Could not mark as purchased.",
       });
     }
- }
+  };
 
   if (location.pathname.endsWith("/groups")) {
     return <WishlistGroupsPage />
   }
   return (
-    <div className="min-h-screen ">
+    <div className="">
       {/* Breadcrumb Header */}
       <div className="py-12 text-center border-b bg-gradient-to-b from-[#fff8ef] to-[#f5f3f2]">
         <h1 className="text-4xl font-bold text-[#5a4639] mb-2 tracking-wide animate-fade-in">
@@ -238,19 +237,43 @@ const WishlistPage = () => {
                       </span>
                     </div>
 
-                    {/* Add to Cart */}
-                    <div className="col-span-1 flex justify-end">
-                      <button className="bg-gradient-to-r from-[#846551] to-[#5a4639] text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm hover:shadow-md hover:scale-105 active:scale-95 transition-all"
-                        onClick={() => handleMoveToCart(item._id)}>
+                    {/* Actions */}
+                    <div className="col-span-1 flex flex-col items-end gap-2">
+                      {/* Add to Cart */}
+                      <button
+                        className="w-full min-w-[120px] bg-gradient-to-r from-[#846551] to-[#5a4639] 
+               text-white px-4 py-2 rounded-xl text-sm font-medium shadow-sm 
+               hover:shadow-md hover:scale-[1.03] active:scale-95 transition-all duration-200"
+                        onClick={() => handleMoveToCart(item._id)}
+                      >
                         Add to Cart
                       </button>
+
+                      {/* Add to Group */}
                       <button
-                        className="border border-[#d7cbbf] text-[#5a4639] px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#f5f3f2] transition-all"
-                      onClick={() => setShowGroupModal(item._id)}
+                        className="w-full min-w-[120px] border border-[#d7cbbf] text-[#5a4639] 
+               px-4 py-2 rounded-xl text-sm font-medium bg-white 
+               hover:bg-[#f9f6f4] hover:text-[#846551] 
+               hover:shadow-sm hover:scale-[1.03] active:scale-95 transition-all duration-200"
+                        onClick={() => setShowGroupModal(item._id)}
                       >
                         Add to Group
                       </button>
+
+                      {/* Mark as Purchased */}
+                      <button
+                        className={`w-full min-w-[120px] px-4 py-2 rounded-xl text-sm font-medium 
+                border transition-all duration-200
+                ${item.is_purchased
+                            ? "bg-green-50 text-green-700 border-green-300 hover:bg-green-100 hover:shadow-md"
+                            : "bg-[#fffdfa] text-[#5a4639] border-[#d7cbbf] hover:bg-[#f5f3f2] hover:text-[#846551] hover:shadow-md"
+                          } hover:scale-[1.03] active:scale-95`}
+                        onClick={() => handleMarkAsPurchased(item._id)}
+                      >
+                        {item.is_purchased ? "Purchased ✓" : "Mark as Purchased"}
+                      </button>
                     </div>
+
                   </div>
                 );
               })}
@@ -263,7 +286,7 @@ const WishlistPage = () => {
                 onClick={handleClearAllItems}>
                 Clear Wishlist
               </button>
-            
+
             </div>
 
             <Pagination
@@ -285,19 +308,19 @@ const WishlistPage = () => {
         />
       )}
       {showGroupModal && (
-  <SelectGroupModal
-    wishlistId={showGroupModal}
-    onClose={() => setShowGroupModal(null)}
-    onSuccess={(message) => {
-      setToast({
-        type: "success",
-        title: "Success",
-        message,
-      });
-      fetchWishlist();
-    }}
-  />
-)}
+        <SelectGroupModal
+          wishlistId={showGroupModal}
+          onClose={() => setShowGroupModal(null)}
+          onSuccess={(message) => {
+            setToast({
+              type: "success",
+              title: "Success",
+              message,
+            });
+            fetchWishlist();
+          }}
+        />
+      )}
 
       {toast && <Toast type={toast.type} title={toast.title} message={toast?.message} onClose={() => {
         setToast(null)
