@@ -33,17 +33,7 @@ export default function SidebarProfile() {
                     <SquaresFour size={20} weight="duotone" />
                     <span className="text-sm">Dashboard</span>
                 </NavLink>
-
-                <NavLink
-                    to="/orders"
-                    className={({ isActive }) =>
-                        `flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-[#f9f5f1] ${isActive ? "bg-[#f9f5f1]" : ""}`
-                    }
-                >
-                    <ListChecks size={20} weight="duotone" />
-                    <span className="text-sm">Order History</span>
-                </NavLink>
-
+                
                 <NavLink
                     to="/schedule"
                     className={({ isActive }) =>
