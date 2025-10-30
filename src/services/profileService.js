@@ -55,4 +55,35 @@ const getLoginHistory = async (page = 1, limit = 10) => {
     }
 };
 
-export { changePassword, deleteAccount, getLoginHistory };
+const getProfile = async () => {
+    const response = await axiosInstance.get(`${API_BASE_URL}/profile`, {
+        headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+    });
+    return response.data.data;
+};
+
+const updateProfile = async (profileData) => {
+    const response = await axios.put(`${API_BASE_URL}/profile`, profileData, {
+        headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+        },
+    });
+    return response.data.data;
+};
+
+const uploadAvatar = async (avatarFile) => {
+    const formData = new FormData();
+    formData.append("avatar", avatarFile);
+    const response = await axios.post(`${API_BASE_URL}/profile/avatar`, formData, {
+        headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "multipart/form-data",
+        },
+    });
+    return response.data.data;
+};
+
+export { changePassword, deleteAccount, getLoginHistory, getProfile, updateProfile, uploadAvatar };

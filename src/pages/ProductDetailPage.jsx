@@ -40,7 +40,7 @@ const ProductDetailPage = () => {
   const [showVariations, setShowVariations] = useState(false);
   const [isAddToWishlist, setIsAddToWishlist] = useState(false);
   const [toast, setToast] = useState(null);
-  const [isInWishlist, setIsInWishlist] = useState(false);
+  const [inWishlist, setInWishlist] = useState(false);
 
   // Fetch product details and variations
   useEffect(() => {
@@ -79,10 +79,10 @@ const ProductDetailPage = () => {
     }
   }, [id]);
 
-      useEffect(()=> {
-                  checkWishlist();
+  useEffect(() => {
+    checkWishlist();
 
-      },[selectedVariation])
+  }, [selectedVariation])
   // Handle quantity change
   const handleQuantityChange = (change) => {
     const newQuantity = quantity + change;
@@ -118,7 +118,6 @@ const ProductDetailPage = () => {
         title: "Success!",
         message: `Added ${quantity} × ${selectedVariation.name} to cart!`,
       });
-      setTimeout(() => navigate("/cart"), 1500);
     } catch (error) {
       setToast({
         type: "error",
@@ -131,77 +130,75 @@ const ProductDetailPage = () => {
 
 
  const checkWishlist = async () => {
+  if (!selectedVariation?._id) return;
+
   try {
     const data = await getWishlist();
-    console.log("zzz", data.status);
-    console.log("wishlist data:", data.data);
-
-    if (Array.isArray(data.data)) {
+    if (data?.data && Array.isArray(data.data)) {
       const exists = data.data.some(
-        (item) => item.product_variation_id?._id === selectedVariation?._id
+        (item) => item.product_variation_id?._id === selectedVariation._id
       );
-      console.log("Existssssss", exists);
-      console.log("1" , selectedVariation)
-      setIsInWishlist(exists);
-
+      setInWishlist(exists); 
     } else {
-      console.warn("⚠️ data.data không phải là mảng:", data.data);
+      setInWishlist(false);
     }
   } catch (error) {
     console.error("Lỗi khi kiểm tra wishlist:", error);
+    setInWishlist(false);
   }
 };
 
 
 
-  const handleAddToWishlist = async () => {
-    try {
-      setLoading(true);
-      if (!selectedVariation) {
-        setToast({
-          type: "warning",
-          title: "Notice",
-          message: "Please select a product variation first!",
-        });
-        return;
-      }
-      const res = await addToWishlist(selectedVariation._id);
-        setToast({
+
+ const handleAddToWishlist = async () => {
+  try {
+    if (!selectedVariation) {
+      setToast({
+        type: "warning",
+        title: "Notice",
+        message: "Please select a product variation first!",
+      });
+      return;
+    }
+
+    if (inWishlist) {
+      setToast({
+        type: "warning",
+        title: "Notice",
+        message: "Product already exists in your wishlist.",
+      });
+      return;
+    }
+
+    setLoading(true);
+    const res = await addToWishlist(selectedVariation._id);
+    console.log("Wishlist add is success", res)
+    if (res.status === 'success') {
+      setInWishlist(true); 
+      setToast({
         type: "success",
         title: "Success!",
-        message: `Added ${quantity} × ${selectedVariation.name} to wishlist!`,
+        message: "Product added to wishlist successfully.",
       });
-      if (res.success === false && res.message === "Product already in wishlist") {
-        setToast({
-          type: "warning",
-          title: "Notice",
-          message: "Product already exists in your wishlist.",
-        });
-        return;
-      }
-
-      if (res.success) {
-
-        setIsAddToWishlist(true);
-        setToast({
-          type: "success",
-          title: "Success!",
-          message: "Product added to wishlist successfully.",
-        });
-      }
-    } catch (error) {
-      console.log("error detail:", error);
+    } else {
       setToast({
         type: "error",
         title: "Failed!",
-        message: error.response?.data?.message || "Failed to add to wishlist",
+        message: res.message || "Failed to add to wishlist.",
       });
-    } finally {
-      setLoading(false);
-                   window.location.reload();
-
     }
-  };
+  } catch (error) {
+    console.log("error detail:", error);
+    setToast({
+      type: "error",
+      title: "Failed!",
+      message: error.response?.data?.message || "Failed to add to wishlist",
+    });
+  }     setLoading(false);
+
+};
+
 
 
   // Handle variation selection
@@ -447,20 +444,22 @@ const ProductDetailPage = () => {
                 </button>
 
                 <button
-                  onClick={handleAddToWishlist}
-                  // disabled={loading || isAddToWishlist}
-                  className={`px-3 py-2 border border-gray-300 rounded-lg flex items-center justify-center 
-    transition-all duration-300 hover:bg-gray-50 relative z-50
-    ${isInWishlist ? "bg-yellow-50 border-yellow-400" : ""}
+  onClick={handleAddToWishlist}
+  disabled={loading}
+  className={`px-3 py-2 border border-gray-300 rounded-lg flex items-center justify-center 
+  transition-all duration-300 hover:bg-gray-50 relative z-50
+  ${inWishlist ? "bg-yellow-50 border-yellow-400" : ""}
+  ${loading ? "opacity-60 cursor-not-allowed" : ""}
+`}
+>
+  <Star
+    className={`w-5 h-5 transition-transform duration-300
+    ${inWishlist ? "fill-yellow-400 text-yellow-500 scale-125" : "text-gray-500"}
+    ${loading ? "animate-pulse" : ""}
   `}
-                >
-                  <Star
-                    className={`w-5 h-5 transition-transform duration-300 
-      ${isInWishlist || isAddToWishlist? "fill-yellow-400 text-yellow-500 scale-125" : "text-gray-500"} 
-      ${loading ? "animate-pulse" : ""}
-    `}
-                  />
-                </button>
+  />
+</button>
+
 
               </div>
             </div>

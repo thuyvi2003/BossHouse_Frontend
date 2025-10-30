@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
@@ -12,16 +12,29 @@ export default function VerifyOtpPage() {
   const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isResendLoading, setIsResendLoading] = useState(false);
+  const [countdown, setCountdown] = useState(0);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const email = searchParams.get('email');
+
+  // Timer effect for countdown
+  useEffect(() => {
+    let intervalId;
+    if (countdown > 0) {
+      intervalId = setInterval(() => {
+        setCountdown((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [countdown]);
 
   const handleVerify = async () => {
     if (otp.length !== 4) {
       toast.error('Please enter a 4-digit OTP');
       return;
     }
-
     setIsLoading(true);
     try {
       const response = await axios.post(`${API_BASE_URL}/auth/verify-otp`, { email, otp });
@@ -35,12 +48,17 @@ export default function VerifyOtpPage() {
   };
 
   const handleResend = async () => {
+    if (countdown > 0 || isResendLoading) return; // Prevent if already counting down or loading
+
     setIsResendLoading(true);
     try {
       const response = await axios.post(`${API_BASE_URL}/auth/resend-otp`, { email });
       toast.success(response.data.message);
+      // Start 30-second countdown after successful resend
+      setCountdown(30);
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to resend OTP');
+      // Optionally start countdown even on error, or not - here we do not, to allow retry
     } finally {
       setIsResendLoading(false);
     }
@@ -65,7 +83,6 @@ export default function VerifyOtpPage() {
           <p className="text-lg opacity-90">Everything your furry friends need</p>
         </div>
       </div>
-
       {/* Right side - Verification form in a Card */}
       <div className="flex-1 flex items-center justify-center p-8 bg-white">
         <Card className="w-full max-w-md shadow-lg">
@@ -83,7 +100,6 @@ export default function VerifyOtpPage() {
               We've sent a 4-digit code to your email address
             </CardDescription>
           </CardHeader>
-
           <CardContent className="space-y-6">
             <div className="space-y-2">
               <label className="block text-lg text-center">Enter verification code</label>
@@ -103,29 +119,31 @@ export default function VerifyOtpPage() {
                 </InputOTP>
               </div>
             </div>
-
             <Button
               onClick={handleVerify}
-              disabled={otp.length !== 4 || isLoading || isResendLoading}
+              disabled={otp.length !== 4 || isLoading}
               className="w-full bg-black hover:bg-gray-800 text-white py-3 rounded-lg"
             >
               {isLoading ? 'Verifying...' : 'Verify Code'}
             </Button>
-
             <div className="text-center">
               <p className="text-gray-600 text-sm">
                 Didn't receive the code?{' '}
                 <button
                   onClick={handleResend}
-                  className="text-black hover:underline"
-                  disabled={isLoading || isResendLoading}
+                  className="text-black hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={isLoading || isResendLoading || countdown > 0}
                 >
                   {isResendLoading ? 'Resending...' : 'Resend code'}
                 </button>
+                {countdown > 0 && (
+                  <span className="text-gray-500 text-sm ml-2">
+                    ({countdown}s)
+                  </span>
+                )}
               </p>
             </div>
           </CardContent>
-
           <CardFooter className="flex justify-center">
             <Button
               variant="link"
