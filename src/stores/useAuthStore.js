@@ -81,6 +81,16 @@ export const useAuthStore = create((set) => ({
     },
 
     logout: async () => {
+        try {
+            const token = localStorage.getItem("token");
+            if (token) {
+                await axios.post(`${API_BASE_URL}/auth/logout`, {}, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+            }
+        } catch (error) {
+            console.error("Logout API failed:", error); // Non-blocking
+        }
         localStorage.removeItem("token");
         localStorage.removeItem("user");
         set({ token: null, user: null });
