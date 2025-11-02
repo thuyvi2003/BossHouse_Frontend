@@ -27,6 +27,7 @@ import ReviewManagement from "@/components/ui/Dashboard/Reviews/ReviewManagement
 import NotificationManagement from "@/components/ui/Dashboard/Notifications/NotificationManagement";
 import { Clock } from "lucide-react";
 import ScheduleManager from "@/components/ui/Dashboard/Schedule/ScheduleManager";
+import OrderManagement from "@/components/ui/Dashboard/Orders/OrderManagement";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -44,6 +45,7 @@ export default function Dashboard() {
     { id: "review", icon: <Star size={22} />, label: "Review" },
     { id: "notification", icon: <Bell size={22} />, label: "Notification" },
     { id: "schedule", icon: <Clock size={22} />, label: "Schedule" },
+    { id: "order", icon: <Package size={22} />, label: "Order" },
 
   ];
 
@@ -75,6 +77,8 @@ export default function Dashboard() {
         return <NotificationManagement />;
       case "schedule":
         return <ScheduleManager />;
+      case "order":
+        return <OrderManagement />;
       default:
         return <h2 className="text-2xl font-bold">Welcome to Dashboard</h2>;
     }
