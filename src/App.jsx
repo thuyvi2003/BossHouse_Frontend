@@ -29,6 +29,8 @@ import ContactHistory from "./pages/ContactHistory.jsx";
 import BookingHistory from "./pages/BookingHistory.jsx";
 import NotificationsPage from './pages/NotificationsPage.jsx';
 import NotificationDetailPage from './pages/NotificationDetailPage.jsx';
+import ScheduleManager from './components/ui/Dashboard/Schedule/ScheduleManager.jsx';
+import ChatAIWidget from "./components/ChatAIWidget.jsx";
 import WishlistPage from './pages/WishlistPage.jsx';
 import WishlistGroupsPage from './components/ui/Wishlist/WishlistGroupsPage.jsx';
 import SharedWishlistPage from './components/ui/Wishlist/SharedWishlistPage.jsx';
@@ -113,7 +115,12 @@ function App() {
           />
         </main>
 
-        {!hideLayout && <Footer />}
+        {!hideLayout && (
+          <>
+            <ChatAIWidget />
+            <Footer />
+          </>
+        )}
       </div>
     </GoogleOAuthProvider>
   );
