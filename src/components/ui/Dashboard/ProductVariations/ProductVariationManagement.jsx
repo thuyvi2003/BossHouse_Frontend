@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { variationService } from "@/services/productVariationService";
 import { productService } from "@/services/productService";
+import Pagination from "@/components/Layout/Pagination";
 import {
   Plus,
   Search,
@@ -28,9 +29,9 @@ const ProductVariationManagement = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingVariation, setEditingVariation] = useState(null);
-  const [setPagination] = useState({
+  const [pagination, setPagination] = useState({
     page: 1,
-    limit: 10,
+    limit: 8,
     total: 0,
     totalPages: 0
   });
@@ -122,7 +123,18 @@ const ProductVariationManagement = () => {
       if (data.success) {
         setShowCreateModal(false);
         resetForm();
-        fetchVariations();
+        // Optimistic update: add new variation to state immediately if viewing that product
+        if (data.data && productFilter === formData.product_id) {
+          setVariations(prev => [...prev, data.data]);
+          setPagination(prev => ({
+            ...prev,
+            total: prev.total + 1,
+          }));
+        } else if (productFilter === formData.product_id) {
+          // Fallback: fetch variations if data structure is unexpected but product matches
+          fetchVariations();
+        }
+        // If product filter is different, variations will be fetched automatically when user selects that product
       } else {
         alert(data.message || "Error creating variation");
       }
@@ -223,9 +235,9 @@ const ProductVariationManagement = () => {
   };
 
   // Handle pagination
-  // const handlePageChange = (newPage) => {
-  //   setPagination(prev => ({ ...prev, page: newPage }));
-  // };
+  const handlePageChange = (newPage) => {
+    setPagination(prev => ({ ...prev, page: newPage }));
+  };
 
   // Handle image upload
   const handleImageChange = (e) => {
@@ -240,9 +252,11 @@ const ProductVariationManagement = () => {
     fetchProducts();
   }, []);
 
-  // useEffect(() => {
-  //   fetchVariations();
-  // }, [productFilter, statusFilter]);
+  useEffect(() => {
+    if (productFilter !== "all") {
+      fetchVariations();
+    }
+  }, [productFilter]);
 
   // Filter variations by search term and status
   const filteredVariations = variations.filter(variation => {
@@ -250,6 +264,11 @@ const ProductVariationManagement = () => {
     const matchesStatus = statusFilter === "all" || variation.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  // Client-side paging for variations (variations are fetched per product)
+  const startIdx = (pagination.page - 1) * pagination.limit;
+  const endIdx = startIdx + pagination.limit;
+  const pagedVariations = filteredVariations.slice(startIdx, endIdx);
 
   return (
     <div className="bg-white shadow-xl overflow-hidden flex-1 animate-fade-in">
@@ -383,7 +402,7 @@ const ProductVariationManagement = () => {
               : "No variations found"}
           </div>
         ) : (
-          filteredVariations.map((variation, idx) => (
+      pagedVariations.map((variation, idx) => (
             <div
               key={variation._id}
               className={`
@@ -449,6 +468,17 @@ const ProductVariationManagement = () => {
           ))
         )}
       </div>
+
+      {/* Pagination for variations (only when product selected) */}
+      {productFilter !== "all" && filteredVariations.length > 0 && (
+        <div className="p-6">
+          <Pagination
+            page={pagination.page}
+            totalPages={Math.max(1, Math.ceil(filteredVariations.length / pagination.limit))}
+            onPageChange={handlePageChange}
+          />
+        </div>
+      )}
 
 
       {/* Create Modal */}
