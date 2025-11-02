@@ -26,6 +26,7 @@ class NotificationService {
       if (params.priority) queryParams.append('priority', params.priority);
       if (params.target_audience) queryParams.append('target_audience', params.target_audience);
       if (params.search) queryParams.append('search', params.search);
+      if (params.read_status) queryParams.append('read_status', params.read_status);
       
       // Add date filters
       if (params.start_date) queryParams.append('start_date', params.start_date);
@@ -201,11 +202,16 @@ class NotificationService {
   // Helper method to get active notifications for homepage
   async getActiveNotifications() {
     try {
-      const result = await this.getAllNotifications({
-        status: 'active',
-        limit: 10
+      const response = await fetch(`${this.baseURL}/homepage?status=active&limit=10`, {
+        headers: this.getAuthHeaders()
       });
-      return result.data || [];
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      return result.data?.notifications || [];
     } catch (error) {
       console.error('Error fetching active notifications:', error);
       return [];

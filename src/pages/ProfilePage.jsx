@@ -1,97 +1,167 @@
+import { useAuthStore } from "@/stores/useAuthStore";
+import { PasswordChange } from "@/components/ui/Profile/PasswordChange";
+import { DeleteAccount } from "@/components/ui/Profile/DeleteAccount";
+import { AccountActivityModal } from "@/components/ui/Profile/AccountActivityModal";
+import { EditProfileModal } from "@/components/ui/Profile/EditProfileModal";
+import { Button } from "@/components/ui/button";
+import { History, Upload, Loader2, Pencil } from "lucide-react";
+import { useState, useEffect } from "react";
+import { getProfile, uploadAvatar } from "@/services/profileService";
+import { toast } from "react-toastify";
+
 export default function ProfilePage() {
+  const { user, updateUser } = useAuthStore();
+  const [profile, setProfile] = useState(null);
+  const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+
+  const fetchProfile = async () => {
+    try {
+      setIsLoading(true);
+      const data = await getProfile();
+      setProfile(data);
+      updateUser(data.user); // Sync useAuthStore user with fetched profile
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  const handleAvatarUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    try {
+      setIsUploadingAvatar(true);
+      const updatedUser = await uploadAvatar(file);
+      setProfile((prev) => ({ ...prev, user: updatedUser }));
+      updateUser(updatedUser); // Update useAuthStore user with new avatar
+      toast.success("Avatar uploaded successfully!");
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
+
+  const handleProfileUpdate = (updatedProfile) => {
+    setProfile(updatedProfile);
+    updateUser(updatedProfile.user); // Update useAuthStore user with new profile data
+  };
+
+  if (isLoading || !profile) {
+    return <div className="flex-1 flex items-center justify-center">Loading...</div>;
+  }
+
   return (
     <div className="flex-1 overflow-auto">
-      {/* Header with gradient BossHouse style */}
-      <div className="h-48 bg-gradient-to-br from-[#d7cbbf] via-[#f9f5f1] to-[#846551] relative">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-[#d7cbbf] opacity-40 rounded-full blur-3xl"></div>
-      </div>
-
       {/* Profile Content */}
-      <div className="max-w-5xl mx-auto px-8 mt-20">
+      <div className="max-w-5xl mx-auto p-6">
+        <h2 className="text-3xl font-bold mb-6 text-yellow-800">Profile</h2>
+        <div className="flex justify-end mb-4">
+          <Button
+            variant="outline"
+            onClick={() => setIsActivityModalOpen(true)}
+          >
+            <History className="h-4 w-4 mr-2" />
+            View Account Activity
+          </Button>
+        </div>
+
         {/* Profile Header */}
         <div className="bg-white rounded-xl shadow-sm p-8 mb-6">
           <div className="flex items-start gap-6">
-            <img
-              src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop"
-              alt="Profile"
-              className="w-32 h-32 rounded-full border-4 border-white shadow-lg"
-            />
+            <div className="relative">
+              <img
+                src={profile.user.profile_image || "https://via.placeholder.com/128"}
+                alt="Profile"
+                className="w-32 h-32 rounded-full border-4 border-white shadow-lg"
+              />
+              <label
+                htmlFor="avatar-upload"
+                className="absolute bottom-0 right-0 bg-yellow-800 text-white p-2 rounded-full cursor-pointer hover:bg-yellow-900"
+              >
+                {isUploadingAvatar ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Upload className="h-4 w-4" />
+                )}
+                <input
+                  id="avatar-upload"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleAvatarUpload}
+                  disabled={isUploadingAvatar}
+                />
+              </label>
+            </div>
             <div className="flex-1">
               <div className="flex items-start justify-between">
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">Olivia Rhye</h1>
-                  <p className="text-gray-500">I'm a Product Designer based in Melbourne.</p>
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                    {profile.user.name}
+                  </h1>
+                  <p className="text-gray-500">{profile.user.email}</p>
+                  {profile.veterinarian && (
+                    <div className="mt-4">
+                      <p className="text-gray-600">
+                        <strong>Specialty:</strong> {profile.veterinarian.specialty || "Not specified"}
+                      </p>
+                      <p className="text-gray-600">
+                        <strong>Years of Experience:</strong>{" "}
+                        {profile.veterinarian.years_experience || "Not specified"}
+                      </p>
+                      <p className="text-gray-600">
+                        <strong>Bio:</strong> {profile.veterinarian.bio || "Not specified"}
+                      </p>
+                    </div>
+                  )}
                 </div>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsEditModalOpen(true)}
+                >
+                  <Pencil className="h-4 w-4 mr-2" />
+                  Edit Profile
+                </Button>
               </div>
             </div>
-          </div>
-
-          {/* Experience Section */}
-          <div className="mt-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">Experience</h2>
-            <p className="text-gray-600">
-              I specialise in UX/UI design, brand strategy, and Webflow development.
-            </p>
-          </div>
-
-          {/* About Section */}
-          <div className="mt-8 grid grid-cols-3 gap-8">
-            <div className="col-span-2">
-              <h2 className="text-xl font-semibold text-gray-900 mb-3">About me</h2>
-              <p className="text-gray-600 mb-4">
-                I'm a Product Designer based in Melbourne, Australia. I specialise in UX/UI design, brand strategy, and
-                Webflow development. I'm always striving to grow and learn something new and I don't take myself too seriously.
-              </p>
-              <p className="text-gray-600 mb-4">
-                I'm passionate about helping startups grow, improve their customer experience, and to raise venture capital
-                through good design.
-              </p>
-              <button className="text-[#846551] font-medium hover:text-[#5a3e2d]">Read more</button>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-2">Location</h3>
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">🇦🇺</span>
-                  <span className="text-gray-900">Melbourne, Australia</span>
-                </div>
-              </div>
-
-              <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-2">Portfolio</h3>
-                <a href="#" className="text-[#846551] hover:text-[#5a3e2d] flex items-center gap-1">
-                  @oliviarhye
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Projects Section */}
-        <div className="grid grid-cols-3 gap-6 pb-8">
-          {/* Project 1 */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-1">Lead Product Designer</h3>
-            <p className="text-sm text-gray-500 mb-4">Layers</p>
-            <p className="text-sm text-gray-600 mb-4">May 2020 – Present</p>
-          </div>
-
-          {/* Project 2 */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-1">Product Designer</h3>
-            <p className="text-sm text-gray-500 mb-4">Sisyphus</p>
-            <p className="text-sm text-gray-600 mb-4">Jan 2018 – May 2020</p>
-          </div>
-
-          {/* Project 3 */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-1">UX Designer</h3>
-            <p className="text-sm text-gray-500 mb-4">Catalog</p>
-            <p className="text-sm text-gray-600 mb-4">Mar 2017 – Jan 2018</p>
           </div>
         </div>
       </div>
+
+      {/* Change Password Section */}
+      <div className="max-w-5xl mx-auto p-6">
+        <div className="bg-white rounded-xl shadow-sm p-8 mb-6">
+          <PasswordChange />
+        </div>
+      </div>
+
+      {/* Delete Account Section */}
+      <div className="max-w-5xl mx-auto p-6">
+        <div className="bg-white rounded-xl shadow-sm p-8 mb-6">
+          <DeleteAccount />
+        </div>
+      </div>
+
+      <AccountActivityModal
+        open={isActivityModalOpen}
+        onOpenChange={setIsActivityModalOpen}
+      />
+      <EditProfileModal
+        open={isEditModalOpen}
+        onOpenChange={setIsEditModalOpen}
+        profile={profile}
+        onProfileUpdate={handleProfileUpdate}
+      />
     </div>
   );
 }

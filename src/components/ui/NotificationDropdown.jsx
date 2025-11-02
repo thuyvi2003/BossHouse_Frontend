@@ -36,7 +36,8 @@ const NotificationDropdown = () => {
     try {
       setLoading(true);
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
-      const response = await fetch(`${API_BASE_URL}/api/notifications`, {
+      // Use homepage endpoint to get user-targeted notifications
+      const response = await fetch(`${API_BASE_URL}/api/notifications?status=active`, {
         headers: {
           'Authorization': `Bearer ${userToken}`
         }
@@ -44,6 +45,16 @@ const NotificationDropdown = () => {
 
       if (response.ok) {
         const result = await response.json();
+        console.log('=== FRONTEND DEBUG ===');
+        console.log('API Response:', result);
+        console.log('Response structure:', {
+          hasData: !!result.data,
+          dataType: typeof result.data,
+          hasNotifications: !!result.data?.notifications,
+          notificationsType: typeof result.data?.notifications,
+          isArray: Array.isArray(result.data?.notifications)
+        });
+        
         const list = (
           (result?.data?.notifications && Array.isArray(result.data.notifications) && result.data.notifications) ||
           (Array.isArray(result?.data) && result.data) ||
@@ -51,9 +62,19 @@ const NotificationDropdown = () => {
           (Array.isArray(result?.notifications) && result.notifications) ||
           []
         );
+        console.log('Fetched notifications:', list);
+        console.log('First notification:', list[0]);
+        console.log('====================');
         setNotifications(list);
-        setUnreadCount(list.length);
+        const unread = list.filter(n => !n.is_read).length;
+        setUnreadCount(unread);
       } else {
+        console.log('=== API ERROR ===');
+        console.log('Response status:', response.status);
+        console.log('Response statusText:', response.statusText);
+        const errorText = await response.text();
+        console.log('Error response:', errorText);
+        console.log('================');
         setNotifications([]);
         setUnreadCount(0);
       }
@@ -73,7 +94,15 @@ const NotificationDropdown = () => {
   };
 
   const formatDate = (dateString) => {
+    if (!dateString) return 'No date';
+    
     const date = new Date(dateString);
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      return 'Invalid date';
+    }
+    
     const now = new Date();
     const diffTime = Math.abs(now - date);
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -95,7 +124,12 @@ const NotificationDropdown = () => {
       className="relative"
       ref={dropdownRef}
       onMouseEnter={() => { setIsOpen(true); fetchNotifications(); }}
-      onMouseLeave={() => { setIsOpen(false); }}
+      onMouseLeave={(e) => {
+        // Only close if mouse is leaving the entire dropdown area
+        if (!e.relatedTarget || !dropdownRef.current?.contains(e.relatedTarget)) {
+          setIsOpen(false);
+        }
+      }}
     >
       {/* Bell Icon with Badge */}
       <button
@@ -113,7 +147,11 @@ const NotificationDropdown = () => {
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-96 overflow-hidden">
+        <div 
+          className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-96 overflow-hidden"
+          onMouseEnter={() => setIsOpen(true)}
+          onMouseLeave={() => setIsOpen(false)}
+        >
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200">
             <h3 className="text-lg font-semibold text-gray-900">Notifications</h3>
@@ -139,26 +177,42 @@ const NotificationDropdown = () => {
               </div>
             ) : (
               <div className="divide-y divide-gray-100">
-                {notifications.map((notification) => (
+                {notifications.map((notification, index) => (
                   <div
-                    key={notification._id}
-                    className="p-4 hover:bg-gray-50 transition-colors cursor-pointer"
-                    onClick={() => { setIsOpen(false); navigate(`/notifications/${notification._id}`); }}
+                    key={notification._id || notification.id || index}
+                    className={`p-4 hover:bg-gray-50 transition-colors cursor-pointer ${notification.is_read ? '' : 'font-semibold'}`}
+                    onClick={async () => {
+                      // mark as read then navigate
+                      try {
+                        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+                        await fetch(`${API_BASE_URL}/api/notifications/${notification._id}/read`, {
+                          method: 'POST',
+                          headers: { 'Authorization': `Bearer ${userToken}` }
+                        });
+                        setNotifications(prev => prev.map(n => n._id === notification._id ? { ...n, is_read: true } : n));
+                        setUnreadCount(prev => Math.max(0, prev - (notification.is_read ? 0 : 1)));
+                      } catch {}
+                      setIsOpen(false);
+                      navigate(`/notifications/${notification._id}`);
+                    }}
                   >
                     <div className="flex items-start gap-3">
                       {/* Content */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-1">
-                          <h4 className="text-sm font-medium text-gray-900 truncate">
-                            {notification.title}
+                          <h4 className="text-sm text-gray-900 truncate flex items-center gap-2">
+                            {!notification.is_read && (
+                              <span className="inline-block w-2 h-2 rounded-full bg-blue-500" />
+                            )}
+                            <span>{notification.title || 'No title'}</span>
                           </h4>
                           <span className="text-xs text-gray-500 flex-shrink-0 ml-2">
-                            {formatDate(notification.created_at)}
+                            {formatDate(notification.created_at || notification.createdAt)}
                           </span>
                         </div>
                         
                         <p className="text-sm text-gray-600 line-clamp-2">
-                          {notification.content || notification.description}
+                          {notification.content || notification.description || 'No content'}
                         </p>
                       </div>
                     </div>

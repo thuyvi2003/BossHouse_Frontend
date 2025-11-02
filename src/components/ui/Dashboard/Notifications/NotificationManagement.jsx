@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, Eye, Trash2, Edit, Bell } from 'lucide-react';
+import { io } from 'socket.io-client';
+import { Search, Plus, Eye, Trash2, Edit } from 'lucide-react';
 import { Button } from '../../button';
 import { Input } from '../../input';
 import { Card } from '../../card';
+import Pagination from '../../../Layout/Pagination';
 import CreateNotificationModal from './CreateNotificationModal';
 import NotificationDetailModal from './NotificationDetailModal';
 import DeleteConfirmationModal from './DeleteConfirmationModal';
@@ -10,6 +12,7 @@ import DeleteConfirmationModal from './DeleteConfirmationModal';
 const NotificationManagement = () => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -17,7 +20,7 @@ const NotificationManagement = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedNotification, setSelectedNotification] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [itemsPerPage] = useState(5); // Fixed to 5 items per page
   const [totalItems, setTotalItems] = useState(0);
 
   const userToken = localStorage.getItem('token');
@@ -30,6 +33,7 @@ const NotificationManagement = () => {
   const fetchNotifications = async () => {
     try {
       setLoading(true);
+      setError('');
       const queryParams = new URLSearchParams({
         page: currentPage,
         limit: itemsPerPage,
@@ -42,6 +46,14 @@ const NotificationManagement = () => {
           'Authorization': `Bearer ${userToken}`
         }
       });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        setError(`Failed to load notifications (${response.status})`);
+        setNotifications([]);
+        setTotalItems(0);
+        return;
+      }
 
       if (response.ok) {
         const result = await response.json();
@@ -85,6 +97,27 @@ const NotificationManagement = () => {
     }
   };
 
+  // Realtime: connect to Socket.IO and refresh on new notifications
+  useEffect(() => {
+    const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+    const socket = io(baseURL, { transports: ['websocket'] });
+
+    // Optionally join personal room for targeted notifications
+    try {
+      const u = JSON.parse(localStorage.getItem('user'));
+      const userId = u?._id || u?.id;
+      if (userId) socket.emit('auth:join', String(userId));
+    } catch {}
+
+    socket.on('notification:new', () => {
+      // safest for filters/pagination: refetch list
+      fetchNotifications();
+    });
+
+    return () => socket.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
     setCurrentPage(1);
@@ -113,6 +146,7 @@ const NotificationManagement = () => {
     setSelectedNotification(notification);
     setShowDeleteModal(true);
   };
+
 
   const handleNotificationCreated = () => {
     setShowCreateModal(false);
@@ -226,14 +260,21 @@ const NotificationManagement = () => {
         </div>
 
         {/* Notifications Table */}
-        {loading ? (
+        {error ? (
+          <div className="text-center py-12">
+            <h3 className="text-lg font-medium text-red-600 mb-2">{error}</h3>
+            <p className="text-gray-500">Please check your permissions or try again later</p>
+          </div>
+        ) : loading ? (
           <div className="text-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
             <p className="mt-2 text-gray-500">Loading notifications...</p>
           </div>
         ) : notifications.length === 0 ? (
           <div className="text-center py-12">
-            <Bell className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <div className="w-16 h-16 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center">
+              <span className="text-2xl text-gray-400">📢</span>
+            </div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">No notifications available</h3>
             <p className="text-gray-500">Create your first notification to get started</p>
           </div>
@@ -259,13 +300,13 @@ const NotificationManagement = () => {
                         {(currentPage - 1) * itemsPerPage + index + 1}
                       </td>
                       <td className="px-4 py-4 text-sm text-gray-600">
-                        {notification.created_by?.username || 'System'}
+                        {notification.created_by?.name || notification.created_by?.username || 'System'}
                       </td>
                       <td className="px-4 py-4 text-sm font-medium text-gray-900">
                         {notification.title}
                       </td>
                       <td className="px-4 py-4 text-sm text-gray-600 max-w-xs truncate">
-                        {notification.description}
+                        {notification.content || notification.description || ''}
                       </td>
                       <td className="px-4 py-4 text-sm text-gray-600">
                         {formatDate(notification.created_at)}
@@ -308,46 +349,13 @@ const NotificationManagement = () => {
               </table>
             </div>
 
-            {/* Pagination */}
-            <div className="flex justify-between items-center mt-6">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-700">Items per page:</span>
-                <select
-                  value={itemsPerPage}
-                  onChange={(e) => {
-                    setItemsPerPage(Number(e.target.value));
-                    setCurrentPage(1);
-                  }}
-                  className="border border-gray-300 rounded px-2 py-1 text-sm"
-                >
-                  <option value={5}>5</option>
-                  <option value={10}>10</option>
-                  <option value={20}>20</option>
-                  <option value={50}>50</option>
-                </select>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
-                  className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-                >
-                  Previous
-                </button>
-                
-                <span className="px-3 py-1 bg-blue-600 text-white rounded text-sm">
-                  {currentPage}
-                </span>
-                
-                <button
-                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                  className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-                >
-                  Next
-                </button>
-              </div>
+            {/* Pagination - Centered */}
+            <div className="flex justify-center items-center mt-6">
+              <Pagination 
+                page={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
             </div>
           </>
         )}

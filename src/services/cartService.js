@@ -1,58 +1,38 @@
 // Vo Lam Thuy Vi
 import API_BASE_URL from "@/config/api";
-export async function addToCart(variation_id, quantity = 1) {
+import axiosInstance from "@/config/axiosConfig";
+
+
+export const getUserCart = async () => {
+  try {
+    const res = await axiosInstance.get("/carts");
+    console.log("Fetched user cart:", res.data);
+    return res.data;
+  } catch (error) {
+    console.error("Failed to fetch cart:", error.response?.data || error.message);
+    throw new Error("Failed to fetch cart");
+  }
+};
+
+export const addToCart = async (variation_id, quantity = 1) => {
+  try {
     const dataCart = await getUserCart();
-    if (dataCart.data.items.length === 5) {
-        return 0;
+    if (dataCart?.items?.length >= 5) {
+      alert("You can only have 5 items in your cart. Remove one before adding a new one.");
+      return 0;
     }
-    const token = localStorage.getItem("token");
-
-    const res = await fetch(`${API_BASE_URL}/carts`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ variation_id, quantity }),
-    });
-
-
-    if (!res.ok) {
-        const text = await res.json();
-        console.error("Failed response:", text.code);
-        if (text.code == 0) {
-            alert(`You must be remove one item before add new item into cart`);
-            return
-        }
-        throw new Error("Failed to fetch promotions");
+    const res = await axiosInstance.post("/carts/add", { variation_id, quantity });
+    return res.data;
+  } catch (error) {
+    const errData = error.response?.data;
+    console.error("Failed to add to cart:", errData || error.message);
+    if (errData?.code === 0) {
+      alert("You must remove one item before adding a new item to the cart.");
+      return;
     }
-
-    const data = await res.json();
-    console.log("Parsed data:", data);
-    return data;
-}
-
-export async function getUserCart() {
-    const token = localStorage.getItem("token");
-    const res = await fetch(`${API_BASE_URL}/carts`, {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-        },
-    })
-    console.log("Response status:", res.status);
-
-    if (!res.ok) {
-        const text = await res.text();
-        console.error("Failed response:", text);
-        throw new Error("Failed to fetch promotions");
-    }
-
-    const data = await res.json();
-    console.log("Parsed data:", data);
-    return data;
-}
+    throw new Error(errData?.message || "Failed to add item to cart");
+  }
+};
 
 
 export async function editCartItemQuantity(itemId, newQuantity) {

@@ -27,6 +27,7 @@ import {
     Phone,
     Mail
 } from 'lucide-react';
+import ChatAIWidget from '@/components/ui/ChatAIWidget';
 
 const HomePage = () => {
     const [products, setProducts] = useState([]);
@@ -571,6 +572,9 @@ const HomePage = () => {
                     </div>
                 </div>
             </section>
+            <div className="fixed bottom-4 right-4 z-50">
+                <ChatAIWidget />
+            </div>
 
         </div>
     );

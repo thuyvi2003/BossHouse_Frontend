@@ -30,6 +30,11 @@ import BookingHistory from "./pages/BookingHistory.jsx";
 import NotificationsPage from './pages/NotificationsPage.jsx';
 import NotificationDetailPage from './pages/NotificationDetailPage.jsx';
 import WishlistPage from './pages/WishlistPage.jsx';
+import WishlistGroupsPage from './components/ui/Wishlist/WishlistGroupsPage.jsx';
+import SharedWishlistPage from './components/ui/Wishlist/SharedWishlistPage.jsx';
+import CheckoutPage from './pages/CheckoutPage.jsx';
+import MyOrdersPage from './pages/MyOrdersPage.jsx';
+import ScheduleManager from './components/ui/Dashboard/Schedule/ScheduleManager.jsx';
 
 function App() {
   const location = useLocation();
@@ -77,19 +82,35 @@ function App() {
               <Route index element={<ProfilePage />} />
               <Route path="contact-history" element={<ContactHistory />} />
               <Route path="booking-history" element={<BookingHistory />} />
-               <Route path="wishlist" element={<WishlistPage />} />
+              <Route path="wishlist" element={<WishlistPage />} >
+                <Route path="groups" element={<WishlistGroupsPage />} />
+              </Route>
             </Route>
+            <Route path="/share/wishlist/:groupId" element={<SharedWishlistPage />} />
             <Route path='/contact' element={<ContactPage />} />
             <Route path="/profile" element={<ProfileLayout />}>
               <Route index element={<ProfilePage />} />
               <Route path="contact-history" element={<ContactHistory />} />
               <Route path="booking-history" element={<BookingHistory />} />
+              <Route path="orders/my" element={<MyOrdersPage />} />
             </Route>
             <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/notifications/:id" element={<NotificationDetailPage />} />
+            <Route path="/checkout" element={<CheckoutPage />} />
+            <Route path="/schedules" element={<ScheduleManager />} />
+
+
           </Routes>
 
-          <ToastContainer position="top-right" autoClose={5000} />
+          <ToastContainer
+            position="top-right"
+            autoClose={5000}
+            hideProgressBar={false}
+            closeOnClick
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+          />
         </main>
 
         {!hideLayout && <Footer />}

@@ -115,13 +115,12 @@ const PromotionManagement = () => {
   const handleEditPromotion = async () => {
     try {
       if (!selectedPromo?._id) return;
-      const promotionEdited = await updatePromotion(selectedPromo._id, {
+      await updatePromotion(selectedPromo._id, {
         description: form.description,
         promotion_value: Number(form.promotion_value),
         expires_at: form.expires_at ? dayjs(form.expires_at).format("YYYY-MM-DD") : "",
       });
       setToast({ show: true, type: "success", message: "Promotion updated successfully!" });
-      console.log("Promotion is edit successfully", promotionEdited);
       setEditModalOpen(false);
       setSelectedPromo(null);
       await fetchData();
@@ -279,11 +278,11 @@ const PromotionManagement = () => {
         </div>
       </div>
 
-      <Pagination
-        page={page}
-        totalPages={totalPages}
-        onPageChange={(newPage) => fetchData(newPage)}
-      />
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          onPageChange={(newPage) => fetchData(newPage)}
+        />
 
       {/* Modal */}
       <CreatePromotionModal
