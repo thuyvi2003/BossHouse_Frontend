@@ -25,6 +25,7 @@ import Background from "@/assets/Background_Cat.png";
 import PostManagement from "@/components/ui/Dashboard/Posts/PostManagement";
 import ReviewManagement from "@/components/ui/Dashboard/Reviews/ReviewManagement";
 import NotificationManagement from "@/components/ui/Dashboard/Notifications/NotificationManagement";
+import StockManagement from "@/components/ui/Dashboard/Stocks/StockManagement";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -35,6 +36,7 @@ export default function Dashboard() {
     { id: "product", icon: <Package size={22} />, label: "Product" },
     { id: "category", icon: <Package size={22} />, label: "Category" },
     { id: "variation", icon: <Package size={22} />, label: "Product Variation" },
+    { id: "stock", icon: <Package size={22} />, label: "Stock Management" },
     { id: "promotion", icon: <FilmSlate size={22} />, label: "Promotion" },
     { id: "booking", icon: <CalendarCheck size={22} />, label: "Booking" },
     { id: "post", icon: <Note size={22} />, label: "Post" },
@@ -55,6 +57,8 @@ export default function Dashboard() {
         return <CategoryManagement />;
       case "variation":
         return <ProductVariationManagement />;
+      case "stock":
+        return <StockManagement />;
       case "promotion":
         return <PromotionManagement />;
       case "booking":
