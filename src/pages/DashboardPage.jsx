@@ -18,6 +18,7 @@ import {
   Bell,
   Gear,
   SignOut,
+  Crown,
 } from "phosphor-react";
 
 import Logo from "@/assets/Logo_BossHouse.png";
@@ -28,6 +29,7 @@ import NotificationManagement from "@/components/ui/Dashboard/Notifications/Noti
 import StockManagement from "@/components/ui/Dashboard/Stocks/StockManagement";
 import { Clock } from "lucide-react";
 import ScheduleManager from "@/components/ui/Dashboard/Schedule/ScheduleManager";
+
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -64,7 +66,7 @@ export default function Dashboard() {
       case "stock":
         return <StockManagement />;
       case "promotion":
-        return <PromotionManagement />;
+        return <PromotionManagement />;     
       case "booking":
         return <BookingManager />;
       case "post":
