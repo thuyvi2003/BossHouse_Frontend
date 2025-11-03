@@ -3,6 +3,7 @@ import { PasswordChange } from "@/components/ui/Profile/PasswordChange";
 import { DeleteAccount } from "@/components/ui/Profile/DeleteAccount";
 import { AccountActivityModal } from "@/components/ui/Profile/AccountActivityModal";
 import { EditProfileModal } from "@/components/ui/Profile/EditProfileModal";
+import { SocialLogins } from "@/components/ui/Profile/SocialLogins";
 import { Button } from "@/components/ui/button";
 import { History, Upload, Loader2, Pencil } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -28,6 +29,10 @@ export default function ProfilePage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleRefreshProfile = () => {
+    fetchProfile(); // Helper to refresh after link/unlink
   };
 
   useEffect(() => {
@@ -135,6 +140,16 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Social Logins Section */}
+      <div className="max-w-5xl mx-auto p-6">
+        <div className="bg-white rounded-xl shadow-sm p-8 mb-6">
+          <SocialLogins
+            isConnected={!!profile.user.google_id}
+            onRefreshProfile={handleRefreshProfile}
+          />
         </div>
       </div>
 
