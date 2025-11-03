@@ -1,7 +1,8 @@
 // Vo Lam Thuy Vi
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { productService } from "@/services/productService";
 import { categoryService } from "@/services/categoryService";
+import Pagination from "@/components/Layout/Pagination";
 import {
     Plus,
     Search,
@@ -29,7 +30,7 @@ const ProductManagement = () => {
     const [editingProduct, setEditingProduct] = useState(null);
     const [pagination, setPagination] = useState({
         page: 1,
-        limit: 10,
+        limit: 8,
         total: 0,
         totalPages: 0
     });
@@ -64,7 +65,7 @@ const ProductManagement = () => {
     };
 
     // Fetch products
-    const fetchProducts = async () => {
+    const fetchProducts = useCallback(async () => {
         setLoading(true);
         try {
             const params = {
@@ -93,7 +94,7 @@ const ProductManagement = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [pagination.page, pagination.limit, searchTerm, statusFilter, categoryFilter]);
 
     // Create product
     const createProduct = async (e) => {
@@ -208,9 +209,9 @@ const ProductManagement = () => {
     };
 
     // // Handle pagination
-    // const handlePageChange = (newPage) => {
-    //     setPagination(prev => ({ ...prev, page: newPage }));
-    // };
+    const handlePageChange = (newPage) => {
+        setPagination(prev => ({ ...prev, page: newPage }));
+    };
 
     // Handle image upload
     const handleImageChange = (e) => {
@@ -227,7 +228,7 @@ const ProductManagement = () => {
 
     useEffect(() => {
         fetchProducts();
-    }, [pagination.page, pagination.limit, searchTerm, statusFilter, categoryFilter]);
+    }, [fetchProducts]);
 
     return (
         <div className="bg-white shadow-xl overflow-hidden flex-1 animate-fade-in">
@@ -410,6 +411,15 @@ const ProductManagement = () => {
                         </div>
                     ))
                 )}
+            </div>
+
+            {/* Pagination */}
+            <div className="p-6">
+                <Pagination
+                    page={pagination.page}
+                    totalPages={pagination.totalPages}
+                    onPageChange={handlePageChange}
+                />
             </div>
 
 

@@ -35,7 +35,7 @@ export default function NotificationsPage() {
       });
 
       // Support both shapes: { data, pagination } or just arrays
-      const list = Array.isArray(result?.data)
+      const rawList = Array.isArray(result?.data)
         ? result.data
         : Array.isArray(result?.data?.notifications)
         ? result.data.notifications
@@ -44,6 +44,18 @@ export default function NotificationsPage() {
         : Array.isArray(result?.notifications)
         ? result.notifications
         : [];
+
+      // Extract actual notification data from _doc property if it exists
+      const list = rawList.map(notification => {
+        if (notification._doc) {
+          // Data is in _doc property, extract it
+          return {
+            ...notification._doc,
+            is_read: notification.is_read
+          };
+        }
+        return notification;
+      });
 
       const pagination = result?.pagination || result?.data?.pagination;
       setTotalPages(pagination?.totalPages || pagination?.total_pages || 1);
@@ -165,19 +177,25 @@ export default function NotificationsPage() {
           <div className="p-6 text-center text-gray-600">No notifications</div>
         ) : (
           <ul className="divide-y">
-            {notifications.map((n) => (
+            {notifications.map((n, index) => (
               <li
-                key={n._id}
+                key={n._id || n.id || index}
                 className={`p-4 hover:bg-gray-50 cursor-pointer ${n.is_read ? '' : 'font-semibold'}`}
                 onClick={async () => {
+                  const notificationId = n._id || n.id;
+                  if (!notificationId) {
+                    console.error('Notification ID is missing:', n);
+                    return;
+                  }
+                  
                   try {
                     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
-                    await fetch(`${API_BASE_URL}/api/notifications/${n._id}/read`, {
+                    await fetch(`${API_BASE_URL}/api/notifications/${notificationId}/read`, {
                       method: 'POST',
                       headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
                     });
                   } catch {}
-                  navigate(`/notifications/${n._id}`);
+                  navigate(`/notifications/${notificationId}`);
                 }}
               >
                 <div className="flex items-start justify-between gap-3">

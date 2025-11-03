@@ -33,6 +33,11 @@ export const moveToCart = async (id) => {
   return res.data;
 };
 
+export const markAsPurchased = async (id) => {
+  const res = await axiosInstance.patch(`/wishlists/${id}/mask-as-purchased`);
+  return res.data;
+}
+
 export const moveToGroup = async (id, newGroupId) => {
 if (!id || !newGroupId) {
       throw new Error("Missing wishlist item ID or group ID");
