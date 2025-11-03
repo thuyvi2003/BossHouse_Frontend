@@ -86,4 +86,36 @@ const uploadAvatar = async (avatarFile) => {
     return response.data.data;
 };
 
-export { changePassword, deleteAccount, getLoginHistory, getProfile, updateProfile, uploadAvatar };
+const linkGoogle = async (idToken) => {
+    try {
+        const token = localStorage.getItem("token");
+        const response = await axios.post(
+            `${API_BASE_URL}/profile/link-google`,
+            { idToken },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
+        return response.data;
+    } catch (error) {
+        throw new Error(error.response?.data?.message || "Failed to link Google account");
+    }
+};
+
+const unlinkGoogle = async () => {
+    try {
+        const token = localStorage.getItem("token");
+        const response = await axios.delete(`${API_BASE_URL}/profile/unlink-google`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        return response.data;
+    } catch (error) {
+        throw new Error(error.response?.data?.message || "Failed to unlink Google account");
+    }
+};
+
+export { changePassword, deleteAccount, getLoginHistory, getProfile, updateProfile, uploadAvatar, linkGoogle, unlinkGoogle, };
