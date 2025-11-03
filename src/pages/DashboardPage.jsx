@@ -18,6 +18,7 @@ import {
   Bell,
   Gear,
   SignOut,
+  Crown,
 } from "phosphor-react";
 
 import Logo from "@/assets/Logo_BossHouse.png";
@@ -26,8 +27,11 @@ import PostManagement from "@/components/ui/Dashboard/Posts/PostManagement";
 import ReviewManagement from "@/components/ui/Dashboard/Reviews/ReviewManagement";
 import NotificationManagement from "@/components/ui/Dashboard/Notifications/NotificationManagement";
 import AccountManagement from "@/components/ui/Dashboard/AccountManagement/AccountManagement";
+import StockManagement from "@/components/ui/Dashboard/Stocks/StockManagement";
 import { Clock } from "lucide-react";
 import ScheduleManager from "@/components/ui/Dashboard/Schedule/ScheduleManager";
+import OrderManagement from "@/components/ui/Dashboard/Orders/OrderManagement";
+
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -38,6 +42,7 @@ export default function Dashboard() {
     { id: "product", icon: <Package size={22} />, label: "Product" },
     { id: "category", icon: <Package size={22} />, label: "Category" },
     { id: "variation", icon: <Package size={22} />, label: "Product Variation" },
+    { id: "stock", icon: <Package size={22} />, label: "Stock Management" },
     { id: "promotion", icon: <FilmSlate size={22} />, label: "Promotion" },
     { id: "booking", icon: <CalendarCheck size={22} />, label: "Booking" },
     { id: "post", icon: <Note size={22} />, label: "Post" },
@@ -45,6 +50,7 @@ export default function Dashboard() {
     { id: "review", icon: <Star size={22} />, label: "Review" },
     { id: "notification", icon: <Bell size={22} />, label: "Notification" },
     { id: "schedule", icon: <Clock size={22} />, label: "Schedule" },
+    { id: "order", icon: <Package size={22} />, label: "Order" },
 
   ];
 
@@ -60,8 +66,10 @@ export default function Dashboard() {
         return <CategoryManagement />;
       case "variation":
         return <ProductVariationManagement />;
+      case "stock":
+        return <StockManagement />;
       case "promotion":
-        return <PromotionManagement />;
+        return <PromotionManagement />;     
       case "booking":
         return <BookingManager />;
       case "post":
@@ -76,6 +84,8 @@ export default function Dashboard() {
         return <NotificationManagement />;
       case "schedule":
         return <ScheduleManager />;
+      case "order":
+        return <OrderManagement />;
       default:
         return <h2 className="text-2xl font-bold">Welcome to Dashboard</h2>;
     }
