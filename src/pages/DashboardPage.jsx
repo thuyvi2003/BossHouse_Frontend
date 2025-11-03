@@ -25,6 +25,7 @@ import Background from "@/assets/Background_Cat.png";
 import PostManagement from "@/components/ui/Dashboard/Posts/PostManagement";
 import ReviewManagement from "@/components/ui/Dashboard/Reviews/ReviewManagement";
 import NotificationManagement from "@/components/ui/Dashboard/Notifications/NotificationManagement";
+import AccountManagement from "@/components/ui/Dashboard/AccountManagement/AccountManagement";
 import { Clock } from "lucide-react";
 import ScheduleManager from "@/components/ui/Dashboard/Schedule/ScheduleManager";
 
@@ -52,7 +53,7 @@ export default function Dashboard() {
       case "overview":
         return <h2 className="text-2xl font-bold">📊 Overview</h2>;
       case "account":
-        return <h2 className="text-2xl font-bold">👤 Account Management</h2>;
+        return <AccountManagement />;
       case "product":
         return <ProductManagement />;
       case "category":
@@ -100,8 +101,8 @@ export default function Dashboard() {
                 <button
                   onClick={() => setActiveTab(item.id)}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${activeTab === item.id
-                      ? "bg-[#846551] text-white"
-                      : "text-gray-300 hover:bg-slate-700 hover:text-white"
+                    ? "bg-[#846551] text-white"
+                    : "text-gray-300 hover:bg-slate-700 hover:text-white"
                     }`}
                 >
                   <span className="text-lg">{item.icon}</span>
