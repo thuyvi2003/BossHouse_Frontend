@@ -9,29 +9,39 @@ export default function CheckoutPage() {
     const location = useLocation();
     const navigate = useNavigate();
 
-    const { total = 0, promotion = null } = location.state || {};
+    const { total = 0, promotion = null, selectedItemIds  } = location.state || {};
     const [shippingFee, setShippingFee] = useState(30000);
     const [loading, setLoading] = useState(false);
     const [toast, setToast] = useState(null);
     const [formData, setFormData] = useState(null); //Day la AddressInfo
 
     const handleCheckoutSubmit = async (data) => {
-        const { contact, delivery, shipping, payment } = data;
-        const shippingFee = delivery === "express" ? 50000 : 30000;
+        const { contact, shipping, payment } = data;
+        const shippingFee = data.shippingFee;
 
         const addressInfo = {
             name: contact.name,
             email: contact.email,
             phone: contact.phone,
             country: shipping.country,
-            city: shipping.city,
+            province: shipping.province,
+            district: shipping.district,
+            ward: shipping.ward,
             address: shipping.address,
             payment_method: payment.method,
         };
 
         setLoading(true);
         try {
-            const res = await createOrder(promotion?.code || null, shippingFee, addressInfo);
+            const promoCode = promotion?.code ? promotion.code : null;
+            console.log("Creating order with promo:", promotion?.code || "no promotion");
+
+            const res = await createOrder(
+                selectedItemIds,
+                promoCode,
+                shippingFee,
+                 addressInfo
+                );
             setToast({
                 type: "success",
                 title: "Order Created!",
@@ -67,9 +77,13 @@ export default function CheckoutPage() {
             </div>
             <div className=" flex justify-center py-10 gap-6">
                 <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-2xl">
-                    <CheckoutForm onSubmit={(data) => setFormData(data)} />
-
+                    <CheckoutForm
+                        onSubmit={(data) => setFormData(data)}
+                        onShippingFeeChange={setShippingFee}
+                    />
                 </div>
+
+                {/* order summary */}
                 <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-2xl">
                     <h1 className="text-2xl font-semibold mb-6 text-[#5a4639]">Order Summary</h1>
 
