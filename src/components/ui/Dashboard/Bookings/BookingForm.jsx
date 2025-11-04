@@ -307,24 +307,6 @@ export default function BookingForm({
     setForm((prev) => ({ ...prev, bookingDate: newDate }));
   };
 
-  const getAvailableVetOptions = () => {
-  if (!form.bookingDate) return [];
-  const bookingDateStr = form.bookingDate.toISOString().split("T")[0];
-
-  return options.vetSchedules
-    .filter((s) => s.date === bookingDateStr)
-    .map((s) => {
-      const vet = options.vets.find((v) => v._id === s.vet_id);
-      return {
-        _id: `${vet._id}_${s.startTime}_${s.endTime}`, // unique key
-        label: `${vet.user_id?.name} - ${vet.specialty} (${s.startTime}-${s.endTime})`,
-        vet_id: vet._id,
-        startTime: s.startTime,
-        endTime: s.endTime,
-      };
-    });
-};
-
   return (
     <Modal onClose={onCancel}>
       <form onSubmit={handleSubmit} className="space-y-6">

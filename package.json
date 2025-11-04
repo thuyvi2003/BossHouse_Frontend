@@ -35,6 +35,7 @@
     "lucide-react": "^0.544.0",
     "phosphor-react": "^1.4.1",
     "react": "^19.1.1",
+    "react-calendar": "^6.0.0",
     "react-datepicker": "^8.7.0",
     "react-dom": "^19.1.1",
     "react-hot-toast": "^2.6.0",

@@ -11,7 +11,7 @@ export default function BookingManager() {
   const [formMode, setFormMode] = useState(null);
   const [currentBooking, setCurrentBooking] = useState(null);
   const [search, setSearch] = useState("");
-  const [filters, setFilters] = useState({ pet: "", service: "", status: "ALL" });
+  const [filters, setFilters] = useState({ pet: "", service: "", status: "ALL", vet: "" });
   const [options, setOptions] = useState({ users: [], pets: [], services: [], vets: [] });
   const [loading, setLoading] = useState(false);
 
@@ -46,6 +46,11 @@ export default function BookingManager() {
           (b) => b.status.toUpperCase() === filters.status.toUpperCase()
         );
       }
+      if (filters.vet) {
+        data = data.filter(
+          (b) => (b.veterinarian_id?._id || b.veterinarian_id) === filters.vet
+        );
+      }
 
       setBookings(data);
     } catch (err) {
@@ -75,6 +80,8 @@ export default function BookingManager() {
   useEffect(() => {
     getAllBookings();
   }, [search, filters]);
+
+
 
   const handleDelete = async (id) => {
     try {

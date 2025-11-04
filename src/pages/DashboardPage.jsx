@@ -27,8 +27,7 @@ import Background from "@/assets/Background_Cat.png";
 import PostManagement from "@/components/ui/Dashboard/Posts/PostManagement";
 import ReviewManagement from "@/components/ui/Dashboard/Reviews/ReviewManagement";
 import NotificationManagement from "@/components/ui/Dashboard/Notifications/NotificationManagement";
-import { Clock } from "lucide-react";
-import ScheduleManager from "@/components/ui/Dashboard/Schedule/ScheduleManager";
+// import { Clock } from "lucide-react";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("overview");

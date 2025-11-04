@@ -36,7 +36,7 @@ import WishlistGroupsPage from './components/ui/Wishlist/WishlistGroupsPage.jsx'
 import SharedWishlistPage from './components/ui/Wishlist/SharedWishlistPage.jsx';
 import CheckoutPage from './pages/CheckoutPage.jsx';
 import MyOrdersPage from './pages/MyOrdersPage.jsx';
-import ScheduleManager from './components/ui/Dashboard/Schedule/ScheduleManager.jsx';
+import VetSchedulePage from "./pages/VetSchedulePage";
 
 function App() {
   const location = useLocation();
@@ -95,13 +95,13 @@ function App() {
               <Route path="contact-history" element={<ContactHistory />} />
               <Route path="booking-history" element={<BookingHistory />} />
               <Route path="orders/my" element={<MyOrdersPage />} />
+              <Route path="schedule" element={<VetSchedulePage />} />
             </Route>
             <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/notifications/:id" element={<NotificationDetailPage />} />
             <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/schedules" element={<ScheduleManager />} />
-
-
+          
           </Routes>
 
           <ToastContainer
