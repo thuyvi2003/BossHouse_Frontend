@@ -26,7 +26,7 @@ export default function BookingTable({
     });
   }, [bookings]);
 
-  const totalPages = Math.ceil(sortedBookings.length / rowsPerPage);
+  const totalPages = Math.max(1, Math.ceil(sortedBookings.length / rowsPerPage)); // luôn >= 1
   const startIndex = (currentPage - 1) * rowsPerPage;
   const currentBookings = sortedBookings.slice(
     startIndex,
@@ -44,8 +44,6 @@ export default function BookingTable({
     setSelectedId(null);
   };
 
-  // === Grid columns: STT | Customer | Pet | Services | DateTime | Status | Actions ===
-  // Customer 140px, Pet 140px để có khoảng cách vừa phải
   const gridCols = "grid grid-cols-[30px_140px_140px_1fr_140px_80px_minmax(160px,1fr)] gap-2";
 
   return (
@@ -65,129 +63,119 @@ export default function BookingTable({
 
       {/* Table Body */}
       <div className="max-h-[600px] divide-y divide-gray-100 overflow-y-auto">
-        {currentBookings.length === 0 && (
+        {currentBookings.length === 0 ? (
           <div className="px-2 py-3 text-gray-500 italic text-center">
             No bookings found.
           </div>
-        )}
+        ) : (
+          currentBookings.map((b, idx) => {
+            const bookingDate = b.booking_date ? new Date(b.booking_date) : null;
+            const isPast = bookingDate && bookingDate < new Date();
+            const dateStr = bookingDate
+              ? `${bookingDate.getDate().toString().padStart(2, "0")}-${(
+                  bookingDate.getMonth() + 1
+                )
+                  .toString()
+                  .padStart(2, "0")}-${bookingDate.getFullYear()}`
+              : "-";
+            const timeStr = bookingDate
+              ? bookingDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+              : "-";
 
-        {currentBookings.map((b, idx) => {
-          const bookingDate = b.booking_date ? new Date(b.booking_date) : null;
-          const isPast = bookingDate && bookingDate < new Date();
-          const dateStr = bookingDate
-            ? `${bookingDate.getDate().toString().padStart(2, "0")}-${(
-              bookingDate.getMonth() + 1
-            )
-              .toString()
-              .padStart(2, "0")}-${bookingDate.getFullYear()}`
-            : "-";
-          const timeStr = bookingDate
-            ? bookingDate.toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            })
-            : "-";
-
-          return (
-            <div
-              key={b._id || idx}
-              className={`${gridCols} px-2 py-2 items-center ${isPast ? "bg-gray-50 text-gray-500 italic" : "bg-white hover:bg-gray-50"
+            return (
+              <div
+                key={b._id || idx}
+                className={`${gridCols} px-2 py-2 items-center ${
+                  isPast ? "bg-gray-50 text-gray-500 italic" : "bg-white hover:bg-gray-50"
                 } transition`}
-            >
-              <div className="font-semibold">{startIndex + idx + 1}</div>
+              >
+                <div className="font-semibold">{startIndex + idx + 1}</div>
 
-              {/* Customer */}
-              <div className="truncate">{b.user_id?.name || "Unknown"}</div>
+                <div className="truncate">{b.user_id?.name || "Unknown"}</div>
 
-              {/* Pet: name (type) */}
-              <div className="truncate">
-                {b.pet_id
-                  ? `${b.pet_id?.name || "Unknown"} (${b.pet_id?.species || "Unknown"})`
-                  : "Unknown"}
-              </div>
+                <div className="truncate">
+                  {b.pet_id
+                    ? `${b.pet_id?.name || "Unknown"} (${b.pet_id?.species || "Unknown"})`
+                    : "Unknown"}
+                </div>
 
-              {/* Services */}
-              <div className="truncate flex gap-1 overflow-hidden max-w-full">
-                {Array.isArray(b.services) && b.services.length > 0 ? (
-                  <>
-                    {b.services.slice(0, 2).map((s) => (
-                      <span
-                        key={s._id || s.service_id?._id}
-                        className="px-1 py-0.5 text-xs bg-gray-100 border rounded truncate"
-                        title={`${s.name || s.service_id?.name || "Service"} × ${s.quantity || 1}`}
-                      >
-                        {s.name || s.service_id?.name || "Service"} × {s.quantity || 1}
-                      </span>
-                    ))}
-                    {b.services.length > 2 && (
-                      <span className="px-1 py-0.5 text-xs bg-gray-200 border rounded text-gray-600">
-                        +{b.services.length - 2} more
-                      </span>
-                    )}
-                  </>
-                ) : (
-                  <span className="text-gray-400 italic text-xs truncate">No service</span>
-                )}
-              </div>
+                <div className="truncate flex gap-1 overflow-hidden max-w-full">
+                  {Array.isArray(b.services) && b.services.length > 0 ? (
+                    <>
+                      {b.services.slice(0, 2).map((s) => (
+                        <span
+                          key={s._id || s.service_id?._id}
+                          className="px-1 py-0.5 text-xs bg-gray-100 border rounded truncate"
+                          title={`${s.name || s.service_id?.name || "Service"} × ${s.quantity || 1}`}
+                        >
+                          {s.name || s.service_id?.name || "Service"} × {s.quantity || 1}
+                        </span>
+                      ))}
+                      {b.services.length > 2 && (
+                        <span className="px-1 py-0.5 text-xs bg-gray-200 border rounded text-gray-600">
+                          +{b.services.length - 2} more
+                        </span>
+                      )}
+                    </>
+                  ) : (
+                    <span className="text-gray-400 italic text-xs truncate">No service</span>
+                  )}
+                </div>
 
+                <div className="text-xs truncate">{dateStr} {timeStr}</div>
 
-              {/* Date & Time */}
-              <div className="text-xs truncate">{dateStr} {timeStr}</div>
-
-              {/* Status */}
-              <div>
-                <span
-                  className={`px-1 py-0.5 text-xs rounded-full font-semibold ${b.status === "PENDING"
-                      ? "bg-yellow-100 text-yellow-700"
-                      : b.status === "CONFIRMED"
+                <div>
+                  <span
+                    className={`px-1 py-0.5 text-xs rounded-full font-semibold ${
+                      b.status === "PENDING"
+                        ? "bg-yellow-100 text-yellow-700"
+                        : b.status === "CONFIRMED"
                         ? "bg-blue-100 text-blue-700"
                         : b.status === "COMPLETED"
-                          ? "bg-green-100 text-green-700"
-                          : b.status === "CANCELED"
-                            ? "bg-red-100 text-red-700"
-                            : "bg-gray-100 text-gray-600"
+                        ? "bg-green-100 text-green-700"
+                        : b.status === "CANCELED"
+                        ? "bg-red-100 text-red-700"
+                        : "bg-gray-100 text-gray-600"
                     }`}
-                >
-                  {b.status}
-                </span>
-              </div>
+                  >
+                    {b.status}
+                  </span>
+                </div>
 
-              {/* Actions */}
-              <div className="flex justify-center gap-1 text-xs">
-                <button
-                  onClick={() => onView(b)}
-                  className="px-1 py-0.5 border rounded hover:bg-gray-100"
-                >
-                  View
-                </button>
-                <button
-                  onClick={() => onEdit(b)}
-                  className="px-1 py-0.5 border rounded hover:bg-blue-50 border-blue-500 text-blue-600"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDeleteClick(b._id)}
-                  className="px-1 py-0.5 border rounded hover:bg-red-50 border-red-500 text-red-600"
-                >
-                  Delete
-                </button>
+                <div className="flex justify-center gap-1 text-xs">
+                  <button
+                    onClick={() => onView(b)}
+                    className="px-1 py-0.5 border rounded hover:bg-gray-100"
+                  >
+                    View
+                  </button>
+                  <button
+                    onClick={() => onEdit(b)}
+                    className="px-1 py-0.5 border rounded hover:bg-blue-50 border-blue-500 text-blue-600"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDeleteClick(b._id)}
+                    className="px-1 py-0.5 border rounded hover:bg-red-50 border-red-500 text-red-600"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="p-3 bg-gray-50 border-t flex justify-center">
-          <Pagination
-            page={currentPage}
-            totalPages={totalPages}
-            onPageChange={(p) => setCurrentPage(p)}
-          />
-        </div>
-      )}
+      <div className="p-3 bg-gray-50 border-t flex justify-center">
+        <Pagination
+          page={currentPage}
+          totalPages={totalPages}
+          onPageChange={(p) => setCurrentPage(p)}
+        />
+      </div>
 
       {/* Confirm Delete */}
       {showConfirm && (

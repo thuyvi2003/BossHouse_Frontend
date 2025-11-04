@@ -108,7 +108,6 @@ export default function ScheduleForm({ initialData, mode = "add", options, onCan
         return Object.keys(newErrors).length === 0;
     };
 
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!validate()) return;

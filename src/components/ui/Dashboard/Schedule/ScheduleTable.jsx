@@ -1,3 +1,4 @@
+// ScheduleTable.jsx
 import React, { useState, useMemo } from "react";
 import { Edit, Trash2, Eye } from "lucide-react";
 import Pagination from "../../../Layout/Pagination";
@@ -18,7 +19,7 @@ function formatDate(dateStr) {
 export default function ScheduleTable({ data, onEdit, onDelete, onView, rowsPerPage = 6 }) {
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Sort và đánh dấu lịch quá khứ
+  // Sort schedules and mark past
   const sortedSchedules = useMemo(() => {
     const now = new Date();
     return [...data].sort((a, b) => {
@@ -32,7 +33,7 @@ export default function ScheduleTable({ data, onEdit, onDelete, onView, rowsPerP
     });
   }, [data]);
 
-  const totalPages = Math.ceil(sortedSchedules.length / rowsPerPage);
+  const totalPages = Math.max(1, Math.ceil(sortedSchedules.length / rowsPerPage));
   const startIndex = (currentPage - 1) * rowsPerPage;
   const currentSchedules = sortedSchedules.slice(startIndex, startIndex + rowsPerPage);
 
@@ -62,9 +63,8 @@ export default function ScheduleTable({ data, onEdit, onDelete, onView, rowsPerP
               return (
                 <tr
                   key={s._id}
-                  className={`hover:bg-gray-50 transition ${
-                    isPast ? "bg-gray-50 text-gray-400 italic" : ""
-                  }`}
+                  className={`hover:bg-gray-50 transition ${isPast ? "bg-gray-50 text-gray-400 italic" : ""
+                    }`}
                 >
                   <td className="py-2 px-4 border">{startIndex + idx + 1}</td>
                   <td className="py-2 px-4 border">
@@ -75,28 +75,31 @@ export default function ScheduleTable({ data, onEdit, onDelete, onView, rowsPerP
                   <td className="py-2 px-4 border">{formatDate(s.start_time)}</td>
                   <td className="py-2 px-4 border">{formatDate(s.end_time)}</td>
                   <td
-                    className={`py-2 px-4 border font-semibold ${
-                      s.is_available ? "text-green-600" : "text-red-600"
-                    }`}
+                    className={`py-2 px-4 border font-semibold ${isPast || !s.is_available ? "text-red-600" : "text-green-600"
+                      }`}
                   >
-                    {s.is_available ? "Available" : "Unavailable"}
+                    {isPast || !s.is_available ? "Unavailable" : "Available"}
                   </td>
                   <td className="py-2 px-4 border flex justify-center gap-2">
                     <button
                       onClick={() => onView(s)}
-                      className={`text-blue-500 hover:text-blue-700 ${isPast ? "pointer-events-none opacity-50" : ""}`}
+                      className="text-blue-500 hover:text-blue-700"
                     >
                       <Eye size={18} />
                     </button>
+
+                    {!isPast && (
+                      <button
+                        onClick={() => onEdit(s)}
+                        className="text-green-500 hover:text-green-700"
+                      >
+                        <Edit size={18} />
+                      </button>
+                    )}
+
                     <button
-                      onClick={() => onEdit(s)}
-                      className={`text-green-500 hover:text-green-700 ${isPast ? "pointer-events-none opacity-50" : ""}`}
-                    >
-                      <Edit size={18} />
-                    </button>
-                    <button
-                      onClick={() => onDelete(s._id)}
-                      className={`text-red-500 hover:text-red-700 ${isPast ? "pointer-events-none opacity-50" : ""}`}
+                      onClick={() => onDelete(s)}
+                      className="text-red-500 hover:text-red-700"
                     >
                       <Trash2 size={18} />
                     </button>
@@ -108,11 +111,10 @@ export default function ScheduleTable({ data, onEdit, onDelete, onView, rowsPerP
         </tbody>
       </table>
 
-      {totalPages > 1 && (
-        <div className="flex justify-center mt-3">
-          <Pagination page={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
-        </div>
-      )}
+      {/* Pagination always shows */}
+      <div className="flex justify-center mt-3">
+        <Pagination page={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+      </div>
     </div>
   );
 }

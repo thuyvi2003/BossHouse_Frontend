@@ -4,26 +4,17 @@ import optionService from "../../../../services/optionService";
 import BookingForm from "./BookingForm";
 import { Plus, Search, Filter, Package } from "lucide-react";
 import BookingTable from "./BookingTable";
+import { toast } from "react-toastify"; // <-- import toast
 
 export default function BookingManager() {
   const [bookings, setBookings] = useState([]);
-  const [formMode, setFormMode] = useState(null); // "add" | "edit" | "view"
+  const [formMode, setFormMode] = useState(null);
   const [currentBooking, setCurrentBooking] = useState(null);
   const [search, setSearch] = useState("");
-  const [filters, setFilters] = useState({
-    pet: "",
-    service: "",
-    status: "ALL",
-  });
-  const [options, setOptions] = useState({
-    users: [],
-    pets: [],
-    services: [],
-    vets: [],
-  });
+  const [filters, setFilters] = useState({ pet: "", service: "", status: "ALL", vet: "" });
+  const [options, setOptions] = useState({ users: [], pets: [], services: [], vets: [] });
   const [loading, setLoading] = useState(false);
 
-  /** Load bookings */
   const getAllBookings = async () => {
     setLoading(true);
     try {
@@ -55,23 +46,29 @@ export default function BookingManager() {
           (b) => b.status.toUpperCase() === filters.status.toUpperCase()
         );
       }
+      if (filters.vet) {
+        data = data.filter(
+          (b) => (b.veterinarian_id?._id || b.veterinarian_id) === filters.vet
+        );
+      }
 
       setBookings(data);
     } catch (err) {
       console.error("Error loading bookings:", err);
+      toast.error("Failed to load bookings!"); // <-- toast error
       setBookings([]);
     } finally {
       setLoading(false);
     }
   };
 
-  /** Load options for selects */
   const loadOptions = async () => {
     try {
       const data = await optionService.getAllOptions();
       setOptions(data);
     } catch (err) {
       console.error("Error loading options:", err);
+      toast.error("Failed to load options!"); // <-- toast error
     }
   };
 
@@ -84,14 +81,16 @@ export default function BookingManager() {
     getAllBookings();
   }, [search, filters]);
 
-  /** Handlers */
+
+
   const handleDelete = async (id) => {
     try {
       await bookingService.remove(id);
-      alert("Booking deleted successfully!");
+      toast.success("Booking deleted successfully!"); // <-- toast
       getAllBookings();
     } catch (err) {
       console.error("Error deleting booking:", err);
+      toast.error("Failed to delete booking!"); // <-- toast error
     }
   };
 
@@ -112,11 +111,11 @@ export default function BookingManager() {
 
   const handleFormSuccess = async () => {
     await getAllBookings();
-    alert(
+    toast.success(
       formMode === "add"
         ? "Booking created successfully!"
         : "Booking updated successfully!"
-    );
+    ); // <-- toast
     setFormMode(null);
     setCurrentBooking(null);
   };
@@ -126,7 +125,6 @@ export default function BookingManager() {
     setCurrentBooking(null);
   };
 
-  /** Kiểm tra có phải booking future không */
   const isFutureBooking = (booking) => {
     if (!booking?.date) return false;
     const bookingDate = new Date(booking.date);
@@ -202,15 +200,13 @@ export default function BookingManager() {
                   className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#846551] focus:border-transparent bg-white"
                 >
                   <option value="">All Services</option>
-                  {[
-                    ...new Map(
-                      options.services.map((s) => [s.name, s])
-                    ).values(),
-                  ].map((s) => (
-                    <option key={s._id} value={s._id}>
-                      {s.name}
-                    </option>
-                  ))}
+                  {[...new Map(options.services.map((s) => [s.name, s])).values()].map(
+                    (s) => (
+                      <option key={s._id} value={s._id}>
+                        {s.name}
+                      </option>
+                    )
+                  )}
                 </select>
               </div>
 
@@ -253,7 +249,7 @@ export default function BookingManager() {
           initialData={currentBooking}
           onSuccess={handleFormSuccess}
           onCancel={handleCancel}
-          onEditClick={handleEditClick}
+          onEditClick={() => setFormMode("edit")}
           mode={formMode}
           options={options}
           disableCustomerPet={

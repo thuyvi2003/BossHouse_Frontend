@@ -20,8 +20,6 @@ import {
 import { User, LogOut } from "lucide-react";
 import { claimPromotion, getAvailablePromotions } from "@/services/promotionService";
 
-
-
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
     const [cartItems, setCartItems] = useState([]);

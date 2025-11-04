@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { productService } from '@/services/productService';
 import { categoryService } from '@/services/categoryService';
 import Background_product from '@/assets/Background_product.png'
+import ChatAIWidget from '@/components/ui/ChatAIWidget';
+
 import AOS from "aos";
 import "aos/dist/aos.css";
 
@@ -27,7 +29,6 @@ import {
     Phone,
     Mail
 } from 'lucide-react';
-import ChatAIWidget from '@/components/ui/ChatAIWidget';
 
 const HomePage = () => {
     const [products, setProducts] = useState([]);
@@ -70,7 +71,6 @@ const HomePage = () => {
             buttonLink: "/products",
         },
     ];
-
 
     // Init AOS
     useEffect(() => {
@@ -183,8 +183,6 @@ const HomePage = () => {
                 </div>
             </section>
 
-
-
             {/* PETS */}
             <section className="py-20 bg-[#fdf7f1]">
                 <div className="max-w-7xl mx-auto px-4 text-center">
@@ -258,7 +256,6 @@ const HomePage = () => {
                     </div>
                 </div>
             </section>
-
 
             {/* Information */}
             <div className="py-20">
@@ -394,8 +391,6 @@ const HomePage = () => {
                     </div>
                 </div>
             </div>
-
-
 
             {/* Services Section */}
             <section className="gap-8 p-8 rounded-lg bg-[#eeeae3]">
@@ -572,10 +567,7 @@ const HomePage = () => {
                     </div>
                 </div>
             </section>
-            <div className="fixed bottom-4 right-4 z-50">
-                <ChatAIWidget />
-            </div>
-
+        
         </div>
     );
 };

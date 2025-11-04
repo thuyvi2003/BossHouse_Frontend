@@ -1,5 +1,5 @@
 // ScheduleManager.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import scheduleService from "../../../../services/scheduleService";
 import optionService from "../../../../services/optionService";
 import ScheduleForm from "./ScheduleForm";
@@ -15,6 +15,10 @@ export default function ScheduleManager() {
     const [filters, setFilters] = useState({ vet: "", status: "ALL" });
     const [options, setOptions] = useState({ vets: [] });
     const [loading, setLoading] = useState(false);
+
+    // Delete modal state
+    const [deleteTarget, setDeleteTarget] = useState(null);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     // Load all schedules
     const getAllSchedules = async () => {
@@ -72,12 +76,10 @@ export default function ScheduleManager() {
 
     // Form success callback
     const handleFormSuccess = async (savedSchedule) => {
-        // Nếu mode add, thêm vào list
         if (formMode === "add") {
             setSchedules(prev => [...prev, savedSchedule]);
             toast.success("Schedule created successfully!");
         } else if (formMode === "edit") {
-            // Nếu mode edit, update schedule trong list
             setSchedules(prev =>
                 prev.map(s => (s._id === savedSchedule._id ? savedSchedule : s))
             );
@@ -93,34 +95,50 @@ export default function ScheduleManager() {
         setCurrentSchedule(null);
     };
 
-    // Delete schedule
-    const handleDelete = async (id) => {
-        if (!window.confirm("Are you sure to delete this schedule?")) return;
+    // Open delete modal
+    const handleDeleteClick = (schedule) => {
+        setDeleteTarget(schedule);
+        setShowDeleteModal(true);
+    };
+
+    // Confirm delete
+    const handleConfirmDelete = async () => {
         try {
-            await scheduleService.remove(id);
+            await scheduleService.remove(deleteTarget._id);
             toast.success("Schedule deleted successfully!");
             getAllSchedules();
         } catch (err) {
             console.error(err);
             toast.error("Failed to delete schedule!");
+        } finally {
+            setShowDeleteModal(false);
+            setDeleteTarget(null);
         }
     };
 
-    // Filtered & searched schedules
-    const filteredSchedules = schedules
-        .filter(s =>
-            search
-                ? s.veterinarian_id?.user_id?.name
-                    ?.toLowerCase()
-                    .includes(search.toLowerCase())
-                : true
-        )
-        .filter(s => (filters.vet ? s.veterinarian_id?._id === filters.vet : true))
-        .filter(s =>
-            filters.status === "ALL"
-                ? true
-                : s.is_available === (filters.status === "AVAILABLE")
-        );
+    // Cancel delete
+    const handleCancelDelete = () => {
+        setShowDeleteModal(false);
+        setDeleteTarget(null);
+    };
+
+    // Filtered & searched schedules with useMemo
+    const filteredSchedules = useMemo(() => {
+        return schedules
+            .filter(s =>
+                search
+                    ? s.veterinarian_id?.user_id?.name
+                        ?.toLowerCase()
+                        .includes(search.toLowerCase())
+                    : true
+            )
+            .filter(s => (filters.vet ? s.veterinarian_id?._id === filters.vet : true))
+            .filter(s =>
+                filters.status === "ALL"
+                    ? true
+                    : s.is_available === (filters.status === "AVAILABLE")
+            );
+    }, [schedules, search, filters]);
 
     return (
         <div className="bg-white shadow-xl overflow-hidden flex-1 animate-fade-in relative">
@@ -194,7 +212,7 @@ export default function ScheduleManager() {
                 <ScheduleTable
                     data={filteredSchedules}
                     onEdit={handleEditClick}
-                    onDelete={handleDelete}
+                    onDelete={handleDeleteClick} // dùng popup modal
                     onView={handleView}
                 />
             )}
@@ -211,6 +229,33 @@ export default function ScheduleManager() {
                             options={options}
                             onEditMode={handleEditFromView}
                         />
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Confirmation Modal */}
+            {showDeleteModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+                    <div className="bg-white rounded-lg shadow-lg w-full max-w-sm p-6">
+                        <h3 className="text-lg font-bold mb-4">Confirm Delete</h3>
+                        <p className="mb-6">
+                            Are you sure you want to delete schedule{" "}
+                            <span className="font-semibold">{deleteTarget?.veterinarian_id?.user_id?.name}</span>?
+                        </p>
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={handleCancelDelete}
+                                className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleConfirmDelete}
+                                className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700"
+                            >
+                                Delete
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

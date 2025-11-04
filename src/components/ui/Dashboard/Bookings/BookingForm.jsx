@@ -198,7 +198,7 @@ export default function BookingForm({
         (b) =>
           b.services?.some((bs) => bs.service_id === s.service_id) &&
           new Date(b.booking_date).toISOString().slice(0, 16) ===
-            bookingDateTime &&
+          bookingDateTime &&
           (mode !== "edit" || b._id !== form._id)
       )
     );
@@ -414,9 +414,8 @@ export default function BookingForm({
                 }}
                 dateFormat="dd-MM-yyyy"
                 disabled={disableOtherFields}
-                className={`w-full border rounded p-2 pl-7 focus:ring-2 focus:ring-yellow-600 focus:border-transparent ${
-                  disableOtherFields ? "bg-gray-100" : ""
-                }`}
+                className={`w-full border rounded p-2 pl-7 focus:ring-2 focus:ring-yellow-600 focus:border-transparent ${disableOtherFields ? "bg-gray-100" : ""
+                  }`}
               />
               <Calendar
                 className="absolute left-2 top-2 w-5 h-5 text-gray-500 cursor-pointer"
@@ -487,14 +486,23 @@ export default function BookingForm({
             value={form.note}
             onChange={handleChange}
             disabled={disableOtherFields}
-            className={`w-full border rounded p-2 focus:ring-2 focus:ring-yellow-600 focus:border-transparent ${
-              disableOtherFields ? "bg-gray-100" : ""
-            }`}
+            className={`w-full border rounded p-2 focus:ring-2 focus:ring-yellow-600 focus:border-transparent ${disableOtherFields ? "bg-gray-100" : ""
+              }`}
           />
         </div>
 
         {/* Buttons */}
-        <div className="flex justify-end gap-4 mt-4">
+        <div className="flex justify-center gap-4 mt-4">
+          {/* Cancel / Back */}
+          <button
+            type="button"
+            onClick={onCancel}
+            className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+          >
+            {isView ? "Back to List" : "Cancel"}
+          </button>
+
+          {/* Edit button (chỉ view mode) */}
           {isView && (
             <button
               type="button"
@@ -504,19 +512,15 @@ export default function BookingForm({
               Edit
             </button>
           )}
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-          >
-            Cancel
-          </button>
+
+          {/* Save / Book button (add hoặc edit mode) */}
           {!isView && (
             <button
               type="submit"
-              className="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700"
+              className={`px-4 py-2 rounded text-white hover:brightness-110 ${mode === "add" ? "bg-green-600 hover:bg-green-700" : "bg-green-600 hover:bg-green-700"
+                }`}
             >
-              Save
+              {mode === "add" ? "Book" : "Save"}
             </button>
           )}
         </div>
