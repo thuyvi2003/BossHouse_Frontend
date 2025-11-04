@@ -15,6 +15,7 @@ const SharedWishlistPage = () => {
     (async () => {
       try {
         const res = await getSharedWishlistGroup(groupId);
+        console.log("Shared wishlist group response:", res.data);
         if (res.success) setGroup(res.data);
         else setError(res.message || "Group not found or not shared");
       } catch (err) {
@@ -82,7 +83,7 @@ const SharedWishlistPage = () => {
                 <div className="flex items-center gap-4">
                   <img
                     src={
-                      item.product_variation_id?.product_id?.thumbnail ||
+                      item.product_variation_id?.image||
                       "/placeholder.png"
                     }
                     alt={item.product_variation_id?.product_id?.name || "Product"}
