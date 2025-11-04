@@ -32,7 +32,6 @@ import AccountManagement from "@/components/ui/Dashboard/AccountManagement/Accou
 import StockManagement from "@/components/ui/Dashboard/Stocks/StockManagement";
 import OrderManagement from "@/components/ui/Dashboard/Orders/OrderManagement";
 
-
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("overview");
 
