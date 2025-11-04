@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { stockService } from "@/services/stockService";
 import { productService } from "@/services/productService";
+import { variationService } from "@/services/productVariationService";
 import Pagination from "@/components/Layout/Pagination";
 import {
   Plus,
@@ -21,7 +22,6 @@ const StockManagement = () => {
   const [stocks, setStocks] = useState([]);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -47,6 +47,9 @@ const StockManagement = () => {
     referenceNumber: "",
     entryDate: new Date().toISOString().split("T")[0],
   });
+
+  // State for variations list
+  const [variations, setVariations] = useState([]);
 
   // Fetch stocks
   const fetchStocks = useCallback(async () => {
@@ -90,7 +93,7 @@ const StockManagement = () => {
     }
   };
 
-  // Create stock
+    // Create stock
   const createStock = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -103,8 +106,8 @@ const StockManagement = () => {
       }
 
       const stockData = {
-        ...(formData.productId && { productId: formData.productId }),
-        ...(formData.variationId && { variationId: formData.variationId }),
+        // If we have a variation ID, only send that. Otherwise send the product ID
+        ...(formData.variationId ? { variationId: formData.variationId } : { productId: formData.productId }),
         type: formData.type,
         quantity: parseFloat(formData.quantity),
         supplier: formData.supplier,
@@ -118,6 +121,7 @@ const StockManagement = () => {
       if (data.success) {
         setShowCreateModal(false);
         resetForm();
+        setVariations([]);
         fetchStocks();
         alert("Stock entry created successfully");
       } else {
@@ -131,7 +135,22 @@ const StockManagement = () => {
     }
   };
 
-  // Update stock
+  // Fetch variations for a product
+  const fetchVariations = async (productId) => {
+    if (!productId) {
+      setVariations([]);
+      return;
+    }
+    try {
+      const response = await variationService.getByProduct(productId);
+      if (response.success) {
+        setVariations(response.data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching variations:', error);
+      setVariations([]);
+    }
+  };  // Update stock
   const updateStock = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -452,29 +471,55 @@ const StockManagement = () => {
             <form onSubmit={createStock}>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Product *
-                    </label>
-                    <select
-                      value={formData.productId}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          productId: e.target.value,
-                          variationId: "",
-                        })
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#846551] focus:border-transparent"
-                      disabled={formData.variationId !== ""}
-                    >
-                      <option value="">Select Product</option>
-                      {products.map((product) => (
-                        <option key={product._id} value={product._id}>
-                          {product.name}
-                        </option>
-                      ))}
-                    </select>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Product *
+                      </label>
+                      <select
+                        value={formData.productId}
+                        onChange={(e) => {
+                          const newProductId = e.target.value;
+                          setFormData({
+                            ...formData,
+                            productId: newProductId,
+                            variationId: "",
+                          });
+                          fetchVariations(newProductId);
+                        }}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#846551] focus:border-transparent"
+                      >
+                        <option value="">Select Product</option>
+                        {products.map((product) => (
+                          <option key={product._id} value={product._id}>
+                            {product.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Variation
+                      </label>
+                      <select
+                        value={formData.variationId}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            variationId: e.target.value,
+                          })
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#846551] focus:border-transparent"
+                        disabled={!formData.productId}
+                      >
+                        <option value="">Select Variation</option>
+                        {variations.map((variation) => (
+                          <option key={variation._id} value={variation._id}>
+                            {variation.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
