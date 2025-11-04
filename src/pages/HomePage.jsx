@@ -32,7 +32,7 @@ import {
 
 const HomePage = () => {
     const [products, setProducts] = useState([]);
-    const [setCategories] = useState([]);
+    const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm] = useState('');
     const [selectedCategory] = useState('all');

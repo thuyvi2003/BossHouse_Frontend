@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { getWishlistGroups, moveToGroup } from "@/services/wishListService";
+import Toast from "@/components/Layout/Toast";
+
 
 const SelectGroupModal = ({ wishlistId, onClose, onSuccess }) => {
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
+  const [errorMsg, setErrorMsg] = useState(""); 
+  const [toast, setToast] = useState(null);
+
 
   useEffect(() => {
     (async () => {
@@ -20,22 +25,45 @@ const SelectGroupModal = ({ wishlistId, onClose, onSuccess }) => {
     })();
   }, []);
 
-  const handleConfirm = async () => {
-    if (!selected) return alert("Please select a group.");
-    try {
-      const res = await moveToGroup(wishlistId, selected);
-      if (res.status === "success") {
-        onSuccess(res.message || "Moved to group successfully!");
-        onClose();
-      }
-    } catch (err) {
-      console.error("Move failed:", err);
-      const message =
-        err.response?.data?.message || "Failed to move item to group.";
+ const handleConfirm = async () => {
+  if (!selected) {
+    setToast({
+      type: "warning",
+      title: "Notice",
+      message: "Please select a group before confirming.",
+    });
+    return;
+  }
 
-      setErrorMsg(message);
+  try {
+    const res = await moveToGroup(wishlistId, selected);
+
+    if (res.status === "success") {
+      setToast({
+        type: "success",
+        title: "Success",
+        message: res.message || "Item moved to group successfully!",
+      });
+      onSuccess(res.message);
+      onClose();
+    } else {
+      setToast({
+        type: "error",
+        title: "Failed",
+        message: res.message || "Failed to move item to group.",
+      });
     }
-  };
+  } catch (err) {
+    console.error("Move failed:", err);
+    const message =
+      err.response?.data?.message || "Failed to move item to group.";
+    setToast({
+      type: "error",
+      title: "Error",
+      message,
+    });
+  }
+};
 
   return (
     <div className="fixed inset-0 bg-black/50 bg-opacity-40 flex items-center justify-center z-50">
@@ -94,6 +122,15 @@ const SelectGroupModal = ({ wishlistId, onClose, onSuccess }) => {
           >
             Move
           </button>
+               {toast && (
+  <Toast
+    type={toast.type}
+    title={toast.title}
+    message={toast.message}
+    onClose={() => setToast(null)}
+  />
+)}
+
         </div>
       </div>
     </div>

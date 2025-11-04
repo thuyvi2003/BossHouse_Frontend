@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Bell, ChevronDown, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { io } from 'socket.io-client';
 
 const NotificationDropdown = () => {
   const [notifications, setNotifications] = useState([]);
@@ -32,12 +33,86 @@ const NotificationDropdown = () => {
     };
   }, []);
 
+  // Socket.IO real-time updates
+  useEffect(() => {
+    if (!userToken) return;
+
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+    const socket = io(API_BASE_URL, { transports: ['websocket'] });
+
+    // Join room theo userId để nhận thông báo riêng
+    try {
+      const user = JSON.parse(localStorage.getItem('user'));
+      const userId = user?._id || user?.id;
+      if (userId) socket.emit('auth:join', String(userId));
+    } catch (e) {
+      console.error('Error joining socket room:', e);
+    }
+
+    // Listen event notification mới
+    socket.on('notification:new', (notification) => {
+      // Kiểm tra notification có phù hợp với user không
+      const user = JSON.parse(localStorage.getItem('user')) || {};
+      const userId = user._id || user.id;
+      const userRole = user.role;
+      
+      // Filter theo target_audience
+      const shouldShow = 
+        notification.target_audience === 'all' ||
+        notification.target_audience === userRole ||
+        (notification.target_audience === 'specific' && 
+         Array.isArray(notification.target_users) && 
+         notification.target_users.some(uid => String(uid) === String(userId)));
+      
+      if (!shouldShow || notification.status !== 'active') return;
+      
+      // Thêm notification mới vào danh sách và cập nhật badge
+      setNotifications(prev => {
+        // Kiểm tra xem notification đã tồn tại chưa
+        const exists = prev.some(n => (n._id || n.id) === notification._id);
+        if (exists) return prev;
+        
+        // Thêm notification mới vào đầu danh sách
+        return [{ ...notification, is_read: false }, ...prev];
+      });
+      setUnreadCount(prev => prev + 1);
+    });
+
+    // Listen event khi notification được đánh dấu đã đọc
+    socket.on('notification:read', ({ notification_id, is_read }) => {
+      setNotifications(prev => 
+        prev.map(n => (n._id || n.id) === notification_id ? { ...n, is_read } : n)
+      );
+      
+      // Cập nhật unread count
+      if (is_read) {
+        setUnreadCount(prev => Math.max(0, prev - 1));
+      } else {
+        setUnreadCount(prev => prev + 1);
+      }
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [userToken]);
+
   const fetchNotifications = async () => {
     try {
       setLoading(true);
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
-      // Use homepage endpoint to get user-targeted notifications
-      const response = await fetch(`${API_BASE_URL}/api/notifications?status=active`, {
+      
+      // Use different endpoints based on user role
+      let endpoint;
+      if (userRole === 'admin' || userRole === 'staff' || userRole === 'veterinarian') {
+        // Admin/Staff/Veterinarian can access full notification list
+        endpoint = `${API_BASE_URL}/api/notifications?status=active`;
+      } else {
+        // Regular users should use homepage endpoint
+        endpoint = `${API_BASE_URL}/api/notifications/homepage?status=active`;
+      }
+      
+      const response = await fetch(endpoint, {
         headers: {
           'Authorization': `Bearer ${userToken}`
         }
@@ -55,15 +130,30 @@ const NotificationDropdown = () => {
           isArray: Array.isArray(result.data?.notifications)
         });
         
-        const list = (
+        const rawList = (
           (result?.data?.notifications && Array.isArray(result.data.notifications) && result.data.notifications) ||
           (Array.isArray(result?.data) && result.data) ||
           (Array.isArray(result) && result) ||
           (Array.isArray(result?.notifications) && result.notifications) ||
           []
         );
-        console.log('Fetched notifications:', list);
-        console.log('First notification:', list[0]);
+        
+        // Extract actual notification data from _doc property if it exists
+        const list = rawList.map(notification => {
+          if (notification._doc) {
+            // Data is in _doc property, extract it
+            return {
+              ...notification._doc,
+              is_read: notification.is_read
+            };
+          }
+          return notification;
+        });
+        
+        console.log('Raw notifications:', rawList);
+        console.log('Processed notifications:', list);
+        console.log('First notification ID:', list[0]?._id || list[0]?.id);
+        console.log('First notification title:', list[0]?.title);
         console.log('====================');
         setNotifications(list);
         const unread = list.filter(n => !n.is_read).length;
@@ -182,18 +272,24 @@ const NotificationDropdown = () => {
                     key={notification._id || notification.id || index}
                     className={`p-4 hover:bg-gray-50 transition-colors cursor-pointer ${notification.is_read ? '' : 'font-semibold'}`}
                     onClick={async () => {
+                      const notificationId = notification._id || notification.id;
+                      if (!notificationId) {
+                        console.error('Notification ID is missing:', notification);
+                        return;
+                      }
+                      
                       // mark as read then navigate
                       try {
                         const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
-                        await fetch(`${API_BASE_URL}/api/notifications/${notification._id}/read`, {
+                        await fetch(`${API_BASE_URL}/api/notifications/${notificationId}/read`, {
                           method: 'POST',
                           headers: { 'Authorization': `Bearer ${userToken}` }
                         });
-                        setNotifications(prev => prev.map(n => n._id === notification._id ? { ...n, is_read: true } : n));
+                        setNotifications(prev => prev.map(n => (n._id || n.id) === notificationId ? { ...n, is_read: true } : n));
                         setUnreadCount(prev => Math.max(0, prev - (notification.is_read ? 0 : 1)));
                       } catch {}
                       setIsOpen(false);
-                      navigate(`/notifications/${notification._id}`);
+                      navigate(`/notifications/${notificationId}`);
                     }}
                   >
                     <div className="flex items-start gap-3">

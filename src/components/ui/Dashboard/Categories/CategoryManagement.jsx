@@ -1,6 +1,7 @@
 // Vo Lam Thuy Vi
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { categoryService } from "@/services/categoryService";
+import Pagination from "@/components/Layout/Pagination";
 import { 
   Plus, 
   Search, 
@@ -24,7 +25,7 @@ const CategoryManagement = () => {
   const [editingCategory, setEditingCategory] = useState(null);
   const [pagination, setPagination] = useState({
     page: 1,
-    limit: 10,
+    limit: 8,
     total: 0,
     totalPages: 0
   });
@@ -37,7 +38,7 @@ const CategoryManagement = () => {
   });
 
   // Fetch categories
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     setLoading(true);
     try {
       const params = {
@@ -46,11 +47,10 @@ const CategoryManagement = () => {
         ...(searchTerm && { search: searchTerm }),
         ...(statusFilter !== "all" && { status: statusFilter }),
       };
-  
+
       const data = await categoryService.getAll(params);
 
       if (data.success) {
-        // Backend trả về data.data là mảng categories trực tiếp
         setCategories(Array.isArray(data.data) ? data.data : []);
         setPagination((prev) => ({
           ...prev,
@@ -68,7 +68,7 @@ const CategoryManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [pagination.page, pagination.limit, searchTerm, statusFilter]);
 
   // Create category
   const createCategory = async (e) => {
@@ -168,14 +168,14 @@ const CategoryManagement = () => {
   };
 
   // Handle pagination
-  // const handlePageChange = (newPage) => {
-  //   setPagination(prev => ({ ...prev, page: newPage }));
-  // };
+  const handlePageChange = (newPage) => {
+    setPagination((prev) => ({ ...prev, page: newPage }));
+  };
 
   // Effects
   useEffect(() => {
     fetchCategories();
-  }, [pagination.page, pagination.limit, searchTerm, statusFilter]);
+  }, [fetchCategories]);
 
   return (
     <div className="bg-white shadow-xl overflow-hidden flex-1 animate-fade-in">
@@ -261,6 +261,15 @@ const CategoryManagement = () => {
           <div className="px-6 py-12 text-center">
             <div className="flex justify-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#846551]"></div>
+            </div>
+
+            {/* Pagination */}
+            <div className="p-6">
+              <Pagination
+                page={pagination.page}
+                totalPages={pagination.totalPages}
+                onPageChange={handlePageChange}
+              />
             </div>
           </div>
         ) : categories.length === 0 ? (
