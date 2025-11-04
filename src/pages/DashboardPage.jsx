@@ -30,10 +30,7 @@ import ReviewManagement from "@/components/ui/Dashboard/Reviews/ReviewManagement
 import NotificationManagement from "@/components/ui/Dashboard/Notifications/NotificationManagement";
 import AccountManagement from "@/components/ui/Dashboard/AccountManagement/AccountManagement";
 import StockManagement from "@/components/ui/Dashboard/Stocks/StockManagement";
-// import { Clock } from "lucide-react";
-// import ScheduleManager from "@/components/ui/Dashboard/Schedule/ScheduleManager";
 import OrderManagement from "@/components/ui/Dashboard/Orders/OrderManagement";
-
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("overview");

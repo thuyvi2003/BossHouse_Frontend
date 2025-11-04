@@ -40,7 +40,6 @@ export default function SidebarProfile() {
     );
   }
 
-  // ✅ Return chính duy nhất
   return (
     <div className="w-64 bg-white border-r border-[#d7cbbf] flex flex-col h-screen">
       {/* Logo */}

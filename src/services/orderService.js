@@ -1,9 +1,10 @@
 //Vo Lam Thuy Vi
 import axiosInstance from "@/config/axiosConfig";
 
-export const createOrder = async (promotionCode = null, shippingFee = 30000, addressInfo = {}) => {
+export const createOrder = async (selectedItemIds = [], promotionCode = null, shippingFee = 30000, addressInfo = {}) => {
 
     const res = await axiosInstance.post(`/orders/create`, {
+        selectedItemIds,
         promotionCode,
         shippingFee,
         addressInfo,

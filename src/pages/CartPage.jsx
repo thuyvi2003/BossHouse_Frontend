@@ -166,13 +166,7 @@ export default function Cart() {
                   >
                     Clear All
                   </button>
-                  {selectedItems.length > 0 && (
-                    <button
-                      className="px-6 py-2 bg-[#d7cbbf] text-[#5a4639] rounded hover:bg-[#c8b9a9] transition"
-                    >
-                      Checkout Selected
-                    </button>
-                  )}
+              
                 </div>
               </div>
             )}

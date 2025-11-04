@@ -15,10 +15,10 @@ const OrderManagement = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState(null);
-  const [detailOpen, setDetailOpen] = useState(false);
   const [toast, setToast] = useState({ show: false, type: "success", message: "" });
+  // const [confirmOpen, setConfirmOpen] = useState(false);
+  // const [selectedOrder, setSelectedOrder] = useState(null);
+  // const [detailOpen, setDetailOpen] = useState(false);
 
   // Fetch orders
   async function fetchOrders(pageNum = 1) {
@@ -37,29 +37,29 @@ const OrderManagement = () => {
     fetchOrders(1);
   }, []);
 
-  const handleViewDetail = (order) => {
-    setSelectedOrder(order);
-    setDetailOpen(true);
-  };
+  // const handleViewDetail = (order) => {
+  //   setSelectedOrder(order);
+  //   setDetailOpen(true);
+  // };
 
   // Delete order
-  const handleDeleteClick = (order) => {
-    setSelectedOrder(order);
-    setConfirmOpen(true);
-  };
+  // const handleDeleteClick = (order) => {
+  //   setSelectedOrder(order);
+  //   setConfirmOpen(true);
+  // };
 
-//   const handleConfirmDelete = async () => {
-//     try {
-//       if (!selectedOrder?._id) return;
-//       await removeOrder(selectedOrder._id);
-//       setToast({ show: true, type: "success", message: "Order removed successfully!" });
-//       setConfirmOpen(false);
-//       setSelectedOrder(null);
-//       await fetchOrders(page);
-//     } catch (error) {
-//       setToast({ show: true, type: "error", message: "Failed to remove order!" });
-//     }
-//   };
+  //   const handleConfirmDelete = async () => {
+  //     try {
+  //       if (!selectedOrder?._id) return;
+  //       await removeOrder(selectedOrder._id);
+  //       setToast({ show: true, type: "success", message: "Order removed successfully!" });
+  //       setConfirmOpen(false);
+  //       setSelectedOrder(null);
+  //       await fetchOrders(page);
+  //     } catch (error) {
+  //       setToast({ show: true, type: "error", message: "Failed to remove order!" });
+  //     }
+  //   };
 
   return (
     <div className="bg-white shadow-xl overflow-hidden flex-1 animate-fade-in">
@@ -130,68 +130,66 @@ const OrderManagement = () => {
         </div>
 
         <div className="divide-y divide-transparent min-h-[650px]">
-  {orders.length === 0 ? (
-    <div className="flex items-center justify-center h-[300px] text-gray-500 text-xl italic">
-      No orders found.
-    </div>
-  ) : (
-    orders.map((order, idx) => (
-      <div
-        key={order._id || `order-${idx}`}
-        className="relative px-6 py-5 grid grid-cols-13 gap-4 items-center
+          {orders.length === 0 ? (
+            <div className="flex items-center justify-center h-[300px] text-gray-500 text-xl italic">
+              No orders found.
+            </div>
+          ) : (
+            orders.map((order, idx) => (
+              <div
+                key={order._id || `order-${idx}`}
+                className="relative px-6 py-5 grid grid-cols-13 gap-4 items-center
                    bg-white rounded-xl shadow-sm border border-gray-100
                    hover:border-[#846551] hover:shadow-lg hover:scale-[1.01]
                    transition-all duration-300 ease-in-out animate-fade-in-up"
-        style={{ animationDelay: `${idx * 100}ms` }}
-      >
-        <div className="absolute left-0 top-0 h-full w-1 rounded-l-xl bg-gray-200 hover:bg-[#846551] transition-all"></div>
-        <div className="col-span-1 font-semibold text-gray-700">{(page - 1) * limit + idx + 1}</div>
-        <div className="col-span-2 text-gray-800 font-medium">{order.shipping_address?.name || "N/A"}</div>
-        <div className="col-span-2 text-sm text-gray-600">
-          {order.items?.slice(0, 2).map((it, i) => (
-            <div key={i}>• {it.product_name} x{it.quantity}</div>
-          ))}
-          {order.items?.length > 2 && (
-            <div className="text-xs text-gray-400">+{order.items.length - 2} more</div>
+                style={{ animationDelay: `${idx * 100}ms` }}
+              >
+                <div className="absolute left-0 top-0 h-full w-1 rounded-l-xl bg-gray-200 hover:bg-[#846551] transition-all"></div>
+                <div className="col-span-1 font-semibold text-gray-700">{(page - 1) * limit + idx + 1}</div>
+                <div className="col-span-2 text-gray-800 font-medium">{order.shipping_address?.name || "N/A"}</div>
+                <div className="col-span-2 text-sm text-gray-600">
+                  {order.items?.slice(0, 2).map((it, i) => (
+                    <div key={i}>• {it.product_name} x{it.quantity}</div>
+                  ))}
+                  {order.items?.length > 2 && (
+                    <div className="text-xs text-gray-400">+{order.items.length - 2} more</div>
+                  )}
+                </div>
+                <div className="col-span-2 text-sm font-semibold text-[#5a4639]">
+                  {order.final_price?.toLocaleString()}đ
+                </div>
+                <div className="col-span-1">
+                  <span
+                    className={`px-3 py-1 text-xs rounded-full font-semibold shadow-sm ${order.status === "completed"
+                        ? "bg-green-100 text-green-700"
+                        : order.status === "cancelled"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-yellow-100 text-yellow-700"
+                      }`}
+                  >
+                    {order.status}
+                  </span>
+                </div>
+                <div className="col-span-1 text-sm text-gray-700">{order.payment_method}</div>
+                <div className="col-span-2 text-sm text-gray-600">
+                  {dayjs(order.created_at).format("DD/MM/YYYY")}
+                </div>
+
+                <div className="col-span-2 flex items-center justify-center space-x-3">
+                  <button
+                    onClick={() => handleViewDetail(order)}
+                    className="px-3 py-1 border border-[#846551] text-[#846551] rounded-lg hover:bg-[#f3ece9] transition-all duration-300"
+                  >
+                    View
+                  </button>
+                </div>
+              </div>
+            ))
           )}
         </div>
-        <div className="col-span-2 text-sm font-semibold text-[#5a4639]">
-          {order.final_price?.toLocaleString()}đ
-        </div>
-        <div className="col-span-1">
-          <span
-            className={`px-3 py-1 text-xs rounded-full font-semibold shadow-sm ${
-              order.status === "completed"
-                ? "bg-green-100 text-green-700"
-                : order.status === "cancelled"
-                ? "bg-red-100 text-red-700"
-                : "bg-yellow-100 text-yellow-700"
-            }`}
-          >
-            {order.status}
-          </span>
-        </div>
-        <div className="col-span-1 text-sm text-gray-700">{order.payment_method}</div>
-        <div className="col-span-2 text-sm text-gray-600">
-          {dayjs(order.created_at).format("DD/MM/YYYY")}
-        </div>
-
-        <div className="col-span-2 flex items-center justify-center space-x-3">
-          <button
-            onClick={() => handleViewDetail(order)}
-            className="px-3 py-1 border border-[#846551] text-[#846551] rounded-lg hover:bg-[#f3ece9] transition-all duration-300"
-          >
-            View
-          </button>
-        </div>
-      </div>
-    ))
-  )}
-</div>
 
       </div>
 
-      {/* Pagination */}
       <Pagination page={page} totalPages={totalPages} onPageChange={(newPage) => fetchOrders(newPage)} />
 
       {/* Detail Modal */}

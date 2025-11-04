@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link,useNavigate  } from 'react-router-dom';
 import { productService } from '@/services/productService';
 import { categoryService } from '@/services/categoryService';
+
 import { 
   ShoppingCart, 
   Star, 
@@ -29,7 +30,8 @@ const ProductPage = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(12);
-  // const [favorites, setFavorites] = useState(new Set());
+  const navigate = useNavigate();
+
 
   // Fetch products and categories
   useEffect(() => {
@@ -128,8 +130,8 @@ const ProductPage = () => {
     setSortBy('name');
     setCurrentPage(1);
   };
-
-  if (loading) {
+ 
+    if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#846551]"></div>
@@ -351,10 +353,11 @@ const ProductPage = () => {
                             }`}>
                               ${product.price?.toLocaleString() || '0'}
                             </span>
-                            <button className="flex items-center px-3 py-1.5 bg-[#846551] text-white rounded-md hover:bg-[#5a4639] transition-colors duration-300 text-sm">
+                            {/* <button className="flex items-center px-3 py-1.5 bg-[#846551] text-white rounded-md hover:bg-[#5a4639] transition-colors duration-300 text-sm"
+                              onClick={handleAddClick(product)}>
                               <ShoppingCart className="w-4 h-4 mr-1" />
                               Add
-                            </button>
+                            </button> */}
                           </div>
                         </div>
                     </div>

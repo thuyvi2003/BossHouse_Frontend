@@ -11,7 +11,7 @@ export default function CartSummary({ total, count, cart = [], selectedItems = [
   const [toast, setToast] = useState(null);
   const navigate = useNavigate();
 
-  // Tính subtotal theo các item được chọn
+  //  Calculate selected total
   const selectedTotal = React.useMemo(() => {
     if (!cart || cart.length === 0) return 0;
     const itemsToSum =
@@ -24,21 +24,20 @@ export default function CartSummary({ total, count, cart = [], selectedItems = [
     );
   }, [cart, selectedItems]);
 
-  // Fetch promotion list
-  const fetchPromotions = async () => {
-    try {
-      const res = await getUserClaimedPromotions();
-      setPromotions(res.data?.data || []);
-    } catch (error) {
-      console.error("Failed to fetch promotions:", error.message);
-    }
-  };
-
+  //  Fetch promotion list
   useEffect(() => {
+    const fetchPromotions = async () => {
+      try {
+        const res = await getUserClaimedPromotions();
+        setPromotions(res.data?.data || []);
+      } catch (error) {
+        console.error("Failed to fetch promotions:", error.message);
+      }
+    };
     fetchPromotions();
   }, []);
 
-  // Recalculate final total when subtotal or promotion changes
+  //  Calculate total when promotion/subtotal changes
   useEffect(() => {
     let newTotal = Number(selectedTotal);
     const promoValue = Number(selectedPromo?.value || selectedPromo?.promotion_value || 0);
@@ -52,6 +51,7 @@ export default function CartSummary({ total, count, cart = [], selectedItems = [
     setFinalTotal(newTotal);
   }, [selectedTotal, selectedPromo]);
 
+  //  APPLY promotion
   const handleApplyPromotion = async (promo) => {
     try {
       await applyPromotion(promo._id);
@@ -70,17 +70,22 @@ export default function CartSummary({ total, count, cart = [], selectedItems = [
     }
   };
 
+  //  NAVIGATE to checkout
   const handleCheckout = () => {
-    const itemsToCheckout =
-      selectedItems.length > 0
-        ? cart.filter((i) => selectedItems.includes(i._id))
-        : cart;
+    if (selectedItems.length === 0 && cart.length === 0) {
+      setToast({
+        type: "error",
+        title: "No items",
+        message: "Please select at least one product to checkout",
+      });
+      return;
+    }
 
     navigate("/checkout", {
       state: {
         total: finalTotal,
         promotion: selectedPromo,
-        selectedItems: itemsToCheckout,
+        selectedItemIds: selectedItems.length > 0 ? selectedItems : cart.map(i => i._id),
       },
     });
   };
@@ -88,7 +93,7 @@ export default function CartSummary({ total, count, cart = [], selectedItems = [
   return (
     <div className="p-6 bg-[#fdfaf6] border border-gray-200 rounded shadow-sm">
       <h2 className="text-lg font-light mb-4 text-gray-700 tracking-wide uppercase">
-        Order Summary
+        Cart Summary
       </h2>
 
       {/* Subtotal */}
@@ -113,11 +118,10 @@ export default function CartSummary({ total, count, cart = [], selectedItems = [
             {promotions.map((promo) => (
               <div
                 key={promo._id}
-                className={`p-3 text-sm border rounded cursor-pointer transition ${
-                  selectedPromo?._id === promo._id
+                className={`p-3 text-sm border rounded cursor-pointer transition ${selectedPromo?._id === promo._id
                     ? "border-[#846551] bg-[#f8f4f0]"
                     : "border-gray-200 hover:bg-gray-50"
-                }`}
+                  }`}
               >
                 <div className="font-medium text-gray-800">
                   {promo.description || promo.code}
@@ -130,11 +134,10 @@ export default function CartSummary({ total, count, cart = [], selectedItems = [
                 <button
                   onClick={() => handleApplyPromotion(promo)}
                   disabled={selectedPromo?._id === promo._id}
-                  className={`text-xs px-3 py-1 rounded ${
-                    selectedPromo?._id === promo._id
+                  className={`text-xs px-3 py-1 rounded ${selectedPromo?._id === promo._id
                       ? "bg-gray-400 cursor-not-allowed"
                       : "bg-[#846551] text-white hover:bg-[#6d5041]"
-                  }`}
+                    }`}
                 >
                   {selectedPromo?._id === promo._id ? "Applied" : "Apply"}
                 </button>

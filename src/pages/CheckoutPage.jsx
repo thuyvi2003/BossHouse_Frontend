@@ -9,29 +9,39 @@ export default function CheckoutPage() {
     const location = useLocation();
     const navigate = useNavigate();
 
-    const { total = 0, promotion = null } = location.state || {};
+    const { total = 0, promotion = null, selectedItemIds } = location.state || {};
     const [shippingFee, setShippingFee] = useState(30000);
     const [loading, setLoading] = useState(false);
     const [toast, setToast] = useState(null);
     const [formData, setFormData] = useState(null); //Day la AddressInfo
 
     const handleCheckoutSubmit = async (data) => {
-        const { contact, delivery, shipping, payment } = data;
-        const shippingFee = delivery === "express" ? 50000 : 30000;
+        const { contact, shipping, payment } = data;
+        const shippingFee = data.shippingFee;
 
         const addressInfo = {
             name: contact.name,
             email: contact.email,
             phone: contact.phone,
             country: shipping.country,
-            city: shipping.city,
+            province: shipping.province,
+            district: shipping.district,
+            ward: shipping.ward,
             address: shipping.address,
             payment_method: payment.method,
         };
 
         setLoading(true);
         try {
-            const res = await createOrder(promotion?.code || null, shippingFee, addressInfo);
+            const promoCode = promotion?.code ? promotion.code : null;
+            console.log("Creating order with promo:", promotion?.code || "no promotion");
+
+            const res = await createOrder(
+                selectedItemIds,
+                promoCode,
+                shippingFee,
+                addressInfo
+            );
             setToast({
                 type: "success",
                 title: "Order Created!",
@@ -67,38 +77,68 @@ export default function CheckoutPage() {
             </div>
             <div className=" flex justify-center py-10 gap-6">
                 <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-2xl">
-                    <CheckoutForm onSubmit={(data) => setFormData(data)} />
-
+                    <CheckoutForm
+                        onSubmit={(data) => setFormData(data)}
+                        onShippingFeeChange={setShippingFee}
+                    />
                 </div>
+
+                {/* order summary */}
                 <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-2xl">
-                    <h1 className="text-2xl font-semibold mb-6 text-[#5a4639]">Order Summary</h1>
+                    <h1 className="text-2xl font-semibold mb-6 text-[#5a4639]">
+                        Order Summary
+                    </h1>
 
                     <div className="space-y-4">
                         <div className="flex justify-between py-2 border-b border-gray-200">
-                            <span className="text-gray-600">Subtotal</span>
+                            <span className="text-gray-600">Subtotal (Cart Items)</span>
                             <span>{total.toLocaleString("vi-VN")}đ</span>
                         </div>
 
                         {promotion && (
-                            <div className="flex justify-between py-2 border-b border-gray-200">
-                                <span className="text-gray-600">Promotion ({promotion.code})</span>
-                                <span className="text-[#846551]">
-                                    {promotion.type === "percent"
-                                        ? `-${promotion.value}%`
-                                        : `-${promotion.value.toLocaleString("vi-VN")}đ`}
-                                </span>
-                            </div>
+                            <>
+                                <div className="flex justify-between py-2 border-b border-gray-200">
+                                    <span className="text-gray-600">
+                                        Promotion Code ({promotion.code})
+                                    </span>
+                                    <span className="text-[#846551]">
+                                        {promotion.type === "percent"
+                                            ? `-${promotion.value}%`
+                                            : `-${promotion.value.toLocaleString("vi-VN")}đ`}
+                                    </span>
+                                </div>
+
+                                <div className="flex justify-between py-2 border-b border-gray-200">
+                                    <span className="text-gray-600">Total after Promotion</span>
+                                    <span className="text-gray-800 font-medium">
+                                        {promotion.type === "percent"
+                                            ? (total * (1 - promotion.value / 100)).toLocaleString("vi-VN")
+                                            : Math.max(total - promotion.value, 0).toLocaleString("vi-VN")}đ
+                                    </span>
+                                </div>
+                            </>
                         )}
 
                         <div className="flex justify-between py-2 border-b border-gray-200">
                             <span className="text-gray-600">Shipping Fee</span>
-                            <span>{shippingFee.toLocaleString("vi-VN")}đ</span>
+                            <span>+{shippingFee.toLocaleString("vi-VN")}đ</span>
                         </div>
 
                         <div className="flex justify-between font-semibold text-lg py-3 mt-2 bg-[#f8f4f0] px-2 rounded">
                             <span>Final Total</span>
-                            <span>{(total + shippingFee).toLocaleString("vi-VN")}đ</span>
+                            <span>
+                                {(() => {
+                                    let discounted =
+                                        promotion?.type === "percent"
+                                            ? total * (1 - promotion.value / 100)
+                                            : promotion
+                                                ? Math.max(total - promotion.value, 0)
+                                                : total;
+                                    return (discounted + shippingFee).toLocaleString("vi-VN");
+                                })()}đ
+                            </span>
                         </div>
+
                         {/* Checkbox + T&C */}
                         <div className="flex items-center gap-2 mt-4">
                             <input
@@ -116,6 +156,7 @@ export default function CheckoutPage() {
                                 </Link>
                             </label>
                         </div>
+
                         <button
                             disabled={loading}
                             onClick={() => {
@@ -123,7 +164,8 @@ export default function CheckoutPage() {
                                     setToast({
                                         type: "error",
                                         title: "Required",
-                                        message: "Please accept Terms & Conditions before proceeding",
+                                        message:
+                                            "Please accept Terms & Conditions before proceeding",
                                     });
                                     return;
                                 }
@@ -141,7 +183,6 @@ export default function CheckoutPage() {
                         >
                             {loading ? "Processing..." : "Pay now"}
                         </button>
-
                     </div>
 
                     {toast && (
