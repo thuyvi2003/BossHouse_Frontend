@@ -62,17 +62,28 @@ const OrderManagement = () => {
   //   };
 
   return (
-    <div className="bg-white shadow-xl overflow-hidden flex-1 animate-fade-in">
+    <div className="flex-1 ">
       {/* Header */}
-      <div className="p-6 flex justify-between items-center bg-[#d7cbbf]">
-        <h2 className="flex items-center gap-2 text-2xl font-extrabold tracking-wide text-[#2c2c2c] drop-shadow-sm">
-          <Package size={22} className="text-[#846551]" />
-          <span className="bg-gradient-to-r from-[#846551] to-[#5a4639] bg-clip-text text-transparent">
-            Order Management
+      <div className="flex items-center justify-between gap-6 rounded-t-[2.5rem] bg-[#d8ccbf]/85 px-8 py-6 shadow-inner shadow-[#1a1a16]/15 backdrop-blur-md">
+        <div className="flex items-center gap-3 mb-6">
+          {/* Icon container */}
+          <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#8b5a3c]/95 text-[#f5f3f0] shadow-lg shadow-[#1a1a16]/20">
+            <Package size={24} weight="fill" />
           </span>
-        </h2>
 
-        <div className="flex items-center gap-4 p-4">
+          {/* Title + Subtitle */}
+          <div>
+            <h2 className="text-2xl font-extrabold uppercase tracking-[0.28em] text-[#1a1a16]">
+              Order Management
+            </h2>
+            <p className="text-xs font-semibold uppercase tracking-[0.4em] text-[#8b5a3c]">
+              Manage customer orders
+            </p>
+          </div>
+        </div>
+
+
+        <div className="flex flex-wrap items-center gap-4">
           {/* Search Box */}
           <div className="relative">
             <input
@@ -80,14 +91,11 @@ const OrderManagement = () => {
               placeholder="Search order by user name..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-10 pr-4 py-2 w-64 border border-[#c8b7a6] rounded-lg bg-[#faf8f6]
-                 text-gray-700 placeholder-gray-400
-                 focus:ring-2 focus:ring-[#846551] focus:border-[#846551]
-                 transition-all duration-300 ease-in-out shadow-sm hover:shadow-md"
+              className="w-64 rounded-xl border border-[#8b5a3c]/40 bg-[#f5f3f0] px-10 py-2 text-sm font-medium text-[#1a1a16] placeholder:text-[#8b5a3c]/60 shadow-inner shadow-[#1a1a16]/10 transition-all duration-300 ease-in-out focus:border-[#8b5a3c] focus:outline-none focus:ring-2 focus:ring-[#8b5a3c]/40 hover:shadow-lg hover:shadow-[#1a1a16]/15"
             />
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="absolute left-3 top-2.5 w-5 h-5 text-[#846551]"
+              className="absolute left-3 top-2.5 h-5 w-5 text-[#8b5a3c]"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -100,10 +108,7 @@ const OrderManagement = () => {
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value)}
-            className="px-4 py-2 border border-[#c8b7a6] rounded-lg bg-[#faf8f6]
-               text-gray-700 cursor-pointer
-               focus:ring-2 focus:ring-[#846551] focus:border-[#846551]
-               transition-all duration-300 ease-in-out shadow-sm hover:shadow-md"
+            className="cursor-pointer rounded-xl border border-[#8b5a3c]/40 bg-[#f5f3f0] px-4 py-2 text-sm font-semibold text-[#1a1a16] shadow-inner shadow-[#1a1a16]/10 transition-all duration-300 ease-in-out focus:border-[#8b5a3c] focus:outline-none focus:ring-2 focus:ring-[#8b5a3c]/40 hover:shadow-lg hover:shadow-[#1a1a16]/15"
           >
             <option value="">All Status</option>
             <option value="pending">Pending</option>
@@ -117,8 +122,8 @@ const OrderManagement = () => {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-hidden overflow-y-hidden">
-        <div className="grid grid-cols-13 gap-4 px-6 py-3 text-xs font-bold text-gray-700 uppercase tracking-wider bg-gradient-to-r from-[#f5f3f2] to-[#eae7e5] border-b shadow-sm">
+      <div className="">
+        <div className="grid grid-cols-13 gap-4 border-b  bg-[#f5f3f0] px-6 py-3 text-sm  font-extrabold uppercase tracking-[0.25em] text-[#8a7262]  shadow-inner shadow-[#1a1a16]/30">
           <div className="col-span-1">#</div>
           <div className="col-span-2">User</div>
           <div className="col-span-2">Items</div>
@@ -129,56 +134,58 @@ const OrderManagement = () => {
           <div className="col-span-2 text-center">Actions</div>
         </div>
 
-        <div className="divide-y divide-transparent min-h-[650px]">
+        <div className="min-h-[650px] divide-y divide-transparent">
           {orders.length === 0 ? (
-            <div className="flex items-center justify-center h-[300px] text-gray-500 text-xl italic">
+            <div className="flex h-[300px] items-center justify-center text-xl italic text-[#1a1a16]/60">
               No orders found.
             </div>
           ) : (
             orders.map((order, idx) => (
               <div
                 key={order._id || `order-${idx}`}
-                className="relative px-6 py-5 grid grid-cols-13 gap-4 items-center
-                   bg-white rounded-xl shadow-sm border border-gray-100
-                   hover:border-[#846551] hover:shadow-lg hover:scale-[1.01]
-                   transition-all duration-300 ease-in-out animate-fade-in-up"
+                className="relative grid grid-cols-13 items-center gap-6  border border-[#d8ccbf] bg-[#f5f3f0]/90 px-6 py-5 shadow-[0_22px_45px_-24px_rgba(26,26,22,0.4)] transition-all duration-300 ease-in-out hover:-translate-y-1 hover:border-[#8b5a3c] hover:shadow-[0_32px_60px_-20px_rgba(26,26,22,0.45)] animate-fade-in-up"
                 style={{ animationDelay: `${idx * 100}ms` }}
               >
-                <div className="absolute left-0 top-0 h-full w-1 rounded-l-xl bg-gray-200 hover:bg-[#846551] transition-all"></div>
-                <div className="col-span-1 font-semibold text-gray-700">{(page - 1) * limit + idx + 1}</div>
-                <div className="col-span-2 text-gray-800 font-medium">{order.shipping_address?.name || "N/A"}</div>
-                <div className="col-span-2 text-sm text-gray-600">
+                <div className="absolute left-0 top-0 h-full w-1 rounded-l-3xl bg-[#d8ccbf] transition-colors duration-300 hover:bg-[#8b5a3c]" />
+                <div className="col-span-1 font-semibold text-[#1a1a16]">{(page - 1) * limit + idx + 1}</div>
+                <div className="col-span-2 font-semibold text-[#1a1a16]">{order.shipping_address?.name || "N/A"}</div>
+                <div className="col-span-2 text-sm text-[#1a1a16]/80">
                   {order.items?.slice(0, 2).map((it, i) => (
-                    <div key={i}>• {it.product_name} x{it.quantity}</div>
+                    <div key={i} className="flex items-center gap-2">
+                      <span className="text-[#8b5a3c]">-</span>
+                      <span>
+                        {it.product_name} x{it.quantity}
+                      </span>
+                    </div>
                   ))}
                   {order.items?.length > 2 && (
-                    <div className="text-xs text-gray-400">+{order.items.length - 2} more</div>
+                    <div className="text-xs font-semibold text-[#8b5a3c]">+{order.items.length - 2} more</div>
                   )}
                 </div>
-                <div className="col-span-2 text-sm font-semibold text-[#5a4639]">
-                  {order.final_price?.toLocaleString()}đ
+                <div className="col-span-2 text-sm font-semibold text-[#8b5a3c]">
+                  {order.final_price?.toLocaleString()} VND
                 </div>
                 <div className="col-span-1">
                   <span
-                    className={`px-3 py-1 text-xs rounded-full font-semibold shadow-sm ${order.status === "completed"
-                        ? "bg-green-100 text-green-700"
+                    className={`rounded-full px-3 py-1 text-xs font-semibold shadow-inner shadow-[#1a1a16]/10 ${order.status === "completed"
+                        ? "bg-[#8b5a3c]/20 text-[#8b5a3c]"
                         : order.status === "cancelled"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-yellow-100 text-yellow-700"
+                          ? "bg-[#1a1a16]/15 text-[#1a1a16]"
+                          : "bg-[#d8ccbf]/70 text-[#1a1a16]"
                       }`}
                   >
                     {order.status}
                   </span>
                 </div>
-                <div className="col-span-1 text-sm text-gray-700">{order.payment_method}</div>
-                <div className="col-span-2 text-sm text-gray-600">
+                <div className="col-span-1 text-sm font-semibold text-[#1a1a16]">{order.payment_method}</div>
+                <div className="col-span-2 text-sm text-[#1a1a16]/75">
                   {dayjs(order.created_at).format("DD/MM/YYYY")}
                 </div>
 
                 <div className="col-span-2 flex items-center justify-center space-x-3">
                   <button
                     onClick={() => handleViewDetail(order)}
-                    className="px-3 py-1 border border-[#846551] text-[#846551] rounded-lg hover:bg-[#f3ece9] transition-all duration-300"
+                    className="rounded-xl border border-[#8b5a3c] px-3 py-1 text-sm font-semibold text-[#8b5a3c] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#8b5a3c] hover:text-[#f5f3f0] hover:shadow-lg hover:shadow-[#1a1a16]/20"
                   >
                     View
                   </button>
@@ -187,7 +194,6 @@ const OrderManagement = () => {
             ))
           )}
         </div>
-
       </div>
 
       <Pagination page={page} totalPages={totalPages} onPageChange={(newPage) => fetchOrders(newPage)} />

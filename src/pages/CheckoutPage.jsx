@@ -10,7 +10,7 @@ export default function CheckoutPage() {
     const navigate = useNavigate();
 
     const { total = 0, promotion = null, selectedItemIds } = location.state || {};
-    const [shippingFee, setShippingFee] = useState();
+    const [shippingFee, setShippingFee] = useState(0);
     const [loading, setLoading] = useState(false);
     const [toast, setToast] = useState(null);
     const [formData, setFormData] = useState(null); //Day la AddressInfo
