@@ -13,14 +13,15 @@ import {
   User,
   Package,
   FilmSlate,
-  CalendarCheck, 
-  Clock,  
+  CalendarCheck,
+  Clock,
   Note,
   Star,
   Bell,
   Gear,
   SignOut,
   Crown,
+  ChartLineUp,
 } from "phosphor-react";
 
 import Logo from "@/assets/Logo_BossHouse.png";
@@ -31,9 +32,11 @@ import NotificationManagement from "@/components/ui/Dashboard/Notifications/Noti
 import AccountManagement from "@/components/ui/Dashboard/AccountManagement/AccountManagement";
 import StockManagement from "@/components/ui/Dashboard/Stocks/StockManagement";
 import OrderManagement from "@/components/ui/Dashboard/Orders/OrderManagement";
-
+import MembershipManagement from "@/components/ui/Dashboard/Membership/MembershipManagement";
+import StatisticsDashboard from "@/components/ui/Dashboard/Statistics/StatisticsDashboard";
 
 export default function Dashboard() {
+  // Show statistics overview by default
   const [activeTab, setActiveTab] = useState("overview");
 
   const sidebarItems = [
@@ -51,13 +54,15 @@ export default function Dashboard() {
     { id: "notification", icon: <Bell size={22} />, label: "Notification" },
     { id: "schedule", icon: <Clock size={22} />, label: "Schedule" },
     { id: "order", icon: <Package size={22} />, label: "Order" },
+    { id: "membership", icon: <Crown size={22} />, label: "Membership" },
+    // { id: "statistics", icon: <ChartLineUp size={22} />, label: "Statistics" }, // ADD THIS
 
   ];
 
   const renderContent = () => {
     switch (activeTab) {
       case "overview":
-        return <h2 className="text-2xl font-bold">📊 Overview</h2>;
+        return <StatisticsDashboard />;
       case "account":
         return <AccountManagement />;
       case "product":
@@ -69,7 +74,7 @@ export default function Dashboard() {
       case "stock":
         return <StockManagement />;
       case "promotion":
-        return <PromotionManagement />;     
+        return <PromotionManagement />;
       case "booking":
         return <BookingManager />;
       case "post":
@@ -86,6 +91,10 @@ export default function Dashboard() {
         return <ScheduleManager />;
       case "order":
         return <OrderManagement />;
+      case "membership":
+        return <MembershipManagement />;
+      // case "statistics":
+      //   return <StatisticsDashboard />; // ADD THIS
       default:
         return <h2 className="text-2xl font-bold">Welcome to Dashboard</h2>;
     }

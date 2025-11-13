@@ -60,7 +60,6 @@ export default function CheckoutForm({  onSubmit, onShippingFeeChange }) {
   const handleCalculateShippingFee = async () => {
     try {
       setIsCalculating(true);
-      setShippingFee(null);
       const res = await axios.post("http://localhost:3000/api/shipping/calculate-fee", {
         to_district: shipping.district,
         to_ward_code: shipping.ward,

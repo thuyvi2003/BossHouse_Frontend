@@ -37,7 +37,7 @@ import SharedWishlistPage from './components/ui/Wishlist/SharedWishlistPage.jsx'
 import CheckoutPage from './pages/CheckoutPage.jsx';
 import MyOrdersPage from './pages/MyOrdersPage.jsx';
 import VetSchedulePage from "./pages/VetSchedulePage";
-
+import MembershipPage from './pages/MembershipPage.jsx';
 function App() {
   const location = useLocation();
   const { checkAuth } = useAuthStore();
@@ -94,6 +94,7 @@ function App() {
               <Route index element={<ProfilePage />} />
               <Route path="contact-history" element={<ContactHistory />} />
               <Route path="booking-history" element={<BookingHistory />} />
+              <Route path="membership" element={<MembershipPage />} />   {/* thêm dòng này */}
               <Route path="orders/my" element={<MyOrdersPage />} />
               <Route path="schedule" element={<VetSchedulePage />} />
             </Route>
