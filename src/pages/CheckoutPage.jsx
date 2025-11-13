@@ -10,7 +10,7 @@ export default function CheckoutPage() {
     const navigate = useNavigate();
 
     const { total = 0, promotion = null, selectedItemIds } = location.state || {};
-    const [shippingFee, setShippingFee] = useState(30000);
+    const [shippingFee, setShippingFee] = useState(0);
     const [loading, setLoading] = useState(false);
     const [toast, setToast] = useState(null);
     const [formData, setFormData] = useState(null); //Day la AddressInfo
@@ -121,7 +121,7 @@ export default function CheckoutPage() {
 
                         <div className="flex justify-between py-2 border-b border-gray-200">
                             <span className="text-gray-600">Shipping Fee</span>
-                            <span>+{shippingFee.toLocaleString("vi-VN")}đ</span>
+                            <span> {shippingFee ? shippingFee.toLocaleString("vi-VN") + 'đ' : '-'}</span>
                         </div>
 
                         <div className="flex justify-between font-semibold text-lg py-3 mt-2 bg-[#f8f4f0] px-2 rounded">
