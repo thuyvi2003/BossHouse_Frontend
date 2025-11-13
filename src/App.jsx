@@ -24,6 +24,7 @@ import Services from './pages/Services.jsx';
 import UserBookingForm from './pages/UserBookingForm.jsx';
 import ProfilePage from './pages/ProfilePage.jsx';
 import ProfileLayout from './components/ui/Profile/ProfileLayout.jsx';
+import PetProfileManagement from './pages/PetProfileManagement.jsx';
 import ContactPage from './pages/ContactPage.jsx';
 import ContactHistory from "./pages/ContactHistory.jsx";
 import BookingHistory from "./pages/BookingHistory.jsx";
@@ -36,11 +37,11 @@ import WishlistGroupsPage from './components/ui/Wishlist/WishlistGroupsPage.jsx'
 import SharedWishlistPage from './components/ui/Wishlist/SharedWishlistPage.jsx';
 import CheckoutPage from './pages/CheckoutPage.jsx';
 import MyOrdersPage from './pages/MyOrdersPage.jsx';
-import VetSchedulePage from "./pages/VetSchedulePage";
+import VetSchedulePage from "./pages/VetSchedulePage.jsx";
 
 function App() {
   const location = useLocation();
-  const { checkAuth } = useAuthStore();
+  const { checkAuth, user } = useAuthStore();
   const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
   useEffect(() => {
@@ -71,37 +72,47 @@ function App() {
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-            {/* Other Pages */}
+            {/* Products */}
             <Route path="/products" element={<ProductPage />} />
             <Route path="/product/:id" element={<ProductDetailPage />} />
-            <Route path="/Dashboard" element={<Dashboard />} />
+            
+            {/* Dashboard & Cart */}
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/cart" element={<Cart />} />
+
+            {/* Blog */}
             <Route path="/post" element={<BlogScreen />} />
             <Route path="/post/:id" element={<PostDetail />} />
+
+            {/* Services */}
             <Route path="/services" element={<Services />} />
             <Route path="/user-booking" element={<UserBookingForm />} />
+
+            {/* Profile Pages */}
             <Route path="/profile" element={<ProfileLayout />}>
               <Route index element={<ProfilePage />} />
-              <Route path="contact-history" element={<ContactHistory />} />
-              <Route path="booking-history" element={<BookingHistory />} />
-              <Route path="wishlist" element={<WishlistPage />} >
-                <Route path="groups" element={<WishlistGroupsPage />} />
-              </Route>
-            </Route>
-            <Route path="/share/wishlist/:groupId" element={<SharedWishlistPage />} />
-            <Route path='/contact' element={<ContactPage />} />
-            <Route path="/profile" element={<ProfileLayout />}>
-              <Route index element={<ProfilePage />} />
+              <Route path="pets" element={<PetProfileManagement user={user} />} />
               <Route path="contact-history" element={<ContactHistory />} />
               <Route path="booking-history" element={<BookingHistory />} />
               <Route path="orders/my" element={<MyOrdersPage />} />
+              <Route path="wishlist" element={<WishlistPage />} >
+                <Route path="groups" element={<WishlistGroupsPage />} />
+              </Route>
               <Route path="schedule" element={<VetSchedulePage />} />
             </Route>
+
+            <Route path="/share/wishlist/:groupId" element={<SharedWishlistPage />} />
+            <Route path='/contact' element={<ContactPage />} />
+
+            {/* Notifications */}
             <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/notifications/:id" element={<NotificationDetailPage />} />
+
+            {/* Checkout */}
             <Route path="/checkout" element={<CheckoutPage />} />
+
+            {/* Admin/Dashboard Schedules */}
             <Route path="/schedules" element={<ScheduleManager />} />
-          
           </Routes>
 
           <ToastContainer

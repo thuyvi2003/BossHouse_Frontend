@@ -7,6 +7,7 @@ import {
   Star,
   CalendarCheck,
   Receipt,
+  PawPrint,
 } from "phosphor-react";
 import { useEffect, useState } from "react";
 
@@ -19,18 +20,13 @@ export default function SidebarProfile() {
       try {
         const parsed = JSON.parse(storedUser);
         setUser(parsed);
-        console.log("✅ Loaded user from localStorage:", parsed);
       } catch (err) {
-        console.error("❌ Error parsing user:", err);
+        console.error("Error parsing user:", err);
       }
-    } else {
-      console.warn("⚠️ No user found in localStorage");
     }
   }, []);
 
   const isVet = user?.role?.toLowerCase().trim() === "veterinarian";
-  console.log("Sidebar user:", user);
-  console.log("isVet:", isVet);
 
   if (!user) {
     return (
@@ -39,6 +35,9 @@ export default function SidebarProfile() {
       </div>
     );
   }
+
+  const linkClass = ({ isActive }) =>
+    `flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-[#f9f5f1] ${isActive ? "bg-[#f9f5f1]" : ""}`;
 
   return (
     <div className="w-64 bg-white border-r border-[#d7cbbf] flex flex-col h-screen">
@@ -50,104 +49,51 @@ export default function SidebarProfile() {
 
       {/* Navigation */}
       <nav className="flex-1 px-4 space-y-1">
-        {/* Main Pages */}
-        <NavLink
-          to="/"
-          className={({ isActive }) =>
-            `flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-[#f9f5f1] ${
-              isActive ? "bg-[#f9f5f1]" : ""
-            }`
-          }
-        >
+        <NavLink to="/" className={linkClass}>
           <House size={20} weight="duotone" />
           <span className="text-sm">Home</span>
         </NavLink>
 
-        <NavLink
-          to="/dashboard"
-          className={({ isActive }) =>
-            `flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-[#f9f5f1] ${
-              isActive ? "bg-[#f9f5f1]" : ""
-            }`
-          }
-        >
+        <NavLink to="/dashboard" className={linkClass}>
           <SquaresFour size={20} weight="duotone" />
           <span className="text-sm">Dashboard</span>
         </NavLink>
 
         {/* Schedule — chỉ hiện nếu là vet */}
         {isVet && (
-          <NavLink
-            to="/profile/schedule"
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-[#f9f5f1] ${
-                isActive ? "bg-[#f9f5f1]" : ""
-              }`
-            }
-          >
+          <NavLink to="/profile/schedule" className={linkClass}>
             <Clock size={20} weight="duotone" />
             <span className="text-sm">Schedule</span>
           </NavLink>
         )}
 
         {/* Profile Pages */}
-        <NavLink
-          to="/profile"
-          end
-          className={({ isActive }) =>
-            `flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-[#f9f5f1] ${
-              isActive ? "bg-[#f9f5f1]" : ""
-            }`
-          }
-        >
+        <NavLink to="/profile" end className={linkClass}>
           <SquaresFour size={20} weight="duotone" />
           <span className="text-sm">Profile</span>
         </NavLink>
 
-        <NavLink
-          to="/profile/contact-history"
-          className={({ isActive }) =>
-            `flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-[#f9f5f1] ${
-              isActive ? "bg-[#f9f5f1]" : ""
-            }`
-          }
-        >
+        <NavLink to="/profile/pets" className={linkClass}>
+          <PawPrint size={20} weight="duotone" />
+          <span className="text-sm">Pet Profiles</span>
+        </NavLink>
+
+        <NavLink to="/profile/contact-history" className={linkClass}>
           <ListChecks size={20} weight="duotone" />
           <span className="text-sm">Contact History</span>
         </NavLink>
 
-        <NavLink
-          to="/profile/booking-history"
-          className={({ isActive }) =>
-            `flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-[#f9f5f1] ${
-              isActive ? "bg-[#f9f5f1]" : ""
-            }`
-          }
-        >
+        <NavLink to="/profile/booking-history" className={linkClass}>
           <CalendarCheck size={20} weight="duotone" />
           <span className="text-sm">Booking History</span>
         </NavLink>
 
-        <NavLink
-          to="/profile/wishlist"
-          className={({ isActive }) =>
-            `flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-[#f9f5f1] ${
-              isActive ? "bg-[#f9f5f1]" : ""
-            }`
-          }
-        >
+        <NavLink to="/profile/wishlist" className={linkClass}>
           <Star size={20} weight="duotone" />
           <span className="text-sm">Wishlist</span>
         </NavLink>
 
-        <NavLink
-          to="/profile/orders/my"
-          className={({ isActive }) =>
-            `flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-[#f9f5f1] ${
-              isActive ? "bg-[#f9f5f1]" : ""
-            }`
-          }
-        >
+        <NavLink to="/profile/orders/my" className={linkClass}>
           <Receipt size={20} weight="duotone" />
           <span className="text-sm">Order History</span>
         </NavLink>
