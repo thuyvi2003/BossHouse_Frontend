@@ -134,6 +134,16 @@ export default function SidebarProfile() {
                   <Receipt size={20} weight="duotone" />
                   <span className="text-sm">Order History</span>
               </NavLink>
+              <NavLink
+                  to="/profile/membership"
+                  className={({ isActive }) =>
+                      `flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-[#f9f5f1] ${isActive ? "bg-[#f9f5f1]" : ""
+                      }`
+                  }
+              >
+                  <IdentificationCard size={20} weight="duotone" />
+                  <span className="text-sm">Membership</span>
+              </NavLink>
           </nav>
 
           {/* Bottom Menu */}

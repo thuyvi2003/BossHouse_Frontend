@@ -7,6 +7,7 @@ import { useAuthStore } from "@/stores/useAuthStore";
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
 import Dashboard from './pages/DashboardPage.jsx';
+import ProtectedRoute from './router/ProtectedRoute.jsx';
 import Cart from './pages/CartPage.jsx';
 import HomePage from './pages/HomePage.jsx';
 import ProductPage from './pages/ProductPage.jsx';
@@ -74,7 +75,9 @@ function App() {
             {/* Other Pages */}
             <Route path="/products" element={<ProductPage />} />
             <Route path="/product/:id" element={<ProductDetailPage />} />
-            <Route path="/Dashboard" element={<Dashboard />} />
+            <Route element={<ProtectedRoute requiredRoles={["admin", "staff"]} />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+            </Route>
             <Route path="/cart" element={<Cart />} />
             <Route path="/post" element={<BlogScreen />} />
             <Route path="/post/:id" element={<PostDetail />} />

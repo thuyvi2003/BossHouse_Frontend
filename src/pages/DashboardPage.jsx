@@ -107,6 +107,7 @@ export default function Dashboard() {
       items: [
         { id: "promotion", label: "Promotion", icon: <FilmSlate size={20} /> },
         { id: "order", label: "Order", icon: <Package size={20} /> },
+        { id: "membership", label: "Membership", icon: <Crown size={20} /> },
       ],
     },
     {
