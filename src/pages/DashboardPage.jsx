@@ -12,6 +12,7 @@ import NotificationManagement from "@/components/ui/Dashboard/Notifications/Noti
 import AccountManagement from "@/components/ui/Dashboard/AccountManagement/AccountManagement";
 import StockManagement from "@/components/ui/Dashboard/Stocks/StockManagement";
 import OrderManagement from "@/components/ui/Dashboard/Orders/OrderManagement";
+import PetTypeManagement from "../components/ui/Dashboard/PetTypes/PetTypeManagement";
 
 import {
   ChartBar,
@@ -64,6 +65,7 @@ export default function Dashboard() {
       items: [
         { id: "product", label: "Product", icon: <Package size={20} /> },
         { id: "category", label: "Category", icon: <Package size={20} /> },
+        { id: "petType", label: "Pet Type", icon: <Package size={20} /> },
         {
           id: "variation",
           label: "Product Variation",
@@ -115,6 +117,8 @@ export default function Dashboard() {
         return <ProductManagement />;
       case "category":
         return <CategoryManagement />;
+      case "petType":
+        return <PetTypeManagement />;
       case "variation":
         return <ProductVariationManagement />;
       case "stock":
@@ -169,11 +173,10 @@ export default function Dashboard() {
                 {group.type === "single" ? (
                   <button
                     onClick={() => setActiveTab(group.id)}
-                    className={`group flex w-full items-center gap-3 rounded-2xl border border-transparent bg-[#f5f3f0]/70 px-5 py-3 text-left text-sm font-medium tracking-wide shadow-sm shadow-[#1a1a16]/5 transition-all duration-300 hover:-translate-y-0.5 hover:border-[#8b5a3c]/40 hover:shadow-lg hover:shadow-[#1a1a16]/15 ${
-                      activeTab === group.id
+                    className={`group flex w-full items-center gap-3 rounded-2xl border border-transparent bg-[#f5f3f0]/70 px-5 py-3 text-left text-sm font-medium tracking-wide shadow-sm shadow-[#1a1a16]/5 transition-all duration-300 hover:-translate-y-0.5 hover:border-[#8b5a3c]/40 hover:shadow-lg hover:shadow-[#1a1a16]/15 ${activeTab === group.id
                         ? "bg-gradient-to-r from-[#1a1a16] via-[#8b5a3c] to-[#d8ccbf] text-[#f5f3f0] shadow-xl shadow-[#1a1a16]/20"
                         : "text-[#1a1a16]"
-                    }`}
+                      }`}
                   >
                     <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#d8ccbf]/70 text-[#1a1a16] shadow-inner shadow-[#f5f3f0]/70 transition group-hover:scale-110">
                       {group.icon}
@@ -201,11 +204,10 @@ export default function Dashboard() {
                           <li key={item.id}>
                             <button
                               onClick={() => setActiveTab(item.id)}
-                              className={`group flex w-full items-center gap-2 rounded-xl border border-transparent px-3 py-2 text-sm font-medium transition-all duration-200 hover:-translate-y-0.5 ${
-                                activeTab === item.id
+                              className={`group flex w-full items-center gap-2 rounded-xl border border-transparent px-3 py-2 text-sm font-medium transition-all duration-200 hover:-translate-y-0.5 ${activeTab === item.id
                                   ? "bg-[#8b5a3c]/85 text-[#f5f3f0] shadow-lg shadow-[#1a1a16]/20"
                                   : "bg-[#f5f3f0]/80 text-[#1a1a16] hover:border-[#8b5a3c]/40 hover:text-[#8b5a3c] hover:shadow-md hover:shadow-[#1a1a16]/10"
-                              }`}
+                                }`}
                             >
                               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#d8ccbf]/70 text-[#1a1a16] shadow-inner shadow-[#f5f3f0]/70 transition group-hover:scale-110">
                                 {item.icon}
@@ -238,11 +240,11 @@ export default function Dashboard() {
       <div className="relative z-10 flex flex-1 flex-col p-6">
         <main
           className="relative flex-1 overflow-hidden  transition-all duration-500"
-          // style={{ backgroundImage: `url(${Background})` }}
+        // style={{ backgroundImage: `url(${Background})` }}
         >
           <div className="absolute inset-0 " />
           <div className="relative z-10 flex h-full w-full flex-col gap-6 overflow-y-auto rounded-[3rem]  p-8 ">
-          
+
             <div className="">
               {renderContent()}
             </div>
