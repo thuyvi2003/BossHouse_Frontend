@@ -35,7 +35,7 @@ const Toast = ({ type = "success", title, message, onClose, index = 0 }) => {
 
   return (
     <div
-      className={`fixed right-5 z-[9999] transition-all duration-300 ease-in-out animate-slide-in`}
+      className={`fixed right-5 z-[999] transition-all duration-300 ease-in-out animate-slide-in`}
       style={{
         top: `${20 + index * 80}px`, // đẩy toast sau xuống
       }}

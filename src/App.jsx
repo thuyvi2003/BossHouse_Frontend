@@ -81,11 +81,8 @@ function App() {
             {/* Products */}
             <Route path="/products" element={<ProductPage />} />
             <Route path="/product/:id" element={<ProductDetailPage />} />
-            <Route
-              element={<ProtectedRoute requiredRoles={["admin", "staff"]} />}
-            >
-              <Route path="/dashboard" element={<Dashboard />} />
-            </Route>
+
+            <Route path="/dashboard" element={<Dashboard />} />
 
             {/* Dashboard & Cart */}
             <Route path="/cart" element={<Cart />} />
