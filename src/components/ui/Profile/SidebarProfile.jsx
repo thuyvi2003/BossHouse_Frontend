@@ -1,13 +1,14 @@
 import { NavLink } from "react-router-dom";
 import {
-  House,
-  SquaresFour,
-  Clock,
-  ListChecks,
-  Star,
-  CalendarCheck,
-  Receipt,
-  IdentificationCard,
+    House,
+    SquaresFour,
+    Clock,
+    ListChecks,
+    Star,
+    CalendarCheck,
+    Receipt,
+    IdentificationCard,
+    PawPrint,
 } from "phosphor-react";
 import { useEffect, useState } from "react";
 import { PawPrint } from "lucide-react";
@@ -131,7 +132,7 @@ export default function SidebarProfile() {
         </div>
       </div>
 
-      {/* User Profile
+          {/* User Profile
           <div className="p-4 border-t border-[#d7cbbf] flex items-center gap-3">
               <img
                   src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop"
