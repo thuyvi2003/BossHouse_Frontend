@@ -1,25 +1,24 @@
 import React from "react";
 import dayjs from "dayjs";
 
-export default function OrderCard({ order, onViewDetail }) {
+export default function OrderCard({ order, onViewDetail, onCancel }) {
   const firstItem = order.items?.[0];
 
-  const statusColor = {
-    pending: "bg-yellow-100 text-yellow-700",
-    paid: "bg-blue-100 text-blue-700",
-    processing: "bg-orange-100 text-orange-700",
-    shipping: "bg-purple-100 text-purple-700",
-    completed: "bg-green-100 text-green-700",
-    cancelled: "bg-red-100 text-red-700",
-  }[order.status] || "bg-gray-100 text-gray-600";
+  const statusColor =
+    {
+      pending: "bg-yellow-100 text-yellow-700",
+      paid: "bg-blue-100 text-blue-700",
+      processing: "bg-orange-100 text-orange-700",
+      shipping: "bg-purple-100 text-purple-700",
+      completed: "bg-green-100 text-green-700",
+      cancelled: "bg-red-100 text-red-700",
+    }[order.status] || "bg-gray-100 text-gray-600";
 
   return (
     <div className="border rounded-lg bg-white p-5 shadow-sm hover:shadow-md transition">
       <div className="flex justify-between items-center mb-2">
         <div>
-          <p className="font-semibold text-[#846551]">
-            Order #{order._id.slice(-6).toUpperCase()}
-          </p>
+          <p className="font-semibold text-[#846551]">Order Id: {order._id}</p>
           <p className="text-sm text-gray-500">
             {dayjs(order.created_at).format("DD/MM/YYYY HH:mm")}
           </p>
@@ -51,12 +50,22 @@ export default function OrderCard({ order, onViewDetail }) {
             <p className="text-sm font-semibold text-[#5a4639]">
               {order.final_price.toLocaleString("vi-VN")}đ
             </p>
-            <button
-              onClick={onViewDetail}
-              className="mt-2 text-xs text-[#846551] underline hover:text-[#5a4639]"
-            >
-              View Detail
-            </button>
+            <div className="mt-2 flex items-center gap-3">
+              <button
+                onClick={onViewDetail}
+                className="text-xs text-[#846551] underline hover:text-[#5a4639]"
+              >
+                View Detail
+              </button>
+              {order.status === "pending" && onCancel && (
+                <button
+                  onClick={() => onCancel(order._id)}
+                  className="text-xs text-red-500 underline hover:text-red-700"
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}

@@ -2,7 +2,13 @@ import React, { useEffect, useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { Package, ArrowLeft, Heart, X } from "lucide-react";
 import Toast from "@/components/Layout/Toast";
-import { clearAllWishlist, getWishlist, markAsPurchased, moveToCart, removeWishlistItem } from "@/services/wishListService";
+import {
+  clearAllWishlist,
+  getWishlist,
+  markAsPurchased,
+  moveToCart,
+  removeWishlistItem,
+} from "@/services/wishListService";
 import Pagination from "@/components/Layout/Pagination";
 import dayjs from "dayjs";
 import "dayjs/locale/vi";
@@ -10,8 +16,7 @@ import CreateGroupModal from "@/components/ui/Wishlist/CreateGroupModal";
 import WishlistGroupsPage from "@/components/ui/Wishlist/WishlistGroupsPage";
 import SelectGroupModal from "@/components/ui/Wishlist/SelectGroupModal";
 
-// dayjs.locale("vi"); 
-
+// dayjs.locale("vi");
 
 const WishlistPage = () => {
   const [wishlist, setWishlist] = useState([]);
@@ -22,7 +27,7 @@ const WishlistPage = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showGroupModal, setShowGroupModal] = useState(null);
-  const location = useLocation()
+  const location = useLocation();
   const fetchWishlist = async (pageNum = 1) => {
     try {
       setLoading(true);
@@ -37,11 +42,9 @@ const WishlistPage = () => {
       setToast({
         type: "error",
         title: "Failed!",
-        message:
-          error.response?.data.message || "Failed to fetch wishlist.",
-
+        message: error.response?.data.message || "Failed to fetch wishlist.",
       });
-      console.log(toast)
+      console.log(toast);
     } finally {
       setLoading(false);
     }
@@ -60,19 +63,16 @@ const WishlistPage = () => {
     }
   };
 
-
   const handleClearAllItems = async () => {
     try {
       await clearAllWishlist();
       setWishlist([]);
     } catch (error) {
       console.error("Clear all failed:", error);
-
     }
-  }
+  };
 
   const handleMoveToCart = async (id) => {
-
     try {
       const res = await moveToCart(id);
 
@@ -108,16 +108,17 @@ const WishlistPage = () => {
       setToast({
         type: "error",
         title: "Failed",
-        message: error.response?.data?.message || "Could not mark as purchased.",
+        message:
+          error.response?.data?.message || "Could not mark as purchased.",
       });
     }
   };
 
   if (location.pathname.endsWith("/groups")) {
-    return <WishlistGroupsPage />
+    return <WishlistGroupsPage />;
   }
   return (
-    <div className="">
+    <div className="h-full min-h-screen ">
       {/* Breadcrumb Header */}
       <div className="py-12 text-center border-b bg-gradient-to-b from-[#fff8ef] to-[#f5f3f2]">
         <h1 className="text-4xl font-bold text-[#5a4639] mb-2 tracking-wide animate-fade-in">
@@ -180,14 +181,16 @@ const WishlistPage = () => {
                 return (
                   <div
                     key={item._id}
-                    className={`grid grid-cols-12 gap-4 px-6 py-5 items-center transition-all duration-300 hover:bg-[#f5f3f2] hover:shadow-md ${i % 2 === 0 ? "bg-[#fff]" : "bg-[#fdfcfb]"
-                      }`}
+                    className={`grid grid-cols-12 gap-4 px-6 py-5 items-center transition-all duration-300 hover:bg-[#f5f3f2] hover:shadow-md ${
+                      i % 2 === 0 ? "bg-[#fff]" : "bg-[#fdfcfb]"
+                    }`}
                   >
                     {/* Remove */}
                     <div className="col-span-1">
                       <button
                         className="text-gray-400 hover:text-red-500 transition-transform hover:scale-110"
-                        onClick={() => handleRemove(item._id)}>
+                        onClick={() => handleRemove(item._id)}
+                      >
                         <X className="w-5 h-5" />
                       </button>
                     </div>
@@ -208,7 +211,6 @@ const WishlistPage = () => {
                         >
                           {v?.name}
                         </Link>
-
                       </div>
                     </div>
 
@@ -221,17 +223,19 @@ const WishlistPage = () => {
 
                     {/* Date Added */}
                     <div className="col-span-2 text-center text-sm text-gray-600">
-                      {dayjs(item.created_at || item.createdAt).format("DD MMMM YYYY")}
-
+                      {dayjs(item.created_at || item.createdAt).format(
+                        "DD MMMM YYYY"
+                      )}
                     </div>
 
                     {/* Status */}
                     <div className="col-span-2 text-center">
                       <span
-                        className={`text-sm font-medium px-3 py-1 rounded-full ${v?.status === "active"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-700"
-                          }`}
+                        className={`text-sm font-medium px-3 py-1 rounded-full ${
+                          v?.status === "active"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-red-100 text-red-700"
+                        }`}
                       >
                         {v?.status === "active" ? "In Stock" : "Out of Stock"}
                       </span>
@@ -264,16 +268,18 @@ const WishlistPage = () => {
                       <button
                         className={`w-full min-w-[120px] px-4 py-2 rounded-xl text-sm font-medium 
                 border transition-all duration-200
-                ${item.is_purchased
-                            ? "bg-green-50 text-green-700 border-green-300 hover:bg-green-100 hover:shadow-md"
-                            : "bg-[#fffdfa] text-[#5a4639] border-[#d7cbbf] hover:bg-[#f5f3f2] hover:text-[#846551] hover:shadow-md"
-                          } hover:scale-[1.03] active:scale-95`}
+                ${
+                  item.is_purchased
+                    ? "bg-green-50 text-green-700 border-green-300 hover:bg-green-100 hover:shadow-md"
+                    : "bg-[#fffdfa] text-[#5a4639] border-[#d7cbbf] hover:bg-[#f5f3f2] hover:text-[#846551] hover:shadow-md"
+                } hover:scale-[1.03] active:scale-95`}
                         onClick={() => handleMarkAsPurchased(item._id)}
                       >
-                        {item.is_purchased ? "Purchased ✓" : "Mark as Purchased"}
+                        {item.is_purchased
+                          ? "Purchased ✓"
+                          : "Mark as Purchased"}
                       </button>
                     </div>
-
                   </div>
                 );
               })}
@@ -283,10 +289,10 @@ const WishlistPage = () => {
             <div className="mt-10 flex justify-end items-center">
               <button
                 className="border border-[#d7cbbf] text-[#5a4639] px-6 py-2 rounded-lg font-medium hover:bg-[#f5f3f2] hover:shadow-sm transition-all"
-                onClick={handleClearAllItems}>
+                onClick={handleClearAllItems}
+              >
                 Clear Wishlist
               </button>
-
             </div>
 
             <Pagination
@@ -300,11 +306,13 @@ const WishlistPage = () => {
       {showCreateModal && (
         <CreateGroupModal
           onClose={() => setShowCreateModal(false)}
-          onSuccess={() => setToast({
-            type: "success",
-            title: "Success",
-            message: "Group created successfully!",
-          })}
+          onSuccess={() =>
+            setToast({
+              type: "success",
+              title: "Success",
+              message: "Group created successfully!",
+            })
+          }
         />
       )}
       {showGroupModal && (
@@ -322,9 +330,16 @@ const WishlistPage = () => {
         />
       )}
 
-      {toast && <Toast type={toast.type} title={toast.title} message={toast?.message} onClose={() => {
-        setToast(null)
-      }} />}
+      {toast && (
+        <Toast
+          type={toast.type}
+          title={toast.title}
+          message={toast?.message}
+          onClose={() => {
+            setToast(null);
+          }}
+        />
+      )}
       <Outlet />
     </div>
   );
