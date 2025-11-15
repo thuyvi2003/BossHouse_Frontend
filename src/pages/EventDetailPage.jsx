@@ -19,6 +19,13 @@ export default function EventDetailPage() {
 
   useEffect(() => {
     const loadEvent = async () => {
+      // Check if user is logged in before loading event
+      if (!user) {
+        toast.error('Please login to view event details');
+        navigate('/login');
+        return;
+      }
+
       setLoading(true);
       setError('');
       try {
@@ -27,14 +34,19 @@ export default function EventDetailPage() {
         setIsRegistered(eventData.isRegistered || false);
       } catch (e) {
         setError(e.message || 'Error loading event');
-        toast.error('Failed to load event');
+        if (e.response?.status === 401) {
+          toast.error('Please login to view event details');
+          navigate('/login');
+        } else {
+          toast.error('Failed to load event');
+        }
       } finally {
         setLoading(false);
       }
     };
 
     loadEvent();
-  }, [id]);
+  }, [id, user, navigate]);
 
   const handleRegister = async () => {
     if (!user) {
