@@ -47,7 +47,11 @@ export default function Dashboard() {
     { id: "account", icon: <User size={22} />, label: "Account" },
     { id: "product", icon: <Package size={22} />, label: "Product" },
     { id: "category", icon: <Package size={22} />, label: "Category" },
-    { id: "variation", icon: <Package size={22} />, label: "Product Variation" },
+    {
+      id: "variation",
+      icon: <Package size={22} />,
+      label: "Product Variation",
+    },
     { id: "stock", icon: <Package size={22} />, label: "Stock Management" },
     { id: "promotion", icon: <FilmSlate size={22} />, label: "Promotion" },
     { id: "booking", icon: <CalendarCheck size={22} />, label: "Booking" },
@@ -59,7 +63,6 @@ export default function Dashboard() {
     { id: "order", icon: <Package size={22} />, label: "Order" },
     { id: "membership", icon: <Crown size={22} />, label: "Membership" },
     // { id: "statistics", icon: <ChartLineUp size={22} />, label: "Statistics" }, // ADD THIS
-
   ];
 
   const toggleGroup = (groupId) => {
@@ -179,7 +182,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="relative flex min-h-screen  text-[#1a1a16]">
+    <div className="relative flex min-h-screen  text-[#1a1a16] overflow-x-hidden">
       <span className="pointer-events-none absolute -top-24 -left-28 h-72 w-72 rounded-full bg-[#d8ccbf]/70 blur-3xl opacity-80 animate-pulse" />
       <span className="pointer-events-none absolute bottom-24 -right-24 h-80 w-80 rounded-full bg-[#8b5a3c]/60 blur-3xl opacity-80 animate-pulse" />
       <span className="pointer-events-none absolute top-1/3 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-[#f5f3f0]/80 blur-3xl opacity-75 animate-pulse" />
@@ -206,10 +209,11 @@ export default function Dashboard() {
                 {group.type === "single" ? (
                   <button
                     onClick={() => setActiveTab(group.id)}
-                    className={`group flex w-full items-center gap-3 rounded-2xl border border-transparent bg-[#f5f3f0]/70 px-5 py-3 text-left text-sm font-medium tracking-wide shadow-sm shadow-[#1a1a16]/5 transition-all duration-300 hover:-translate-y-0.5 hover:border-[#8b5a3c]/40 hover:shadow-lg hover:shadow-[#1a1a16]/15 ${activeTab === group.id
+                    className={`group flex w-full items-center gap-3 rounded-2xl border border-transparent bg-[#f5f3f0]/70 px-5 py-3 text-left text-sm font-medium tracking-wide shadow-sm shadow-[#1a1a16]/5 transition-all duration-300 hover:-translate-y-0.5 hover:border-[#8b5a3c]/40 hover:shadow-lg hover:shadow-[#1a1a16]/15 ${
+                      activeTab === group.id
                         ? "bg-gradient-to-r from-[#1a1a16] via-[#8b5a3c] to-[#d8ccbf] text-[#f5f3f0] shadow-xl shadow-[#1a1a16]/20"
                         : "text-[#1a1a16]"
-                      }`}
+                    }`}
                   >
                     <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#d8ccbf]/70 text-[#1a1a16] shadow-inner shadow-[#f5f3f0]/70 transition group-hover:scale-110">
                       {group.icon}
@@ -228,7 +232,11 @@ export default function Dashboard() {
                         </span>
                         <span className="font-medium">{group.label}</span>
                       </div>
-                      {openGroups[group.id] ? <CaretUp size={18} /> : <CaretDown size={18} />}
+                      {openGroups[group.id] ? (
+                        <CaretUp size={18} />
+                      ) : (
+                        <CaretDown size={18} />
+                      )}
                     </button>
 
                     {openGroups[group.id] && (
@@ -237,15 +245,18 @@ export default function Dashboard() {
                           <li key={item.id}>
                             <button
                               onClick={() => setActiveTab(item.id)}
-                              className={`group flex w-full items-center gap-2 rounded-xl border border-transparent px-3 py-2 text-sm font-medium transition-all duration-200 hover:-translate-y-0.5 ${activeTab === item.id
+                              className={`group flex w-full items-center gap-2 rounded-xl border border-transparent px-3 py-2 text-sm font-medium transition-all duration-200 hover:-translate-y-0.5 ${
+                                activeTab === item.id
                                   ? "bg-[#8b5a3c]/85 text-[#f5f3f0] shadow-lg shadow-[#1a1a16]/20"
                                   : "bg-[#f5f3f0]/80 text-[#1a1a16] hover:border-[#8b5a3c]/40 hover:text-[#8b5a3c] hover:shadow-md hover:shadow-[#1a1a16]/10"
-                                }`}
+                              }`}
                             >
                               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#d8ccbf]/70 text-[#1a1a16] shadow-inner shadow-[#f5f3f0]/70 transition group-hover:scale-110">
                                 {item.icon}
                               </span>
-                              <span className="tracking-wide">{item.label}</span>
+                              <span className="tracking-wide">
+                                {item.label}
+                              </span>
                             </button>
                           </li>
                         ))}
@@ -273,14 +284,11 @@ export default function Dashboard() {
       <div className="relative z-10 flex flex-1 flex-col p-6">
         <main
           className="relative flex-1 overflow-hidden  transition-all duration-500"
-        // style={{ backgroundImage: `url(${Background})` }}
+          // style={{ backgroundImage: `url(${Background})` }}
         >
           <div className="absolute inset-0 " />
           <div className="relative z-10 flex h-full w-full flex-col gap-6 overflow-y-auto rounded-[3rem]  p-8 ">
-
-            <div className="">
-              {renderContent()}
-            </div>
+            <div className="">{renderContent()}</div>
           </div>
         </main>
       </div>

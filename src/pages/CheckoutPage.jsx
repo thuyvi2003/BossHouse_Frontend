@@ -42,7 +42,7 @@ export default function CheckoutPage() {
         addressInfo
       );
 
-      // 🔥 Nếu thanh toán VNPAY thì mở link BE trả về
+      //  Nếu thanh toán VNPAY thì mở link BE trả về
       if (addressInfo.payment_method === "vnpay") {
         const paymentUrl = res.data?.paymentUrl;
 
@@ -59,7 +59,7 @@ export default function CheckoutPage() {
         return;
       }
 
-      // 🔥 Nếu COD thì tiếp tục điều hướng
+      //  Nếu COD thì tiếp tục điều hướng
       setToast({
         type: "success",
         title: "Order Created!",
@@ -114,11 +114,6 @@ export default function CheckoutPage() {
           </h1>
 
           <div className="space-y-4">
-            <div className="flex justify-between py-2 border-b border-gray-200">
-              <span className="text-gray-600">Subtotal (Cart Items)</span>
-              <span>{total.toLocaleString("vi-VN")}đ</span>
-            </div>
-
             {promotion && (
               <>
                 <div className="flex justify-between py-2 border-b border-gray-200">
@@ -135,14 +130,7 @@ export default function CheckoutPage() {
                 <div className="flex justify-between py-2 border-b border-gray-200">
                   <span className="text-gray-600">Total after Promotion</span>
                   <span className="text-gray-800 font-medium">
-                    {promotion.type === "percent"
-                      ? (total * (1 - promotion.value / 100)).toLocaleString(
-                          "vi-VN"
-                        )
-                      : Math.max(total - promotion.value, 0).toLocaleString(
-                          "vi-VN"
-                        )}
-                    đ
+                    {total.toLocaleString("vi-VN")}đ
                   </span>
                 </div>
               </>
@@ -157,18 +145,7 @@ export default function CheckoutPage() {
 
             <div className="flex justify-between font-semibold text-lg py-3 mt-2 bg-[#f8f4f0] px-2 rounded">
               <span>Final Total</span>
-              <span>
-                {(() => {
-                  let discounted =
-                    promotion?.type === "percent"
-                      ? total * (1 - promotion.value / 100)
-                      : promotion
-                      ? Math.max(total - promotion.value, 0)
-                      : total;
-                  return (discounted + shippingFee).toLocaleString("vi-VN");
-                })()}
-                đ
-              </span>
+              <span>{(total + shippingFee).toLocaleString("vi-VN")}đ</span>
             </div>
 
             <div className="flex items-center gap-2 mt-4">

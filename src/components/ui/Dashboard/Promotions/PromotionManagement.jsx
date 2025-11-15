@@ -15,6 +15,7 @@ import ConfirmDialog from "@/components/Layout/ConfirmDialog";
 import Toast from "@/components/Layout/Toast";
 import PromotionDetailModal from "./PromotionDetailModal";
 import EditPromotionModal from "./EditPromotionModal";
+import { createPortal } from "react-dom";
 
 const PromotionManagement = () => {
   const [promotions, setPromotions] = useState([]);
@@ -31,9 +32,9 @@ const PromotionManagement = () => {
   const [toast, setToast] = useState({
     show: false,
     type: "success",
+    title: "",
     message: "",
   });
-
   const [form, setForm] = useState({
     code: "",
     description: "",
@@ -42,6 +43,11 @@ const PromotionManagement = () => {
     expires_at: "",
     is_hidden: false,
   });
+
+  // Debug: log toast state changes to help diagnose visibility issues
+  React.useEffect(() => {
+    console.log("[PromotionManagement] toast state:", toast);
+  }, [toast]);
 
   async function fetchData(pageNum = 1) {
     try {
@@ -77,6 +83,13 @@ const PromotionManagement = () => {
       });
       await fetchData();
       console.log("Created promotion:", newPromo);
+      setToast((prev) => ({
+        ...prev,
+        show: true,
+        type: "success",
+        title: "Success",
+        message: "Promotion created successfully!",
+      }));
       setShowModal(false);
       setForm({
         code: "",
@@ -88,6 +101,12 @@ const PromotionManagement = () => {
       });
     } catch (error) {
       console.error("Error creating promotion:", error.message);
+      setToast((prev) => ({
+        ...prev,
+        show: true,
+        type: "error",
+        message: error.message || "Failed to create promotion",
+      }));
     }
   };
 
@@ -124,21 +143,23 @@ const PromotionManagement = () => {
           ? dayjs(form.expires_at).format("YYYY-MM-DD")
           : "",
       });
-      setToast({
+      setToast((prev) => ({
+        ...prev,
         show: true,
         type: "success",
         message: "Promotion updated successfully!",
-      });
+      }));
       setEditModalOpen(false);
       setSelectedPromo(null);
       await fetchData();
     } catch (error) {
       console.error("Error updating promotion:", error);
-      setToast({
+      setToast((prev) => ({
+        ...prev,
         show: true,
         type: "error",
         message: "Failed to update promotion!",
-      });
+      }));
     }
   };
 
@@ -147,21 +168,23 @@ const PromotionManagement = () => {
       if (!selectedPromo?._id) return; //Neu chua chon promotion nao thi thoat
       console.log("Deleting promotion:", selectedPromo._id); //Goi API voi id
       await removePromotion(selectedPromo._id);
-      setToast({
+      setToast((prev) => ({
+        ...prev,
         show: true,
         type: "success",
         message: "Promotion removed successfully!",
-      });
+      }));
       console.log("Promotion is remove succesfully");
       setConfirmOpen(false);
       setSelectedPromo(null);
       await fetchData(page); //Fetch data load lai ds promotion
     } catch (error) {
-      setToast({
+      setToast((prev) => ({
+        ...prev,
         show: true,
         type: "error",
         message: "Failed to remove promotion!",
-      });
+      }));
     }
   };
   return (
@@ -351,14 +374,17 @@ const PromotionManagement = () => {
         setForm={setForm}
       />
 
-      {toast.show && (
-        <Toast
-          type={toast.type}
-          title={toast.title}
-          message={toast.message}
-          onClose={() => setToast({ ...toast, show: false })}
-        />
-      )}
+      {toast.show &&
+        createPortal(
+          <div className="fixed top-5 right-5 z-[999999]">
+            <Toast
+              type={toast.type}
+              message={toast.message}
+              onClose={() => setToast({ ...toast, show: false })}
+            />
+          </div>,
+          document.body
+        )}
     </div>
   );
 };
