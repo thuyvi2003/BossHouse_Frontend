@@ -1,9 +1,12 @@
 import { useEffect, useState, useMemo } from "react";
 import petService from "@/services/petService";
 import petTypeService from "@/services/petTypeService";
-import { PencilSimple, Trash } from "phosphor-react";
 import { toast } from "react-toastify";
 import Pagination from "@/components/Layout/Pagination";
+import * as PhosphorIcons from "phosphor-react";
+
+// --- Destructure tất cả icon cần dùng từ PhosphorIcons ---
+const { MagnifyingGlass, Funnel, PencilSimple, Trash, X, Eye } = PhosphorIcons;
 
 const GENDER_OPTIONS = ["Male", "Female", "Other"];
 const ROWS_PER_PAGE = 10;
@@ -267,114 +270,130 @@ export default function PetProfileManagement({ user }) {
 
     return (
         <div className="p-6 relative">
-            <h1 className="text-2xl font-semibold mb-4">My Pet Profiles</h1>
+            <h2 className="text-3xl font-bold mb-6 text-yellow-800">My Pet Profiles</h2>
 
             {/* Filters */}
-            <div className="flex items-center gap-2 mb-4 flex-wrap">
-                <input
-                    type="text"
-                    placeholder="Search pets..."
-                    className="border rounded px-2 py-1 flex-1"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <select
-                    className="border rounded px-2 py-1"
-                    value={filterSpecies}
-                    onChange={(e) => setFilterSpecies(e.target.value)}
-                >
-                    <option value="">All Species</option>
-                    {petTypes.map((t) => (
-                        <option key={t._id} value={t.name}>
-                            {t.name}
-                        </option>
-                    ))}
-                </select>
-                <select
-                    className="border rounded px-2 py-1"
-                    value={filterGender}
-                    onChange={(e) => setFilterGender(e.target.value)}
-                >
-                    <option value="">All Gender</option>
-                    {GENDER_OPTIONS.map((g) => (
-                        <option key={g} value={g}>
-                            {g}
-                        </option>
-                    ))}
-                </select>
-                <button
-                    onClick={loadPets}
-                    className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
-                >
-                    Apply
-                </button>
-                <button
-                    onClick={() => setShowForm(true)}
-                    className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
-                >
-                    Add Pet
-                </button>
+            <div className="flex flex-col lg:flex-row gap-4 mb-4">
+                {/* Search */}
+                <div className="flex-1 relative">
+                    <MagnifyingGlass className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <input
+                        type="text"
+                        placeholder="Search pets..."
+                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                        value={searchQuery}
+                        onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+                    />
+                </div>
+
+                {/* Species Filter */}
+                <div className="relative">
+                    <Funnel className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <select
+                        className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent bg-white"
+                        value={filterSpecies}
+                        onChange={(e) => { setFilterSpecies(e.target.value); setCurrentPage(1); }}
+                    >
+                        <option value="">All Species</option>
+                        {petTypes.map((t) => (
+                            <option key={t._id} value={t.name}>
+                                {t.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                {/* Gender Filter */}
+                <div className="relative w-48">
+                    <Funnel className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <select
+                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent bg-white"
+                        value={filterGender}
+                        onChange={(e) => { setFilterGender(e.target.value); setCurrentPage(1); }}
+                    >
+                        <option value="">All Gender</option>
+                        {GENDER_OPTIONS.map((g) => (
+                            <option key={g} value={g}>
+                                {g}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                {/* Buttons */}
+                <div className="flex gap-2 flex-wrap">
+                    <button
+                        onClick={loadPets}
+                        className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    >
+                        Apply
+                    </button>
+                    <button
+                        onClick={() => setShowForm(true)}
+                        className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                    >
+                        Add Pet
+                    </button>
+                </div>
             </div>
 
             {/* Table */}
-            <table className="w-full border border-gray-200 rounded">
-                <thead>
-                    <tr className="bg-gray-100 text-center">
-                        <th className="border px-2 py-1">#</th>
-                        <th className="border px-2 py-1">Name</th>
-                        <th className="border px-2 py-1">Species</th>
-                        <th className="border px-2 py-1">Breed</th>
-                        <th className="border px-2 py-1">Age</th>
-                        <th className="border px-2 py-1">Gender</th>
-                        <th className="border px-2 py-1">Weight</th>
-                        <th className="border px-2 py-1">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {loading ? (
-                        <tr>
-                            <td colSpan={8} className="text-center p-4">
-                                Loading pets...
-                            </td>
+            <div className="overflow-x-auto border rounded">
+                <table className="min-w-full divide-y divide-yellow-300">
+                    <thead className="bg-yellow-100">
+                        <tr className="text-center">
+                            <th className="px-3 py-2">#</th>
+                            <th className="px-3 py-2">Name</th>
+                            <th className="px-3 py-2">Species</th>
+                            <th className="px-3 py-2">Breed</th>
+                            <th className="px-3 py-2">Age</th>
+                            <th className="px-3 py-2">Gender</th>
+                            <th className="px-3 py-2">Weight</th>
+                            <th className="px-3 py-2">Actions</th>
                         </tr>
-                    ) : currentPets.length === 0 ? (
-                        <tr>
-                            <td colSpan={8} className="text-center italic text-gray-500 p-4">
-                                No pets found.
-                            </td>
-                        </tr>
-                    ) : (
-                        currentPets.map((pet, idx) => (
-                            <tr key={pet._id} className="text-center">
-                                <td className="border px-2 py-1">{startIndex + idx + 1}</td>
-                                <td className="border px-2 py-1">{pet.name}</td>
-                                <td className="border px-2 py-1">{pet.species}</td>
-                                <td className="border px-2 py-1">{pet.breed}</td>
-                                <td className="border px-2 py-1">{pet.age}</td>
-                                <td className="border px-2 py-1">{pet.gender}</td>
-                                <td className="border px-2 py-1">{pet.weight}</td>
-                                <td className="border px-2 py-1 flex justify-center gap-2">
-                                    <button
-                                        onClick={() => handleEdit(pet)}
-                                        className="text-blue-600 hover:text-blue-800"
-                                    >
-                                        <PencilSimple size={18} />
-                                    </button>
-                                    <button
-                                        onClick={() => handleDelete(pet)}
-                                        className="text-red-600 hover:text-red-800"
-                                    >
-                                        <Trash size={18} />
-                                    </button>
-                                </td>
+                    </thead>
+                    <tbody>
+                        {loading ? (
+                            <tr>
+                                <td colSpan={8} className="text-center py-4">Loading pets...</td>
                             </tr>
-                        ))
-                    )}
-                </tbody>
-            </table>
+                        ) : currentPets.length === 0 ? (
+                            <tr>
+                                <td colSpan={8} className="text-center py-4 italic text-gray-500">No pets found.</td>
+                            </tr>
+                        ) : (
+                            currentPets.map((pet, idx) => (
+                                <tr key={pet._id} className="hover:bg-yellow-50 text-center">
+                                    <td className="px-3 py-2">{startIndex + idx + 1}</td>
+                                    <td className="px-3 py-2">{pet.name}</td>
+                                    <td className="px-3 py-2">{pet.species}</td>
+                                    <td className="px-3 py-2">{pet.breed}</td>
+                                    <td className="px-3 py-2">{pet.age}</td>
+                                    <td className="px-3 py-2">{pet.gender}</td>
+                                    <td className="px-3 py-2">{pet.weight}</td>
+                                    <td className="px-3 py-2 flex justify-center gap-2 flex-wrap">
+                                        <button
+                                            onClick={() => handleEdit(pet)}
+                                            className="px-2 py-1 border rounded text-green-600 hover:bg-gray-100 flex items-center gap-1"
+                                        >
+                                            <PencilSimple size={16} /> Edit
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(pet)}
+                                            className="px-2 py-1 border rounded text-red-600 hover:bg-gray-100 flex items-center gap-1"
+                                        >
+                                            <X size={16} /> Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
+            </div>
 
             {/* Pagination */}
-            <div className="mt-3 flex justify-center">
+            <div className="mt-4 flex justify-center">
                 <Pagination
                     page={currentPage}
                     totalPages={totalPages}

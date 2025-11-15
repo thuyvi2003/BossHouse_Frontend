@@ -7,41 +7,48 @@ const PETS_API = `${API_BASE_URL}/pets`;
 const SERVICES_API = `${API_BASE_URL}/services`;
 const VETS_API = `${API_BASE_URL}/veterinarians`;
 
+const extractArray = (res) => {
+  const data = res?.data?.data ?? res?.data;
+  return Array.isArray(data) ? data : [];
+};
+
+const extractObject = (res) => res?.data?.data ?? res?.data ?? null;
+
 const optionService = {
   getUsers: async () => {
     try {
       const res = await axiosInstance.get(USERS_API);
-      return res.data.data;
+      return extractArray(res);
     } catch (error) {
       console.error("Failed to fetch users:", error.response?.data || error.message);
-      throw error;
+      return [];
     }
   },
 
   getCurrentUser: async () => {
     try {
       const res = await axiosInstance.get(`${USERS_API}/me`);
-      return res.data.data || res.data;
+      return extractObject(res);
     } catch (error) {
       console.error("Failed to fetch current user:", error.response?.data || error.message);
-      throw error;
+      return null;
     }
   },
 
   getPets: async () => {
     try {
       const res = await axiosInstance.get(PETS_API);
-      return res.data.data;
+      return extractArray(res);
     } catch (error) {
       console.error("Failed to fetch pets:", error.response?.data || error.message);
-      throw error;
+      return [];
     }
   },
 
   createPet: async (petData) => {
     try {
       const res = await axiosInstance.post(PETS_API, petData);
-      return res.data.data || res.data;
+      return extractObject(res);
     } catch (error) {
       console.error("Failed to create pet:", error.response?.data || error.message);
       throw error;
@@ -51,20 +58,20 @@ const optionService = {
   getServices: async () => {
     try {
       const res = await axiosInstance.get(SERVICES_API);
-      return res.data.data;
+      return extractArray(res);
     } catch (error) {
       console.error("Failed to fetch services:", error.response?.data || error.message);
-      throw error;
+      return [];
     }
   },
 
   getVets: async () => {
     try {
       const res = await axiosInstance.get(VETS_API);
-      return res.data.data;
+      return extractArray(res);
     } catch (error) {
       console.error("Failed to fetch veterinarians:", error.response?.data || error.message);
-      throw error;
+      return [];
     }
   },
 
@@ -76,10 +83,20 @@ const optionService = {
         optionService.getServices(),
         optionService.getVets(),
       ]);
-      return { users, pets, services, vets };
+
+      // Map species nếu pet.species là ID
+      const petsWithSpecies = pets.map((pet) => ({
+        ...pet,
+        species:
+          typeof pet.species === "object"
+            ? pet.species
+            : { _id: pet.species || "unknown", name: pet.species_name || "Unknown" },
+      }));
+
+      return { users, pets: petsWithSpecies, services, vets };
     } catch (error) {
       console.error("Failed to fetch all options:", error.response?.data || error.message);
-      throw error;
+      return { users: [], pets: [], services: [], vets: [] };
     }
   },
 };

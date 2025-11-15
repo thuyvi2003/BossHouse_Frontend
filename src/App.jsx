@@ -38,7 +38,6 @@ import WishlistGroupsPage from './components/ui/Wishlist/WishlistGroupsPage.jsx'
 import SharedWishlistPage from './components/ui/Wishlist/SharedWishlistPage.jsx';
 import CheckoutPage from './pages/CheckoutPage.jsx';
 import MyOrdersPage from './pages/MyOrdersPage.jsx';
-import VetSchedulePage from "./pages/VetSchedulePage";
 import MembershipPage from './pages/MembershipPage.jsx';
 import VetSchedulePage from "./pages/VetSchedulePage.jsx";
 import EventListPage from "./pages/EventListPage.jsx";
@@ -81,9 +80,6 @@ function App() {
             {/* Products */}
             <Route path="/products" element={<ProductPage />} />
             <Route path="/product/:id" element={<ProductDetailPage />} />
-            <Route element={<ProtectedRoute requiredRoles={["admin", "staff"]} />}>
-              <Route path="/dashboard" element={<Dashboard />} />
-            </Route>
             
             {/* Dashboard & Cart */}
             <Route path="/dashboard" element={<Dashboard />} />
@@ -109,22 +105,15 @@ function App() {
               <Route path="booking-history" element={<BookingHistory />} />
               <Route path="events" element={<MyEventsPage />} />
               <Route path="orders/my" element={<MyOrdersPage />} />
-              <Route path="wishlist" element={<WishlistPage />} >
+              <Route path="wishlist" element={<WishlistPage />}>
                 <Route path="groups" element={<WishlistGroupsPage />} />
               </Route>
               <Route path="schedule" element={<VetSchedulePage />} />
+              <Route path="membership" element={<MembershipPage />} />  {/* duy nhất dòng membership */}
             </Route>
 
             <Route path="/share/wishlist/:groupId" element={<SharedWishlistPage />} />
             <Route path='/contact' element={<ContactPage />} />
-            <Route path="/profile" element={<ProfileLayout />}>
-              <Route index element={<ProfilePage />} />
-              <Route path="contact-history" element={<ContactHistory />} />
-              <Route path="booking-history" element={<BookingHistory />} />
-              <Route path="membership" element={<MembershipPage />} />   {/* thêm dòng này */}
-              <Route path="orders/my" element={<MyOrdersPage />} />
-              <Route path="schedule" element={<VetSchedulePage />} />
-            </Route>
 
             {/* Notifications */}
             <Route path="/notifications" element={<NotificationsPage />} />

@@ -4,21 +4,23 @@ import axiosInstance from "@/config/axiosConfig";
 
 const BOOKING_API = `${API_BASE_URL}/bookings`;
 
+const extractData = (res) => res?.data?.data ?? res?.data ?? null;
+
 const bookingService = {
   getAll: async () => {
     try {
       const res = await axiosInstance.get(BOOKING_API);
-      return res.data.data;
+      return extractData(res) || [];
     } catch (error) {
       console.error("Failed to fetch all bookings:", error.response?.data || error.message);
-      throw error;
+      return [];
     }
   },
 
   getBookingById: async (id) => {
     try {
       const res = await axiosInstance.get(`${BOOKING_API}/${id}`);
-      return res.data.data;
+      return extractData(res);
     } catch (error) {
       console.error(`Failed to fetch booking ${id}:`, error.response?.data || error.message);
       throw error;
@@ -28,7 +30,7 @@ const bookingService = {
   create: async (booking) => {
     try {
       const res = await axiosInstance.post(BOOKING_API, booking);
-      return res.data.data;
+      return extractData(res);
     } catch (error) {
       console.error("Failed to create booking:", error.response?.data || error.message);
       throw error;
@@ -38,7 +40,7 @@ const bookingService = {
   update: async (id, booking) => {
     try {
       const res = await axiosInstance.put(`${BOOKING_API}/${id}`, booking);
-      return res.data.data;
+      return extractData(res);
     } catch (error) {
       console.error(`Failed to update booking ${id}:`, error.response?.data || error.message);
       throw error;
@@ -48,7 +50,7 @@ const bookingService = {
   remove: async (id) => {
     try {
       const res = await axiosInstance.delete(`${BOOKING_API}/${id}`);
-      return res.data.data;
+      return extractData(res);
     } catch (error) {
       console.error(`Failed to remove booking ${id}:`, error.response?.data || error.message);
       throw error;
@@ -57,34 +59,28 @@ const bookingService = {
 
   search: async (query) => {
     try {
-      const url = new URL(`${BOOKING_API}/search`);
-      url.searchParams.append("q", query);
-
-      const res = await axiosInstance.get(url.toString());
-      return res.data.data;
+      const res = await axiosInstance.get(`${BOOKING_API}/search?q=${query}`);
+      return extractData(res) || [];
     } catch (error) {
-      console.error(`Failed to search bookings with query "${query}":`, error.response?.data || error.message);
-      throw error;
+      console.error(`Failed to search bookings:`, error.response?.data || error.message);
+      return [];
     }
   },
 
   filter: async (status) => {
     try {
-      const url = new URL(`${BOOKING_API}/filter`);
-      url.searchParams.append("status", status);
-
-      const res = await axiosInstance.get(url.toString());
-      return res.data.data;
+      const res = await axiosInstance.get(`${BOOKING_API}/filter?status=${status}`);
+      return extractData(res) || [];
     } catch (error) {
-      console.error(`Failed to filter bookings with status "${status}":`, error.response?.data || error.message);
-      throw error;
+      console.error(`Failed to filter bookings:`, error.response?.data || error.message);
+      return [];
     }
   },
 
   cancel: async (id) => {
     try {
       const res = await axiosInstance.put(`${BOOKING_API}/${id}/cancel`);
-      return res.data.data;
+      return extractData(res);
     } catch (error) {
       console.error(`Failed to cancel booking ${id}:`, error.response?.data || error.message);
       throw error;
@@ -94,10 +90,10 @@ const bookingService = {
   getMyBookings: async () => {
     try {
       const res = await axiosInstance.get(`${BOOKING_API}/my-bookings`);
-      return res.data.data;
+      return extractData(res) || [];
     } catch (error) {
-      console.error("Failed to fetch my bookings:", error.response?.data || error.message);
-      throw error;
+      console.error(`Failed to fetch my bookings:`, error.response?.data || error.message);
+      return [];
     }
   },
 };
