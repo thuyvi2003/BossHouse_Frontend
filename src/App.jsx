@@ -38,6 +38,9 @@ import SharedWishlistPage from './components/ui/Wishlist/SharedWishlistPage.jsx'
 import CheckoutPage from './pages/CheckoutPage.jsx';
 import MyOrdersPage from './pages/MyOrdersPage.jsx';
 import VetSchedulePage from "./pages/VetSchedulePage.jsx";
+import EventListPage from "./pages/EventListPage.jsx";
+import EventDetailPage from "./pages/EventDetailPage.jsx";
+import MyEventsPage from "./pages/MyEventsPage.jsx";
 
 function App() {
   const location = useLocation();
@@ -84,6 +87,10 @@ function App() {
             <Route path="/post" element={<BlogScreen />} />
             <Route path="/post/:id" element={<PostDetail />} />
 
+            {/* Events */}
+            <Route path="/events" element={<EventListPage />} />
+            <Route path="/events/:id" element={<EventDetailPage />} />
+
             {/* Services */}
             <Route path="/services" element={<Services />} />
             <Route path="/user-booking" element={<UserBookingForm />} />
@@ -94,6 +101,7 @@ function App() {
               <Route path="pets" element={<PetProfileManagement user={user} />} />
               <Route path="contact-history" element={<ContactHistory />} />
               <Route path="booking-history" element={<BookingHistory />} />
+              <Route path="events" element={<MyEventsPage />} />
               <Route path="orders/my" element={<MyOrdersPage />} />
               <Route path="wishlist" element={<WishlistPage />} >
                 <Route path="groups" element={<WishlistGroupsPage />} />

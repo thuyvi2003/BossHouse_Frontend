@@ -13,6 +13,7 @@ import AccountManagement from "@/components/ui/Dashboard/AccountManagement/Accou
 import StockManagement from "@/components/ui/Dashboard/Stocks/StockManagement";
 import OrderManagement from "@/components/ui/Dashboard/Orders/OrderManagement";
 import PetTypeManagement from "../components/ui/Dashboard/PetTypes/PetTypeManagement";
+import EventManagement from "@/components/ui/Dashboard/Events/EventManagement";
 
 import {
   ChartBar,
@@ -93,6 +94,7 @@ export default function Dashboard() {
       icon: <Note size={22} />,
       items: [
         { id: "post", label: "Post", icon: <Note size={20} /> },
+        { id: "event", label: "Event", icon: <CalendarCheck size={20} /> },
         { id: "booking", label: "Booking", icon: <CalendarCheck size={20} /> },
         { id: "schedule", label: "Schedule", icon: <Clock size={20} /> },
       ],
@@ -129,6 +131,8 @@ export default function Dashboard() {
         return <BookingManager />;
       case "post":
         return <PostManagement />;
+      case "event":
+        return <EventManagement />;
       case "contact":
         return <ContactManager />;
       case "review":
