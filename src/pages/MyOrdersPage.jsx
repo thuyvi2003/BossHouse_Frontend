@@ -1,29 +1,34 @@
 // Vo Lam Thuy Vi - MyOrdersPage.jsx
 import React, { useEffect, useState } from "react";
-import { getMyOrders } from "@/services/orderService";
+import { getMyOrders, cancelOrder } from "@/services/orderService";
+import Toast from "@/components/Layout/Toast";
 import Pagination from "@/components/Layout/Pagination";
 import OrderTabs from "@/components/ui/Orders/OrderTabs";
 import OrderDetailModal from "@/components/ui/Orders/OrderDetailModal";
 import OrderCard from "@/components/ui/Orders/OrderCard";
-
 
 export default function MyOrdersPage() {
   const [orders, setOrders] = useState([]);
   const [statusFilter, setStatusFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
-  const [limit] = useState(6);
+  const [limit] = useState(5);
   const [totalPages, setTotalPages] = useState(1);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [toast, setToast] = useState({
+    show: false,
+    type: "success",
+    message: "",
+  });
 
   const fetchOrders = async (status = "all", pageNum = 1) => {
     try {
       setLoading(true);
       const res = await getMyOrders(pageNum, limit, status);
-      console.log("My order history", res.data)
-      if (res.status === "success") {
-        setOrders(res.data);
-        setTotalPages(res.pagination?.totalPages || 1);
+      console.log("My order history", res);
+      if (res && res.success) {
+        setOrders(res.orders || []);
+        setTotalPages(res.totalPages || 1);
         setPage(pageNum);
       }
     } catch (error) {
@@ -37,8 +42,26 @@ export default function MyOrdersPage() {
     fetchOrders(statusFilter, 1);
   }, [statusFilter]);
 
+  const handleCancel = async (orderId) => {
+    try {
+      await cancelOrder(orderId);
+      setToast({ show: true, type: "success", message: "Order cancelled" });
+      // refresh list
+      fetchOrders(statusFilter, page);
+    } catch (err) {
+      console.error("Cancel failed", err);
+      setToast({
+        show: true,
+        type: "error",
+        message: "Failed to cancel order",
+      });
+    }
+  };
+
   if (loading)
-    return <div className="text-center py-10 text-gray-500">Loading orders...</div>;
+    return (
+      <div className="text-center py-10 text-gray-500">Loading orders...</div>
+    );
 
   return (
     <div className="">
@@ -58,6 +81,7 @@ export default function MyOrdersPage() {
                 key={order._id}
                 order={order}
                 onViewDetail={() => setSelectedOrder(order)}
+                onCancel={() => handleCancel(order._id)}
               />
             ))}
           </div>
@@ -75,6 +99,13 @@ export default function MyOrdersPage() {
           <OrderDetailModal
             order={selectedOrder}
             onClose={() => setSelectedOrder(null)}
+          />
+        )}
+        {toast.show && (
+          <Toast
+            type={toast.type}
+            message={toast.message}
+            onClose={() => setToast({ ...toast, show: false })}
           />
         )}
       </div>

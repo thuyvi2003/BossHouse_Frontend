@@ -2,11 +2,16 @@
 import React, { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import { Package } from "phosphor-react";
-import { getAllOrders } from "@/services/orderService";
+import {
+  getAllOrders,
+  searchOrders,
+  updateOrderStatus,
+  cancelOrder,
+} from "@/services/orderService";
 import Pagination from "@/components/Layout/Pagination";
 import ConfirmDialog from "@/components/Layout/ConfirmDialog";
 import Toast from "@/components/Layout/Toast";
-// import OrderDetailModal from "./OrderDetailModal";
+import OrderDetailModal from "./OrderDetailModal";
 
 const OrderManagement = () => {
   const [orders, setOrders] = useState([]);
@@ -15,38 +20,100 @@ const OrderManagement = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
-  const [toast, setToast] = useState({ show: false, type: "success", message: "" });
-  // const [confirmOpen, setConfirmOpen] = useState(false);
-  // const [selectedOrder, setSelectedOrder] = useState(null);
-  // const [detailOpen, setDetailOpen] = useState(false);
+  const [toast, setToast] = useState({
+    show: false,
+    type: "success",
+    message: "",
+  });
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [confirmType, setConfirmType] = useState(null);
 
   // Fetch orders
-  async function fetchOrders(pageNum = 1) {
+  async function fetchOrders(page = 1) {
     try {
-      const data = await getAllOrders(pageNum, limit);
+      const data = await searchOrders(search, status, page, limit);
+
       console.log("Fetched orders:", data.orders);
+
       setOrders(data.orders || []);
-      setTotalPages(data.pagination?.totalPages || 1);
-      setPage(pageNum);
+      setTotalPages(data.totalPages || 1);
+      setPage(page);
     } catch (err) {
       console.error("Error fetching orders:", err.message);
     }
   }
 
   useEffect(() => {
-    fetchOrders(1);
-  }, []);
+    const delayDebounceFn = setTimeout(() => {
+      fetchOrders(1);
+    }, 500);
 
-  // const handleViewDetail = (order) => {
-  //   setSelectedOrder(order);
-  //   setDetailOpen(true);
-  // };
+    return () => clearTimeout(delayDebounceFn);
+  }, [search, status]);
+
+  const handleViewDetail = (order) => {
+    setSelectedOrder(order);
+    setDetailOpen(true);
+  };
+
+  const handleStatusChange = async (orderId, newStatus) => {
+    // Optimistic UI update
+    const previous = orders;
+    setOrders((prev) =>
+      prev.map((o) => (o._id === orderId ? { ...o, status: newStatus } : o))
+    );
+    try {
+      await updateOrderStatus(orderId, newStatus);
+      setToast({
+        show: true,
+        type: "success",
+        message: "Order status updated",
+      });
+    } catch (err) {
+      // revert on error
+      setOrders(previous);
+      setToast({
+        show: true,
+        type: "error",
+        message: "Failed to update status",
+      });
+      console.error("Update status error:", err);
+    }
+  };
+
+  const handleCancelClick = (order) => {
+    setSelectedOrder(order);
+    setConfirmType("cancel");
+    setConfirmOpen(true);
+  };
+
+  const handleConfirm = async () => {
+    if (!selectedOrder) return;
+    if (confirmType === "cancel") {
+      try {
+        await cancelOrder(selectedOrder._id);
+        setToast({ show: true, type: "success", message: "Order cancelled" });
+        setConfirmOpen(false);
+        setSelectedOrder(null);
+        await fetchOrders(page);
+      } catch (err) {
+        setToast({
+          show: true,
+          type: "error",
+          message: "Failed to cancel order",
+        });
+        console.error("Cancel order error:", err);
+      }
+    }
+  };
 
   // Delete order
-  // const handleDeleteClick = (order) => {
-  //   setSelectedOrder(order);
-  //   setConfirmOpen(true);
-  // };
+  const handleDeleteClick = (order) => {
+    setSelectedOrder(order);
+    setConfirmOpen(true);
+  };
 
   //   const handleConfirmDelete = async () => {
   //     try {
@@ -62,28 +129,27 @@ const OrderManagement = () => {
   //   };
 
   return (
-    <div className="flex-1 ">
+    <div className="flex-1">
       {/* Header */}
-      <div className="flex items-center justify-between gap-6 rounded-t-[2.5rem] bg-[#d8ccbf]/85 px-8 py-6 shadow-inner shadow-[#1a1a16]/15 backdrop-blur-md">
-        <div className="flex items-center gap-3 mb-6">
-          {/* Icon container */}
-          <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#8b5a3c]/95 text-[#f5f3f0] shadow-lg shadow-[#1a1a16]/20">
-            <Package size={24} weight="fill" />
+      <div className="p-6 flex justify-between items-center bg-[#d7cbbf] rounded-t-md">
+        <div className="flex items-center gap-3">
+          <span className="text-[#846551] flex items-center gap-2">
+            <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#8b5a3c]/95 text-[#f5f3f0] shadow-lg shadow-[#1a1a16]/20">
+              <Package size={24} weight="fill" />
+            </span>
           </span>
 
-          {/* Title + Subtitle */}
           <div>
-            <h2 className="text-2xl font-extrabold uppercase tracking-[0.28em] text-[#1a1a16]">
-              Order Management
+            <h2 className="flex items-center gap-2 text-2xl font-extrabold tracking-wide text-[#2c2c2c] drop-shadow-sm">
+              <span className="bg-gradient-to-r from-[#846551] to-[#5a4639] bg-clip-text text-transparent">
+                Order Management
+              </span>
             </h2>
-            <p className="text-xs font-semibold uppercase tracking-[0.4em] text-[#8b5a3c]">
-              Manage customer orders
-            </p>
+            <p className="text-sm text-gray-700">Manage customer orders</p>
           </div>
         </div>
 
-
-        <div className="flex flex-wrap items-center gap-4">
+        <div className="flex items-center gap-4 p-4">
           {/* Search Box */}
           <div className="relative">
             <input
@@ -91,16 +157,21 @@ const OrderManagement = () => {
               placeholder="Search order by user name..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-64 rounded-xl border border-[#8b5a3c]/40 bg-[#f5f3f0] px-10 py-2 text-sm font-medium text-[#1a1a16] placeholder:text-[#8b5a3c]/60 shadow-inner shadow-[#1a1a16]/10 transition-all duration-300 ease-in-out focus:border-[#8b5a3c] focus:outline-none focus:ring-2 focus:ring-[#8b5a3c]/40 hover:shadow-lg hover:shadow-[#1a1a16]/15"
+              className="pl-10 pr-4 py-2 w-64 border border-[#c8b7a6] rounded-lg bg-[#faf8f6] text-gray-700 placeholder-gray-400 focus:ring-2 focus:ring-[#846551] focus:border-[#846551] transition-all duration-300 ease-in-out shadow-sm hover:shadow-md"
             />
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="absolute left-3 top-2.5 h-5 w-5 text-[#8b5a3c]"
+              className="absolute left-3 top-2.5 w-5 h-5 text-[#846551]"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"
+              />
             </svg>
           </div>
 
@@ -108,7 +179,7 @@ const OrderManagement = () => {
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value)}
-            className="cursor-pointer rounded-xl border border-[#8b5a3c]/40 bg-[#f5f3f0] px-4 py-2 text-sm font-semibold text-[#1a1a16] shadow-inner shadow-[#1a1a16]/10 transition-all duration-300 ease-in-out focus:border-[#8b5a3c] focus:outline-none focus:ring-2 focus:ring-[#8b5a3c]/40 hover:shadow-lg hover:shadow-[#1a1a16]/15"
+            className="px-4 py-2 border border-[#c8b7a6] rounded-lg bg-[#faf8f6] text-gray-700 cursor-pointer focus:ring-2 focus:ring-[#846551] focus:border-[#846551] transition-all duration-300 ease-in-out shadow-sm hover:shadow-md"
           >
             <option value="">All Status</option>
             <option value="pending">Pending</option>
@@ -123,7 +194,7 @@ const OrderManagement = () => {
 
       {/* Table */}
       <div className="">
-        <div className="grid grid-cols-13 gap-4 border-b  bg-[#f5f3f0] px-6 py-3 text-sm  font-extrabold uppercase tracking-[0.25em] text-[#8a7262]  shadow-inner shadow-[#1a1a16]/30">
+        <div className="grid grid-cols-13 gap-4 px-6 py-3 text-xs font-bold text-gray-700 uppercase tracking-wider bg-gradient-to-r from-[#f5f3f2] to-[#eae7e5] border-b shadow-sm">
           <div className="col-span-1">#</div>
           <div className="col-span-2">User</div>
           <div className="col-span-2">Items</div>
@@ -134,7 +205,7 @@ const OrderManagement = () => {
           <div className="col-span-2 text-center">Actions</div>
         </div>
 
-        <div className="min-h-[650px] divide-y divide-transparent">
+        <div className="divide-y divide-transparent min-h-[650px]">
           {orders.length === 0 ? (
             <div className="flex h-[300px] items-center justify-center text-xl italic text-[#1a1a16]/60">
               No orders found.
@@ -143,12 +214,16 @@ const OrderManagement = () => {
             orders.map((order, idx) => (
               <div
                 key={order._id || `order-${idx}`}
-                className="relative grid grid-cols-13 items-center gap-6  border border-[#d8ccbf] bg-[#f5f3f0]/90 px-6 py-5 shadow-[0_22px_45px_-24px_rgba(26,26,22,0.4)] transition-all duration-300 ease-in-out hover:-translate-y-1 hover:border-[#8b5a3c] hover:shadow-[0_32px_60px_-20px_rgba(26,26,22,0.45)] animate-fade-in-up"
-                style={{ animationDelay: `${idx * 100}ms` }}
+                className={`relative px-6 py-5 grid grid-cols-13 gap-4 items-center bg-white rounded-xl shadow-sm border border-gray-100 hover:border-[#846551] hover:shadow-lg hover:scale-[1.01] transition-all duration-300 ease-in-out animate-fade-in-up`}
+                style={{ animationDelay: `${idx * 120}ms` }}
               >
-                <div className="absolute left-0 top-0 h-full w-1 rounded-l-3xl bg-[#d8ccbf] transition-colors duration-300 hover:bg-[#8b5a3c]" />
-                <div className="col-span-1 font-semibold text-[#1a1a16]">{(page - 1) * limit + idx + 1}</div>
-                <div className="col-span-2 font-semibold text-[#1a1a16]">{order.shipping_address?.name || "N/A"}</div>
+                <div className="absolute left-0 top-0 h-full w-1 rounded-l-xl bg-gray-200 hover:bg-[#846551] transition-all"></div>
+                <div className="col-span-1 font-semibold text-[#1a1a16]">
+                  {(page - 1) * limit + idx + 1}
+                </div>
+                <div className="col-span-2 font-semibold text-[#1a1a16]">
+                  {order.shipping_address?.name || "N/A"}
+                </div>
                 <div className="col-span-2 text-sm text-[#1a1a16]/80">
                   {order.items?.slice(0, 2).map((it, i) => (
                     <div key={i} className="flex items-center gap-2">
@@ -159,7 +234,9 @@ const OrderManagement = () => {
                     </div>
                   ))}
                   {order.items?.length > 2 && (
-                    <div className="text-xs font-semibold text-[#8b5a3c]">+{order.items.length - 2} more</div>
+                    <div className="text-xs font-semibold text-[#8b5a3c]">
+                      +{order.items.length - 2} more
+                    </div>
                   )}
                 </div>
                 <div className="col-span-2 text-sm font-semibold text-[#8b5a3c]">
@@ -167,17 +244,20 @@ const OrderManagement = () => {
                 </div>
                 <div className="col-span-1">
                   <span
-                    className={`rounded-full px-3 py-1 text-xs font-semibold shadow-inner shadow-[#1a1a16]/10 ${order.status === "completed"
+                    className={`rounded-full px-3 py-1 text-xs font-semibold shadow-inner shadow-[#1a1a16]/10 ${
+                      order.status === "completed"
                         ? "bg-[#8b5a3c]/20 text-[#8b5a3c]"
                         : order.status === "cancelled"
-                          ? "bg-[#1a1a16]/15 text-[#1a1a16]"
-                          : "bg-[#d8ccbf]/70 text-[#1a1a16]"
-                      }`}
+                        ? "bg-[#1a1a16]/15 text-[#1a1a16]"
+                        : "bg-[#d8ccbf]/70 text-[#1a1a16]"
+                    }`}
                   >
                     {order.status}
                   </span>
                 </div>
-                <div className="col-span-1 text-sm font-semibold text-[#1a1a16]">{order.payment_method}</div>
+                <div className="col-span-1 text-sm font-semibold text-[#1a1a16]">
+                  {order.payment_method}
+                </div>
                 <div className="col-span-2 text-sm text-[#1a1a16]/75">
                   {dayjs(order.created_at).format("DD/MM/YYYY")}
                 </div>
@@ -189,6 +269,28 @@ const OrderManagement = () => {
                   >
                     View
                   </button>
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={order.status}
+                      onChange={(e) =>
+                        handleStatusChange(order._id, e.target.value)
+                      }
+                      className="rounded-xl border px-2 py-1 text-sm"
+                      disabled={
+                        order.status === "completed" ||
+                        order.status === "cancelled"
+                      }
+                    >
+                      <option value="pending">Pending</option>
+                      <option value="paid">Paid</option>
+                      <option value="processing">Processing</option>
+                      <option value="shipping">Shipping</option>
+                      <option value="completed">Completed</option>
+                      <option value="cancelled">Cancelled</option>
+                    </select>
+
+                    {/* Admins cannot cancel customers' orders from this view; only users can cancel their own orders */}
+                  </div>
                 </div>
               </div>
             ))
@@ -196,10 +298,18 @@ const OrderManagement = () => {
         </div>
       </div>
 
-      <Pagination page={page} totalPages={totalPages} onPageChange={(newPage) => fetchOrders(newPage)} />
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        onPageChange={(newPage) => fetchOrders(newPage)}
+      />
 
       {/* Detail Modal */}
-      {/* <OrderDetailModal isOpen={detailOpen} order={selectedOrder} onClose={() => setDetailOpen(false)} /> */}
+      <OrderDetailModal
+        isOpen={detailOpen}
+        order={selectedOrder}
+        onClose={() => setDetailOpen(false)}
+      />
 
       {/* Confirm Delete */}
       {/* <ConfirmDialog
@@ -217,6 +327,18 @@ const OrderManagement = () => {
           onClose={() => setToast({ ...toast, show: false })}
         />
       )}
+
+      <ConfirmDialog
+        isOpen={confirmOpen}
+        title={confirmType === "cancel" ? "Confirm Cancel" : "Confirm"}
+        message={
+          confirmType === "cancel"
+            ? `Are you sure you want to cancel order of "${selectedOrder?.shipping_address?.name}"?`
+            : "Are you sure?"
+        }
+        onConfirm={handleConfirm}
+        onCancel={() => setConfirmOpen(false)}
+      />
     </div>
   );
 };
