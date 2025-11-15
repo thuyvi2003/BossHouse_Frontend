@@ -35,12 +35,44 @@ const AccountDetailDialog = ({ account, onClose }) => {
         }
     };
 
+    // UPDATED: Handle inactive status (gray badge)
+    const getStatusBadgeClass = (status) => {
+        switch (status) {
+            case AccountStatus.ACTIVE:
+                return 'bg-green-100 text-green-700 hover:bg-green-100';
+            case AccountStatus.BANNED:
+                return 'bg-red-100 text-red-700 hover:bg-red-100';
+            case AccountStatus.INACTIVE:  // NEW: Gray for inactive/deleted
+                return 'bg-gray-100 text-gray-700 hover:bg-gray-100';
+            default:
+                return 'bg-gray-100 text-gray-700 hover:bg-gray-100';
+        }
+    };
+
+    const getStatusLabel = (status) => {
+        switch (status) {
+            case AccountStatus.ACTIVE:
+                return 'Active';
+            case AccountStatus.BANNED:
+                return 'Banned';
+            case AccountStatus.INACTIVE:
+                return 'Inactive';  // NEW: For deleted
+            default:
+                return status;
+        }
+    };
+
     return (
         <Dialog open={!!account} onOpenChange={onClose}>
             <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
                     <DialogTitle>Account Details</DialogTitle>
                     <DialogDescription>
+                        {account.is_deleted && (  // NEW: Warning for deleted accounts
+                            <div className="mb-2 p-2 bg-gray-100 rounded text-sm text-gray-700">
+                                ⚠️ This account is soft-deleted (inactive).
+                            </div>
+                        )}
                         View detailed information about this account
                     </DialogDescription>
                 </DialogHeader>
@@ -83,24 +115,20 @@ const AccountDetailDialog = ({ account, onClose }) => {
                     {/* Status */}
                     <div className="flex items-start gap-3">
                         <div
-                            className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${account.status === AccountStatus.ACTIVE ? 'bg-green-100' : 'bg-red-100'
+                            className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${account.status === AccountStatus.ACTIVE ? 'bg-green-100' :
+                                account.status === AccountStatus.BANNED ? 'bg-red-100' : 'bg-gray-100'  // NEW: Gray for inactive
                                 }`}
                         >
                             <AlertCircle
-                                className={`w-5 h-5 ${account.status === AccountStatus.ACTIVE ? 'text-green-600' : 'text-red-600'
+                                className={`w-5 h-5 ${account.status === AccountStatus.ACTIVE ? 'text-green-600' :
+                                    account.status === AccountStatus.BANNED ? 'text-red-600' : 'text-gray-600'  // NEW: Gray for inactive
                                     }`}
                             />
                         </div>
                         <div className="flex-1">
                             <p className="text-sm text-gray-500 mb-1">Status</p>
-                            <Badge
-                                className={
-                                    account.status === AccountStatus.ACTIVE
-                                        ? 'bg-green-100 text-green-700 hover:bg-green-100'
-                                        : 'bg-red-100 text-red-700 hover:bg-red-100'
-                                }
-                            >
-                                {account.status === AccountStatus.ACTIVE ? 'Active' : 'Banned'}
+                            <Badge className={getStatusBadgeClass(account.status)}>
+                                {getStatusLabel(account.status)}
                             </Badge>
                         </div>
                     </div>
