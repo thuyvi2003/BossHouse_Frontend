@@ -7,6 +7,7 @@ import { useAuthStore } from "@/stores/useAuthStore";
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
 import Dashboard from './pages/DashboardPage.jsx';
+import ProtectedRoute from './router/ProtectedRoute.jsx';
 import Cart from './pages/CartPage.jsx';
 import HomePage from './pages/HomePage.jsx';
 import ProductPage from './pages/ProductPage.jsx';
@@ -37,6 +38,8 @@ import WishlistGroupsPage from './components/ui/Wishlist/WishlistGroupsPage.jsx'
 import SharedWishlistPage from './components/ui/Wishlist/SharedWishlistPage.jsx';
 import CheckoutPage from './pages/CheckoutPage.jsx';
 import MyOrdersPage from './pages/MyOrdersPage.jsx';
+import VetSchedulePage from "./pages/VetSchedulePage";
+import MembershipPage from './pages/MembershipPage.jsx';
 import VetSchedulePage from "./pages/VetSchedulePage.jsx";
 import EventListPage from "./pages/EventListPage.jsx";
 import EventDetailPage from "./pages/EventDetailPage.jsx";
@@ -78,6 +81,9 @@ function App() {
             {/* Products */}
             <Route path="/products" element={<ProductPage />} />
             <Route path="/product/:id" element={<ProductDetailPage />} />
+            <Route element={<ProtectedRoute requiredRoles={["admin", "staff"]} />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+            </Route>
             
             {/* Dashboard & Cart */}
             <Route path="/dashboard" element={<Dashboard />} />
@@ -111,6 +117,14 @@ function App() {
 
             <Route path="/share/wishlist/:groupId" element={<SharedWishlistPage />} />
             <Route path='/contact' element={<ContactPage />} />
+            <Route path="/profile" element={<ProfileLayout />}>
+              <Route index element={<ProfilePage />} />
+              <Route path="contact-history" element={<ContactHistory />} />
+              <Route path="booking-history" element={<BookingHistory />} />
+              <Route path="membership" element={<MembershipPage />} />   {/* thêm dòng này */}
+              <Route path="orders/my" element={<MyOrdersPage />} />
+              <Route path="schedule" element={<VetSchedulePage />} />
+            </Route>
 
             {/* Notifications */}
             <Route path="/notifications" element={<NotificationsPage />} />
