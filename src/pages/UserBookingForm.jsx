@@ -61,7 +61,7 @@ export default function UserBookingForm({ onSuccess }) {
               phone: currentUser.phone || "",
               pet_id: userPets[0]?._id || "",
               pet_name: userPets[0]?.name || "",
-              pet_species: userPets[0]?.species || "",
+              pet_species: userPets[0]?.species?._id || "",
               pet_species_other: "",
             };
           });
@@ -75,13 +75,16 @@ export default function UserBookingForm({ onSuccess }) {
     fetchUserAndOptions();
   }, []);
 
-  const allSpecies = useMemo(
-    () =>
-      Array.from(
-        new Set(options.pets.map((p) => p.species).filter(Boolean))
-      ),
-    [options.pets]
-  );
+  // allSpecies: array of {id, name}
+  const allSpecies = useMemo(() => {
+    const speciesMap = {};
+    options.pets.forEach((p) => {
+      if (p.species && p.species._id && p.species.name) {
+        speciesMap[p.species._id] = p.species.name;
+      }
+    });
+    return Object.entries(speciesMap).map(([id, name]) => ({ id, name }));
+  }, [options.pets]);
 
   const totalPrice = useMemo(
     () =>
@@ -144,6 +147,7 @@ export default function UserBookingForm({ onSuccess }) {
     return null;
   };
 
+  // --- handleSubmit trong UserBookingForm.jsx ---
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -158,7 +162,7 @@ export default function UserBookingForm({ onSuccess }) {
 
     if (!form.pet_species) {
       newErrors.pet_species = "Species is required";
-    } else if (form.pet_species === "Other" && !form.pet_species_other) {
+    } else if (form.pet_species === "other" && !form.pet_species_other) {
       newErrors.pet_species = "Please specify species";
     }
 
@@ -169,7 +173,7 @@ export default function UserBookingForm({ onSuccess }) {
 
     if (Object.keys(newErrors).length) {
       setErrors(newErrors);
-      toast.error("Please fix the errors before submitting."); // <-- thay alert
+      toast.error("Please fix the errors before submitting.");
       return;
     }
 
@@ -177,16 +181,18 @@ export default function UserBookingForm({ onSuccess }) {
       const userId = form.user_id;
       let petId = form.pet_id;
 
-      if (!petId) {
-        const speciesToUse =
-          form.pet_species === "Other"
-            ? form.pet_species_other
-            : form.pet_species;
+      let petNameToSend = form.pet_name;
+      let petSpeciesToSend =
+        form.pet_species === "other"
+          ? form.pet_species_other
+          : allSpecies.find((s) => s.id === form.pet_species)?.name || form.pet_species;
 
+      // Nếu pet chưa tồn tại, tạo mới
+      if (!petId) {
         const newPet = await optionService.createPet({
           user_id: userId,
-          name: form.pet_name,
-          species: speciesToUse,
+          name: petNameToSend,
+          species: petSpeciesToSend,
         });
         petId = newPet._id;
       }
@@ -194,6 +200,8 @@ export default function UserBookingForm({ onSuccess }) {
       const payload = {
         user_id: userId,
         pet_id: petId,
+        pet_name: petNameToSend,       // <--- gửi thêm
+        pet_species: petSpeciesToSend, // <--- gửi thêm
         services: form.services.map((s) => ({
           service_id: s._id,
           quantity: s.quantity,
@@ -204,7 +212,7 @@ export default function UserBookingForm({ onSuccess }) {
       };
 
       await bookingService.create(payload);
-      toast.success("Booking created successfully!"); // <-- thay alert
+      toast.success("Booking created successfully!");
       onSuccess && onSuccess();
       navigate("/");
     } catch (err) {
@@ -212,9 +220,10 @@ export default function UserBookingForm({ onSuccess }) {
       const errorMsg =
         err.response?.data?.message || "Failed to create booking";
       setErrors({ form: errorMsg });
-      toast.error(errorMsg); // <-- thay alert
+      toast.error(errorMsg);
     }
   };
+
 
   if (loading) return <p>Loading options...</p>;
 
@@ -284,7 +293,7 @@ export default function UserBookingForm({ onSuccess }) {
               setForm((prev) => ({
                 ...prev,
                 pet_species: value,
-                pet_species_other: value === "Other" ? prev.pet_species_other : "",
+                pet_species_other: value === "other" ? prev.pet_species_other : "",
               }));
               setErrors((prev) => ({ ...prev, pet_species: "" }));
             }}
@@ -292,12 +301,12 @@ export default function UserBookingForm({ onSuccess }) {
           >
             <option value="">Select species</option>
             {allSpecies.map((s) => (
-              <option key={s} value={s}>{s}</option>
+              <option key={s.id} value={s.id}>{s.name}</option>
             ))}
-            <option value="Other">Other</option>
+            <option value="other">Other</option>
           </select>
 
-          {form.pet_species === "Other" && (
+          {form.pet_species === "other" && (
             <input
               type="text"
               name="pet_species_other"

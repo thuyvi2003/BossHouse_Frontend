@@ -100,7 +100,9 @@ function BookingPopup({ booking, mode, options, onClose, onSave, onEditMode }) {
               className="w-full border rounded p-2"
             >
               {options.pets.map((p) => (
-                <option key={p._id} value={p._id}>{p.name} ({p.species})</option>
+                <option key={p._id} value={p._id}>
+                  {p.name} ({p.species?.name || "Unknown"})
+                </option>
               ))}
             </select>
           </div>
@@ -160,7 +162,6 @@ function BookingPopup({ booking, mode, options, onClose, onSave, onEditMode }) {
           </div>
         </div>
 
-        {/* Total Price gọn nằm dưới danh sách service */}
         <div className="mt-2 text-sm font-semibold text-yellow-800">
           Total: ${form.services.reduce((sum, s) => sum + (s.base_price || 0) * s.quantity, 0).toLocaleString()}
         </div>
@@ -193,10 +194,17 @@ function BookingPopup({ booking, mode, options, onClose, onSave, onEditMode }) {
             <label className="block text-sm font-medium text-gray-700 mb-1">Time</label>
             <div className="flex items-center gap-1">
               <Clock className="w-5 h-5 text-gray-500" />
-              <select className="border rounded p-2 w-14" value={hour} onChange={(e) => setHour(parseInt(e.target.value))} disabled={disableOtherFields}>{Array.from({ length: 12 }, (_, i) => i + 1).map(h => <option key={h} value={h}>{h}</option>)}</select>
+              <select className="border rounded p-2 w-14" value={hour} onChange={(e) => setHour(parseInt(e.target.value))} disabled={disableOtherFields}>
+                {Array.from({ length: 12 }, (_, i) => i + 1).map(h => <option key={h} value={h}>{h}</option>)}
+              </select>
               <span className="font-semibold">:</span>
-              <select className="border rounded p-2 w-14" value={minute} onChange={(e) => setMinute(parseInt(e.target.value))} disabled={disableOtherFields}>{Array.from({ length: 60 }, (_, i) => i).map(m => <option key={m} value={m}>{m.toString().padStart(2, '0')}</option>)}</select>
-              <select className="border rounded p-2 w-16" value={AMPM} onChange={(e) => setAMPM(e.target.value)} disabled={disableOtherFields}><option value="AM">AM</option><option value="PM">PM</option></select>
+              <select className="border rounded p-2 w-14" value={minute} onChange={(e) => setMinute(parseInt(e.target.value))} disabled={disableOtherFields}>
+                {Array.from({ length: 60 }, (_, i) => i).map(m => <option key={m} value={m}>{m.toString().padStart(2, '0')}</option>)}
+              </select>
+              <select className="border rounded p-2 w-16" value={AMPM} onChange={(e) => setAMPM(e.target.value)} disabled={disableOtherFields}>
+                <option value="AM">AM</option>
+                <option value="PM">PM</option>
+              </select>
             </div>
           </div>
         </div>
@@ -217,13 +225,12 @@ function BookingPopup({ booking, mode, options, onClose, onSave, onEditMode }) {
               >
                 Back to List
               </button>
-              {/* Chỉ hiện nút Edit nếu booking chưa cancel và có thể edit */}
               {booking.status === "PENDING" && (
                 <button
                   onClick={onEditMode}
-                  className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"
+                  className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 flex items-center gap-1"
                 >
-                  Edit
+                  <Edit size={14} /> Edit
                 </button>
               )}
             </>
@@ -245,7 +252,6 @@ function BookingPopup({ booking, mode, options, onClose, onSave, onEditMode }) {
             </>
           )}
         </div>
-
       </div>
     </div>
   );
@@ -255,7 +261,7 @@ function BookingPopup({ booking, mode, options, onClose, onSave, onEditMode }) {
 export default function BookingHistoryUser() {
   const { user } = useAuthStore();
   const [bookings, setBookings] = useState([]);
-  const [options, setOptions] = useState({ pets: [], services: [] });
+  const [options, setOptions] = useState({ pets: [], services: [], vets: [] });
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState({ pet: "", service: "", status: "ALL" });
   const [currentPage, setCurrentPage] = useState(1);
@@ -265,7 +271,7 @@ export default function BookingHistoryUser() {
 
   const fetchBookings = async () => {
     try {
-      const data = await bookingService.getMyBookings(); // chỉ user hiện tại
+      const data = await bookingService.getMyBookings();
       setBookings(data);
     } catch (err) {
       console.error(err);
@@ -291,17 +297,16 @@ export default function BookingHistoryUser() {
     fetchOptions();
   }, []);
 
-  // --- Search & filter ---
   const filteredBookings = bookings
     .filter((b) => {
       const searchLower = search.toLowerCase();
       return (
         b.pet_id?.name?.toLowerCase().includes(searchLower) ||
         b.services?.some((s) => s.service_id?.name?.toLowerCase().includes(searchLower)) ||
-        b.vet_id?.name?.toLowerCase().includes(searchLower)
+        b.veterinarian_id?.user_id?.name?.toLowerCase().includes(searchLower)
       );
     })
-    .filter((b) => (filters.pet ? b.pet_id?.species === filters.pet : true))
+    .filter((b) => (filters.pet ? b.pet_id?.species?.name === filters.pet : true))
     .filter((b) =>
       filters.service
         ? b.services?.some((s) => (s.service_id?._id || s.service_id) === filters.service)
@@ -311,7 +316,6 @@ export default function BookingHistoryUser() {
       filters.status !== "ALL" ? b.status.toUpperCase() === filters.status.toUpperCase() : true
     );
 
-  // --- Pagination ---
   const totalPages = Math.ceil(filteredBookings.length / rowsPerPage);
   const indexOfLastItem = currentPage * rowsPerPage;
   const indexOfFirstItem = indexOfLastItem - rowsPerPage;
@@ -348,7 +352,7 @@ export default function BookingHistoryUser() {
     <div className="p-6">
       <h2 className="text-3xl font-bold mb-6 text-yellow-800">Booking History</h2>
 
-      {/* --- Search & Filters --- */}
+      {/* Search & Filters */}
       <div className="flex flex-col lg:flex-row gap-4 mb-4">
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -362,6 +366,7 @@ export default function BookingHistoryUser() {
         </div>
 
         <div className="flex gap-3 flex-wrap">
+          {/* Pet filter */}
           <div className="relative">
             <Package className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <select
@@ -370,12 +375,13 @@ export default function BookingHistoryUser() {
               className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent bg-white"
             >
               <option value="">All Pets</option>
-              {[...new Set(options.pets.map((p) => p.species))].map((species) => (
-                <option key={species} value={species}>{species}</option>
+              {[...new Set(options.pets.map((p) => p.species?.name).filter(Boolean))].map((speciesName) => (
+                <option key={speciesName} value={speciesName}>{speciesName}</option>
               ))}
             </select>
           </div>
 
+          {/* Service filter */}
           <div className="relative">
             <Package className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <select
@@ -384,12 +390,13 @@ export default function BookingHistoryUser() {
               className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent bg-white"
             >
               <option value="">All Services</option>
-              {options.services?.map((s) => (
+              {options.services.map((s) => (
                 <option key={s._id} value={s._id}>{s.name}</option>
               ))}
             </select>
           </div>
 
+          {/* Status filter */}
           <div className="relative">
             <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <select
@@ -399,7 +406,6 @@ export default function BookingHistoryUser() {
             >
               <option value="ALL">All Status</option>
               <option value="PENDING">Pending</option>
-              <option value="CONFIRMED">Confirmed</option>
               <option value="COMPLETED">Completed</option>
               <option value="CANCELED">Canceled</option>
             </select>
@@ -407,64 +413,59 @@ export default function BookingHistoryUser() {
         </div>
       </div>
 
-      {/* --- Table --- */}
+      {/* Booking Table */}
       <div className="overflow-x-auto">
-        <table className="w-full border rounded text-sm">
-          <thead className="bg-yellow-100">
-            <tr className="text-left">
-              <th className="p-2 border">#</th>
-              <th className="p-2 border">Pet</th>
-              <th className="p-2 border">Vet</th>
-              <th className="p-2 border">Services</th>
-              <th className="p-2 border">Date & Time</th>
-              <th className="p-2 border">Total Price</th>
-              <th className="p-2 border">Status</th>
-              <th className="p-2 border text-center">Actions</th>
+        <table className="w-full border border-gray-300 rounded-lg overflow-hidden">
+          <thead className="bg-yellow-100 text-yellow-900 font-semibold">
+            <tr>
+              <th className="p-3 text-left">Pet</th>
+              <th className="p-3 text-left">Services</th>
+              <th className="p-3 text-left">Vet</th>
+              <th className="p-3 text-left">Date</th>
+              <th className="p-3 text-left">Status</th>
+              <th className="p-3 text-left">Action</th>
             </tr>
           </thead>
           <tbody>
-            {currentItems.length === 0 && (
-              <tr>
-                <td colSpan={8} className="p-4 text-center text-gray-500">No bookings found</td>
+            {currentItems.map((b) => (
+              <tr key={b._id} className="border-b border-gray-200">
+                <td className="p-3">{b.pet_id?.name} ({b.pet_id?.species?.name})</td>
+                <td className="p-3">{b.services?.map((s) => s.service_id?.name || s.name).join(", ")}</td>
+                <td className="p-3">
+                  {(() => {
+                    const vetId = typeof b.veterinarian_id === "string" ? b.veterinarian_id : b.veterinarian_id?._id;
+                    const vet = options.vets.find(v => String(v._id) === String(vetId));
+                    return vet ? `${vet.user_id?.name} (${vet.specialty})` : "N/A";
+                  })()}
+                </td>
+                <td className="p-3">{new Date(b.booking_date).toLocaleString()}</td>
+                <td className="p-3">{b.status}</td>
+                <td className="p-3 flex gap-2">
+                  <button onClick={() => openPopup(b, "view")} className="bg-yellow-500 text-white p-1 rounded"><Eye size={16} /></button>
+                  {b.status === "PENDING" && (
+                    <>
+                      <button onClick={() => openPopup(b, "edit")} className="bg-blue-500 text-white p-1 rounded flex items-center gap-1"><Edit size={14} /></button>
+                      <button onClick={() => handleCancel(b)} className="bg-red-500 text-white p-1 rounded"><X size={16} /></button>
+                    </>
+                  )}
+                </td>
               </tr>
-            )}
-            {currentItems.map((b, idx) => {
-              const bookingDate = new Date(b.booking_date);
-              const canEdit = b.status === "PENDING" && bookingDate.getTime() > Date.now();
-              const canCancel = b.status === "PENDING" && bookingDate.getTime() > Date.now();
-              return (
-                <tr key={b._id} className="hover:bg-yellow-50">
-                  <td className="p-2 border">{indexOfFirstItem + idx + 1}</td>
-                  <td className="p-2 border">{b.pet_id?.name || b.pet_id}</td>
-                  <td className="p-2 border">
-                    {(() => {
-                      if (!b.veterinarian_id) return "Not assigned";
-                      const vetId = typeof b.veterinarian_id === "object" ? b.veterinarian_id._id : b.veterinarian_id;
-                      const vet = options.vets?.find(v => v._id === vetId);
-                      return vet ? `${vet.user_id?.name} (${vet.specialty})` : "Not assigned";
-                    })()}
-                  </td>
-                  <td className="p-2 border max-w-xs">{b.services?.map((s) => s.service_id?.name || s.name).join(", ")}</td>
-                  <td className="p-2 border">{bookingDate.toLocaleString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" })}</td>
-                  <td className="p-2 border">{b.total_price?.toLocaleString()}$</td>
-                  <td className="p-2 border">{b.status}</td>
-                  <td className="p-2 border flex flex-wrap gap-2">
-                    <button onClick={() => openPopup(b, "view")} className="px-2 py-1 text-blue-600 border rounded hover:bg-gray-100 flex items-center gap-1"><Eye size={16} /> View</button>
-                    {canEdit && <button onClick={() => openPopup(b, "edit")} className="px-2 py-1 text-green-600 border rounded hover:bg-gray-100 flex items-center gap-1"><Edit size={16} /> Edit</button>}
-                    {canCancel && <button onClick={() => handleCancel(b)} className="px-2 py-1 text-red-600 border rounded hover:bg-gray-100 flex items-center gap-1"><X size={16} /> Cancel</button>}
-                  </td>
-                </tr>
-              );
-            })}
+            ))}
+            {currentItems.length === 0 && <tr><td colSpan={6} className="text-center p-4 text-gray-500">No bookings found</td></tr>}
           </tbody>
         </table>
       </div>
 
-      {/* --- Pagination --- */}
-      <div className="mt-4 flex justify-center">
-        <Pagination page={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+      {/* Pagination */}
+      <div className="flex justify-center mt-4">
+        <Pagination
+          page={currentPage}
+          totalPages={Math.max(1, totalPages)} // luôn ≥ 1
+          onPageChange={setCurrentPage}
+        />
       </div>
 
+      {/* Popup */}
       {selectedBooking && (
         <BookingPopup
           booking={selectedBooking}
