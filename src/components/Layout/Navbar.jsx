@@ -160,6 +160,9 @@ export default function Navbar() {
                 <NavLink to="/post" className={navLinkClass}>
                     Blog
                 </NavLink>
+                <NavLink to="/events" className={navLinkClass}>
+                    Events
+                </NavLink>
                 <NavLink to="/contact" className={navLinkClass}>
                     Contact
                 </NavLink>

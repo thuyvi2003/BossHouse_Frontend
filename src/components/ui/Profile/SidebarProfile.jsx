@@ -88,6 +88,11 @@ export default function SidebarProfile() {
           <span className="text-sm">Booking History</span>
         </NavLink>
 
+        <NavLink to="/profile/events" className={linkClass}>
+          <CalendarCheck size={20} weight="duotone" />
+          <span className="text-sm">My Events</span>
+        </NavLink>
+
         <NavLink to="/profile/wishlist" className={linkClass}>
           <Star size={20} weight="duotone" />
           <span className="text-sm">Wishlist</span>
