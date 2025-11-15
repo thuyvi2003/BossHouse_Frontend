@@ -218,17 +218,37 @@ const NotificationManagement = () => {
                   <td className="px-3 py-2">{formatDate(n.created_at)}</td>
                   <td className="px-3 py-2">
                     <div className="flex gap-2 justify-end">
-                      <button onClick={() => setViewNotification(n)} className="px-2.5 py-1 rounded border border-gray-300 hover:bg-gray-50" title="View">👁️</button>
+                      <button 
+                        onClick={() => setViewNotification(n)} 
+                        className="px-3 py-1 text-[13px] rounded-full border border-[#846551] text-[#846551] hover:bg-[#f3ece9] transition"
+                      >
+                        View
+                      </button>
                       {userRole === 'admin' && (
                         <>
-                          <button onClick={() => {
-                            setEditNotification(n);
-                            setCreateOpen(true);
-                          }} className="px-2.5 py-1 rounded bg-amber-500 text-white hover:bg-amber-600" title="Edit">✎</button>
+                          <button 
+                            onClick={() => {
+                              setEditNotification(n);
+                              setCreateOpen(true);
+                            }} 
+                            className="px-3 py-1 text-[13px] rounded-full border border-[#8c6f5a] text-[#8c6f5a] hover:bg-[#efe7e1] transition"
+                          >
+                            Edit
+                          </button>
                           {n.status === 'inactive' ? (
-                            <button onClick={() => handleToggleStatus(n)} className="px-2.5 py-1 rounded bg-green-600 text-white hover:bg-green-700" title="Reactivate">↻</button>
+                            <button 
+                              onClick={() => handleToggleStatus(n)} 
+                              className="px-3 py-1 text-[13px] rounded-full border border-[#4a7c59] text-[#4a7c59] hover:bg-[#e8f5e9] transition"
+                            >
+                              Reactivate
+                            </button>
                           ) : (
-                            <button onClick={() => setDeleteNotification(n)} className="px-2.5 py-1 rounded bg-red-600 text-white hover:bg-red-700" title="Deactivate">🗑️</button>
+                            <button 
+                              onClick={() => setDeleteNotification(n)} 
+                              className="px-3 py-1 text-[13px] rounded-full border border-[#b85c49] text-[#b85c49] hover:bg-[#fbe9e6] transition"
+                            >
+                              Delete
+                            </button>
                           )}
                         </>
                       )}

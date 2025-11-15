@@ -8,6 +8,7 @@ import {
     CalendarCheck,
     Receipt,
     IdentificationCard,
+    PawPrint,
 } from "phosphor-react";
 import { useEffect, useState } from "react";
 
@@ -107,6 +108,11 @@ export default function SidebarProfile() {
           <Receipt size={20} weight="duotone" />
           <span className="text-sm">Order History</span>
         </NavLink>
+
+        <NavLink to="/profile/membership" className={linkClass}>
+          <IdentificationCard size={20} weight="duotone" />
+          <span className="text-sm">Membership</span>
+        </NavLink>
       </nav>
 
       {/* Bottom Menu */}
@@ -118,80 +124,6 @@ export default function SidebarProfile() {
           <span className="text-sm">Settings</span>
         </div>
       </div>
-
-              {/* Profile Pages */}
-              <NavLink
-                  to="/profile"
-                  end
-                  className={({ isActive }) =>
-                      `flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-[#f9f5f1] ${isActive ? "bg-[#f9f5f1]" : ""}`
-                  }
-              >
-                  <SquaresFour size={20} weight="duotone" />
-                  <span className="text-sm">Profile</span>
-              </NavLink>
-
-              <NavLink
-                  to="/profile/contact-history"
-                  className={({ isActive }) =>
-                      `flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-[#f9f5f1] ${isActive ? "bg-[#f9f5f1]" : ""}`
-                  }
-              >
-                  <ListChecks size={20} weight="duotone" />
-                  <span className="text-sm">Contact History</span>
-              </NavLink>
-
-              <NavLink
-                  to="/profile/booking-history"
-                  className={({ isActive }) =>
-                      `flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-[#f9f5f1] ${isActive ? "bg-[#f9f5f1]" : ""
-                      }`
-                  }
-              >
-                  <CalendarCheck size={20} weight="duotone" />
-                  <span className="text-sm">Booking History</span>
-              </NavLink>
-              <NavLink
-                  to="/profile/wishlist"
-                  className={({ isActive }) =>
-                      `flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-[#f9f5f1] ${isActive ? "bg-[#f9f5f1]" : ""
-                      }`
-                  }
-              >
-                  <Star size={20} weight="duotone" />
-                  <span className="text-sm">Wishlist</span>
-              </NavLink>
-              <NavLink
-                  to="/profile/orders/my"
-                  className={({ isActive }) =>
-                      `flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-[#f9f5f1] ${isActive ? "bg-[#f9f5f1]" : ""
-                      }`
-                  }
-              >
-                  <Receipt size={20} weight="duotone" />
-                  <span className="text-sm">Order History</span>
-              </NavLink>
-              <NavLink
-                  to="/profile/membership"
-                  className={({ isActive }) =>
-                      `flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-[#f9f5f1] ${isActive ? "bg-[#f9f5f1]" : ""
-                      }`
-                  }
-              >
-                  <IdentificationCard size={20} weight="duotone" />
-                  <span className="text-sm">Membership</span>
-              </NavLink>
-          </nav>
-
-          {/* Bottom Menu */}
-          <div className="p-4 border-t border-[#d7cbbf] space-y-1">
-              <div className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-[#f9f5f1] rounded-lg cursor-pointer">
-                  <span className="text-sm">Support</span>
-              </div>
-              <div className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-[#f9f5f1] rounded-lg cursor-pointer">
-                  <span className="text-sm">Settings</span>
-              </div>
-          </div>
 
           {/* User Profile
           <div className="p-4 border-t border-[#d7cbbf] flex items-center gap-3">

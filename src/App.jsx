@@ -38,7 +38,6 @@ import WishlistGroupsPage from './components/ui/Wishlist/WishlistGroupsPage.jsx'
 import SharedWishlistPage from './components/ui/Wishlist/SharedWishlistPage.jsx';
 import CheckoutPage from './pages/CheckoutPage.jsx';
 import MyOrdersPage from './pages/MyOrdersPage.jsx';
-import VetSchedulePage from "./pages/VetSchedulePage";
 import MembershipPage from './pages/MembershipPage.jsx';
 import VetSchedulePage from "./pages/VetSchedulePage.jsx";
 import EventListPage from "./pages/EventListPage.jsx";
