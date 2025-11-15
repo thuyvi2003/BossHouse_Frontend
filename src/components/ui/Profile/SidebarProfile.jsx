@@ -11,30 +11,31 @@ import {
     PawPrint,
 } from "phosphor-react";
 import { useEffect, useState } from "react";
+import { PawPrint } from "lucide-react";
 
 export default function SidebarProfile() {
-    const [user, setUser] = useState(null);
+  const [user, setUser] = useState(null);
 
-    useEffect(() => {
-        const storedUser = localStorage.getItem("user");
-        if (storedUser) {
-            try {
-                const parsed = JSON.parse(storedUser);
-                setUser(parsed);
-                console.log("✅ Loaded user from localStorage:", parsed);
-            } catch (err) {
-                console.error("❌ Error parsing user:", err);
-            }
-        } else {
-            console.warn("⚠️ No user found in localStorage");
-        }
-    }, []);
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        const parsed = JSON.parse(storedUser);
+        setUser(parsed);
+        console.log("✅ Loaded user from localStorage:", parsed);
+      } catch (err) {
+        console.error("❌ Error parsing user:", err);
+      }
+    } else {
+      console.warn("⚠️ No user found in localStorage");
+    }
+  }, []);
 
-    const isVet = user?.role?.toLowerCase().trim() === "veterinarian";
-    console.log("Sidebar user:", user);
-    console.log("isVet:", isVet);
+  const isVet = user?.role?.toLowerCase().trim() === "veterinarian";
+  console.log("Sidebar user:", user);
+  console.log("isVet:", isVet);
 
- if (!user) {
+  if (!user) {
     return (
       <div className="w-64 bg-white border-r border-[#d7cbbf] flex items-center justify-center h-screen">
         <span className="text-gray-500 text-sm">Loading user...</span>
@@ -43,16 +44,17 @@ export default function SidebarProfile() {
   }
 
   const linkClass = ({ isActive }) =>
-    `flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-[#f9f5f1] ${isActive ? "bg-[#f9f5f1]" : ""}`;
+    `flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-[#f9f5f1] ${
+      isActive ? "bg-[#f9f5f1]" : ""
+    }`;
 
   return (
-      <div className="w-64 bg-white border-r border-[#d7cbbf] flex flex-col h-screen">
-          {/* Logo */}
-          <div className="p-6 border-b border-[#d7cbbf] flex items-center gap-2">
-              <div className="w-8 h-8 bg-[#846551] rounded-lg"></div>
-              <span className="font-semibold text-gray-800">Profile UI</span>
-          </div>
-
+    <div className="w-64 bg-white border-r border-[#d7cbbf] flex flex-col">
+      {/* Logo */}
+      <div className="p-6 border-b border-[#d7cbbf] flex items-center gap-2">
+        <div className="w-8 h-8 bg-[#846551] rounded-lg"></div>
+        <span className="font-semibold text-gray-800">Profile UI</span>
+      </div>
       {/* Navigation */}
       <nav className="flex-1 px-4 space-y-1">
         <NavLink to="/" className={linkClass}>
@@ -108,13 +110,18 @@ export default function SidebarProfile() {
           <Receipt size={20} weight="duotone" />
           <span className="text-sm">Order History</span>
         </NavLink>
-
-        <NavLink to="/profile/membership" className={linkClass}>
+        <NavLink
+          to="/profile/membership"
+          className={({ isActive }) =>
+            `flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-[#f9f5f1] ${
+              isActive ? "bg-[#f9f5f1]" : ""
+            }`
+          }
+        >
           <IdentificationCard size={20} weight="duotone" />
           <span className="text-sm">Membership</span>
         </NavLink>
       </nav>
-
       {/* Bottom Menu */}
       <div className="p-4 border-t border-[#d7cbbf] space-y-1">
         <div className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-[#f9f5f1] rounded-lg cursor-pointer">
@@ -137,9 +144,6 @@ export default function SidebarProfile() {
                   <div className="text-xs text-gray-500">olivia@bosshouse.com</div>
               </div>
           </div> */}
-      </div>
-    );
-  }
-
-
-
+    </div>
+  );
+}

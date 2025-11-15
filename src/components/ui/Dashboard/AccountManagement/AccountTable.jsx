@@ -49,6 +49,33 @@ const AccountTable = ({ accounts, onViewDetail, onAssignRole, onBanUnban }) => {
         }
     };
 
+    // NEW: Updated for inactive status
+    const getStatusBadgeClass = (status) => {
+        switch (status) {
+            case AccountStatus.ACTIVE:
+                return 'bg-green-100 text-green-700 hover:bg-green-100';
+            case AccountStatus.BANNED:
+                return 'bg-red-100 text-red-700 hover:bg-red-100';
+            case AccountStatus.INACTIVE:
+                return 'bg-gray-100 text-gray-700 hover:bg-gray-100';  // NEW: Gray for inactive
+            default:
+                return 'bg-gray-100 text-gray-700 hover:bg-gray-100';
+        }
+    };
+
+    const getStatusLabel = (status) => {
+        switch (status) {
+            case AccountStatus.ACTIVE:
+                return 'Active';
+            case AccountStatus.BANNED:
+                return 'Banned';
+            case AccountStatus.INACTIVE:
+                return 'Inactive';  // NEW: For soft-deleted
+            default:
+                return status;
+        }
+    };
+
     return (
         <div className="overflow-x-auto">
             <Table>
@@ -73,14 +100,8 @@ const AccountTable = ({ accounts, onViewDetail, onAssignRole, onBanUnban }) => {
                                 </Badge>
                             </TableCell>
                             <TableCell>
-                                <Badge
-                                    className={
-                                        account.status === AccountStatus.ACTIVE
-                                            ? 'bg-green-100 text-green-700 hover:bg-green-100'
-                                            : 'bg-red-100 text-red-700 hover:bg-red-100'
-                                    }
-                                >
-                                    {account.status === AccountStatus.ACTIVE ? 'Active' : 'Banned'}
+                                <Badge className={getStatusBadgeClass(account.status)}>
+                                    {getStatusLabel(account.status)}
                                 </Badge>
                             </TableCell>
                             <TableCell className="text-gray-600">
@@ -103,33 +124,38 @@ const AccountTable = ({ accounts, onViewDetail, onAssignRole, onBanUnban }) => {
                                                 <p>View Details</p>
                                             </TooltipContent>
                                         </Tooltip>
+                                        {/* UPDATED: Assign Role - Disabled + Tooltip for deleted */}
                                         <Tooltip>
                                             <TooltipTrigger asChild>
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    onClick={() => onAssignRole(account)}
+                                                    onClick={() => !account.is_deleted && onAssignRole(account)}  // NEW: Conditional onClick
+                                                    disabled={account.is_deleted}  // NEW: Disable for deleted
+                                                    className={account.is_deleted ? 'opacity-50 cursor-not-allowed' : ''}  // NEW: Visual disabled
                                                 >
                                                     <UserCog className="w-4 h-4" />
                                                 </Button>
                                             </TooltipTrigger>
                                             <TooltipContent>
-                                                <p>Assign Role</p>
+                                                <p>{account.is_deleted ? 'Cannot assign roles to deleted users' : 'Assign Role'}</p>
                                             </TooltipContent>
                                         </Tooltip>
+                                        {/* UPDATED: Ban/Unban - Disabled + Tooltip for deleted */}
                                         <Tooltip>
                                             <TooltipTrigger asChild>
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    onClick={() => onBanUnban(account)}
-                                                    className={`min-w-[80px] ${account.status === AccountStatus.ACTIVE ? 'text-red-600 hover:text-red-700' : 'text-green-600 hover:text-green-700'}`}
+                                                    onClick={() => !account.is_deleted && onBanUnban(account)}  // NEW: Conditional onClick
+                                                    disabled={account.is_deleted}  // NEW: Disable for deleted
+                                                    className={`min-w-[80px] ${account.is_deleted ? 'opacity-50 cursor-not-allowed' : (account.status === AccountStatus.ACTIVE ? 'text-red-600 hover:text-red-700' : 'text-green-600 hover:text-green-700')}`}  // UPDATED: Conditional class
                                                 >
-                                                    {account.status === AccountStatus.ACTIVE ? 'Ban' : 'Unban'}
+                                                    {account.is_deleted ? 'N/A' : (account.status === AccountStatus.ACTIVE ? 'Ban' : 'Unban')}
                                                 </Button>
                                             </TooltipTrigger>
                                             <TooltipContent>
-                                                <p>{account.status === AccountStatus.ACTIVE ? 'Ban Account' : 'Unban Account'}</p>
+                                                <p>{account.is_deleted ? 'Ban/unban not available for deleted users' : (account.status === AccountStatus.ACTIVE ? 'Ban Account' : 'Unban Account')}</p>
                                             </TooltipContent>
                                         </Tooltip>
                                     </div>
