@@ -7,6 +7,7 @@ import { useAuthStore } from "@/stores/useAuthStore";
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
 import Dashboard from './pages/DashboardPage.jsx';
+import ProtectedRoute from './router/ProtectedRoute.jsx';
 import Cart from './pages/CartPage.jsx';
 import HomePage from './pages/HomePage.jsx';
 import ProductPage from './pages/ProductPage.jsx';
@@ -37,7 +38,11 @@ import WishlistGroupsPage from './components/ui/Wishlist/WishlistGroupsPage.jsx'
 import SharedWishlistPage from './components/ui/Wishlist/SharedWishlistPage.jsx';
 import CheckoutPage from './pages/CheckoutPage.jsx';
 import MyOrdersPage from './pages/MyOrdersPage.jsx';
+import MembershipPage from './pages/MembershipPage.jsx';
 import VetSchedulePage from "./pages/VetSchedulePage.jsx";
+import EventListPage from "./pages/EventListPage.jsx";
+import EventDetailPage from "./pages/EventDetailPage.jsx";
+import MyEventsPage from "./pages/MyEventsPage.jsx";
 
 function App() {
   const location = useLocation();
@@ -84,6 +89,10 @@ function App() {
             <Route path="/post" element={<BlogScreen />} />
             <Route path="/post/:id" element={<PostDetail />} />
 
+            {/* Events */}
+            <Route path="/events" element={<EventListPage />} />
+            <Route path="/events/:id" element={<EventDetailPage />} />
+
             {/* Services */}
             <Route path="/services" element={<Services />} />
             <Route path="/user-booking" element={<UserBookingForm />} />
@@ -94,11 +103,13 @@ function App() {
               <Route path="pets" element={<PetProfileManagement user={user} />} />
               <Route path="contact-history" element={<ContactHistory />} />
               <Route path="booking-history" element={<BookingHistory />} />
+              <Route path="events" element={<MyEventsPage />} />
               <Route path="orders/my" element={<MyOrdersPage />} />
-              <Route path="wishlist" element={<WishlistPage />} >
+              <Route path="wishlist" element={<WishlistPage />}>
                 <Route path="groups" element={<WishlistGroupsPage />} />
               </Route>
               <Route path="schedule" element={<VetSchedulePage />} />
+              <Route path="membership" element={<MembershipPage />} />  {/* duy nhất dòng membership */}
             </Route>
 
             <Route path="/share/wishlist/:groupId" element={<SharedWishlistPage />} />

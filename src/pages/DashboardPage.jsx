@@ -6,13 +6,18 @@ import PromotionManagement from "../components/ui/Dashboard/Promotions/Promotion
 import BookingManager from "@/components/ui/Dashboard/Bookings/BookingManager";
 import ContactManager from "../components/ui/Dashboard/Contact/ContactManager";
 import ScheduleManager from "@/components/ui/Dashboard/Schedule/ScheduleManager";
+import Logo from "@/assets/Logo_BossHouse.png";
+import Background from "@/assets/Background_Cat.png";
 import PostManagement from "@/components/ui/Dashboard/Posts/PostManagement";
 import ReviewManagement from "@/components/ui/Dashboard/Reviews/ReviewManagement";
 import NotificationManagement from "@/components/ui/Dashboard/Notifications/NotificationManagement";
 import AccountManagement from "@/components/ui/Dashboard/AccountManagement/AccountManagement";
 import StockManagement from "@/components/ui/Dashboard/Stocks/StockManagement";
 import OrderManagement from "@/components/ui/Dashboard/Orders/OrderManagement";
+import MembershipManagement from "@/components/ui/Dashboard/Membership/MembershipManagement";
+import StatisticsDashboard from "@/components/ui/Dashboard/Statistics/StatisticsDashboard";
 import PetTypeManagement from "../components/ui/Dashboard/PetTypes/PetTypeManagement";
+import EventManagement from "@/components/ui/Dashboard/Events/EventManagement";
 
 import {
   ChartBar,
@@ -26,16 +31,36 @@ import {
   Bell,
   Gear,
   SignOut,
-  CaretDown,
+  Crown,
+  ChartLineUp,
   CaretUp,
+  CaretDown,
 } from "phosphor-react";
 
-import Logo from "@/assets/Logo_BossHouse.png";
-import Background from "@/assets/Background_Cat.png";
-
 export default function Dashboard() {
+  // Show statistics overview by default
   const [activeTab, setActiveTab] = useState("overview");
   const [openGroups, setOpenGroups] = useState({});
+
+  const sidebarItems = [
+    { id: "overview", icon: <ChartBar size={22} />, label: "Overview" },
+    { id: "account", icon: <User size={22} />, label: "Account" },
+    { id: "product", icon: <Package size={22} />, label: "Product" },
+    { id: "category", icon: <Package size={22} />, label: "Category" },
+    { id: "variation", icon: <Package size={22} />, label: "Product Variation" },
+    { id: "stock", icon: <Package size={22} />, label: "Stock Management" },
+    { id: "promotion", icon: <FilmSlate size={22} />, label: "Promotion" },
+    { id: "booking", icon: <CalendarCheck size={22} />, label: "Booking" },
+    { id: "post", icon: <Note size={22} />, label: "Post" },
+    { id: "contact", icon: <User size={22} />, label: "Contact" },
+    { id: "review", icon: <Star size={22} />, label: "Review" },
+    { id: "notification", icon: <Bell size={22} />, label: "Notification" },
+    { id: "schedule", icon: <Clock size={22} />, label: "Schedule" },
+    { id: "order", icon: <Package size={22} />, label: "Order" },
+    { id: "membership", icon: <Crown size={22} />, label: "Membership" },
+    // { id: "statistics", icon: <ChartLineUp size={22} />, label: "Statistics" }, // ADD THIS
+
+  ];
 
   const toggleGroup = (groupId) => {
     setOpenGroups((prev) => ({ ...prev, [groupId]: !prev[groupId] }));
@@ -85,6 +110,7 @@ export default function Dashboard() {
       items: [
         { id: "promotion", label: "Promotion", icon: <FilmSlate size={20} /> },
         { id: "order", label: "Order", icon: <Package size={20} /> },
+        { id: "membership", label: "Membership", icon: <Crown size={20} /> },
       ],
     },
     {
@@ -93,6 +119,7 @@ export default function Dashboard() {
       icon: <Note size={22} />,
       items: [
         { id: "post", label: "Post", icon: <Note size={20} /> },
+        { id: "event", label: "Event", icon: <CalendarCheck size={20} /> },
         { id: "booking", label: "Booking", icon: <CalendarCheck size={20} /> },
         { id: "schedule", label: "Schedule", icon: <Clock size={20} /> },
       ],
@@ -110,7 +137,7 @@ export default function Dashboard() {
   const renderContent = () => {
     switch (activeTab) {
       case "overview":
-        return <h2 className="text-2xl font-bold">Overview</h2>;
+        return <StatisticsDashboard />;
       case "account":
         return <AccountManagement />;
       case "product":
@@ -129,6 +156,8 @@ export default function Dashboard() {
         return <BookingManager />;
       case "post":
         return <PostManagement />;
+      case "event":
+        return <EventManagement />;
       case "contact":
         return <ContactManager />;
       case "review":
@@ -140,6 +169,10 @@ export default function Dashboard() {
         return <ScheduleManager />;
       case "order":
         return <OrderManagement />;
+      case "membership":
+        return <MembershipManagement />;
+      // case "statistics":
+      //   return <StatisticsDashboard />; // ADD THIS
       default:
         return <h2 className="text-2xl font-bold">Welcome to Dashboard</h2>;
     }
