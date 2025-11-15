@@ -131,6 +131,7 @@ const AccountManagement = () => {
                                     <SelectItem value="all">All Status</SelectItem>
                                     <SelectItem value={AccountStatus.ACTIVE}>Active</SelectItem>
                                     <SelectItem value={AccountStatus.BANNED}>Banned</SelectItem>
+                                    <SelectItem value={AccountStatus.INACTIVE}>Inactive</SelectItem>
                                 </SelectContent>
                             </Select>
                             <Select value={roleFilter} onValueChange={setRoleFilter} disabled={isLoading}>

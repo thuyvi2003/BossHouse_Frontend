@@ -7,6 +7,7 @@ export const AccountRole = {
 
 export const AccountStatus = {
     ACTIVE: 'active',
-    BANNED: 'banned'
+    BANNED: 'banned',
+    INACTIVE: 'inactive'  // NEW: For soft-deleted users
 };
 
